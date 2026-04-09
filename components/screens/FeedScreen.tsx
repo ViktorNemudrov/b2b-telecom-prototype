@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Calendar, SlidersHorizontal } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { DatePickerModal } from "@/components/DatePickerModal";
 import { FeedItem } from "@/components/FeedItem";
 import { Button } from "@/components/ui/button";
@@ -56,28 +56,30 @@ export function FeedScreen() {
           </Button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 pb-1">
-          <div className="shrink-0">
-            <Button
-              variant={filter === "all" ? "secondary" : "outline"}
-              size="sm"
-              onClick={() => setFilter("all")}
-            >
-              <SlidersHorizontal className="h-4 w-4" /> Все
-            </Button>
-          </div>
+        <div className="grid grid-cols-4 gap-2 pb-1">
+          <button
+            onClick={() => setFilter("all")}
+            className={[
+              "min-w-0 rounded-full border px-2 py-2 text-xs font-semibold transition active:translate-y-[1px]",
+              filter === "all"
+                ? "border-transparent bg-gradient-to-r from-accent-teal to-accent-violet text-white shadow-softSm"
+                : "border-slate-200 bg-white text-slate-800 shadow-softSm hover:bg-slate-50"
+            ].join(" ")}
+          >
+            <span className="block truncate">Все</span>
+          </button>
           {filterChips.map((c) => (
             <button
               key={c.key}
               onClick={() => setFilter(c.key)}
               className={[
-                "shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition active:translate-y-[1px]",
+                "min-w-0 rounded-full border px-2 py-2 text-xs font-semibold transition active:translate-y-[1px]",
                 filter === c.key
                   ? "border-transparent bg-gradient-to-r from-accent-teal to-accent-violet text-white shadow-softSm"
                   : "border-slate-200 bg-white text-slate-800 shadow-softSm hover:bg-slate-50"
               ].join(" ")}
             >
-              {c.label}
+              <span className="block truncate">{c.label}</span>
             </button>
           ))}
         </div>

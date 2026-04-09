@@ -19,12 +19,14 @@ export function BottomInputBar({
   value,
   onChange,
   onSend,
-  onOpenHistory
+  onOpenHistory,
+  placement = "fixedBottom"
 }: {
   value: string;
   onChange: (v: string) => void;
   onSend: () => void;
   onOpenHistory: () => void;
+  placement?: "fixedBottom" | "inline";
 }) {
   const inputRef = React.useRef<HTMLInputElement | null>(null);
   const [focused, setFocused] = React.useState(false);
@@ -40,8 +42,20 @@ export function BottomInputBar({
   }, []);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 mx-auto w-full max-w-[430px]">
-      <div className="safe-px border-t border-slate-100 bg-[rgb(var(--bg))]/85 pb-4 pt-3 backdrop-blur">
+    <div
+      className={cn(
+        placement === "fixedBottom" &&
+          "fixed bottom-0 left-0 right-0 z-40 mx-auto w-full max-w-[430px]",
+        placement === "inline" && "w-full"
+      )}
+    >
+      <div
+        className={cn(
+          "safe-px bg-[rgb(var(--bg))]/85 backdrop-blur",
+          placement === "fixedBottom" && "border-t border-slate-100 pb-4 pt-3",
+          placement === "inline" && "pb-2 pt-1"
+        )}
+      >
         <div
           className={cn(
             "flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-soft",

@@ -114,7 +114,15 @@ export function AiAssistantScreen() {
         <div className="mt-1 text-sm text-slate-500">С чего мы начнём?</div>
       </div>
 
-      <div className="flex flex-wrap gap-2 pb-1">
+      <BottomInputBar
+        placement="inline"
+        value={input}
+        onChange={setInput}
+        onSend={() => send()}
+        onOpenHistory={() => setOpenHistory(true)}
+      />
+
+      <div className="grid grid-cols-3 gap-2 pb-1">
         {quickPrompts.map((p) => (
           <PromptTag
             key={p}
@@ -233,13 +241,6 @@ export function AiAssistantScreen() {
           ))}
         </div>
       </Modal>
-
-      <BottomInputBar
-        value={input}
-        onChange={setInput}
-        onSend={() => send()}
-        onOpenHistory={() => setOpenHistory(true)}
-      />
     </div>
   );
 }

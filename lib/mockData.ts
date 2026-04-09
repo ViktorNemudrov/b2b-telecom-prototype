@@ -116,16 +116,15 @@ export const feedItems: FeedItem[] = [
       companyHint: "В профиле: «Компания вместо номера»",
       transcript:
         "Клиент: Добрый день. Уточните, пожалуйста, по счету за март — не проходит оплата.\n\nОператор: Проверяю. Вижу отклонение по реквизитам. Могу продублировать счет и подсказать корректный шаблон платежа.\n\nКлиент: Да, пришлите на почту и скажите срок зачисления.\n\nОператор: Обычно 1–2 рабочих дня. Я отправлю обновленный счет прямо сейчас.",
-      recordingUrl:
-        "data:audio/wav;base64,UklGRlYAAABXQVZFZm10IBAAAAABAAEAgD4AAIA+AAABAAgAZGF0YTIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      recordingUrl: "/greeting.wav"
     }
   },
   {
     id: "f2",
     kind: "tariff",
     stats: {
-      gbUsed: 2.4,
-      gbTotal: 127,
+      gbUsed: 25,
+      gbTotal: 100,
       minutesUsed: 15,
       minutesTotal: 500,
       smsUsed: 500,
