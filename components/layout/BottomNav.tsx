@@ -6,8 +6,8 @@ import { FileText, Headphones, Home, LayoutGrid, MapPin } from "lucide-react";
 import { cn } from "@/components/ui/cn";
 
 const items = [
-  { href: "/", label: "Главная", Icon: Home },
-  { href: "/assistant", label: "Сервисы", Icon: LayoutGrid },
+  { href: "/assistant", label: "Главная", Icon: Home },
+  { href: "/home", label: "Сервисы", Icon: LayoutGrid },
   { href: "/documents", label: "Документы", Icon: FileText },
   { href: "/sphere", label: "Сфера", Icon: MapPin, badge: "PRO" as const },
   { href: "/support", label: "Поддержка", Icon: Headphones }
@@ -16,8 +16,9 @@ const items = [
 export function BottomNav() {
   const pathname = usePathname();
   const onCallRoute = pathname?.startsWith("/call/");
+  const hideNav = pathname === "/" || pathname === "/auth" || onCallRoute;
 
-  if (onCallRoute) return null;
+  if (hideNav) return null;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 mx-auto w-full max-w-[430px]">
@@ -25,9 +26,11 @@ export function BottomNav() {
         <div className="flex items-stretch justify-between gap-1 rounded-[26px] border border-slate-200/90 bg-white/95 px-2 py-2 shadow-soft backdrop-blur">
           {items.map(({ href, label, Icon, badge }) => {
             const active =
-              href === "/"
-                ? pathname === "/" || pathname === "/communication"
-                : pathname === href || pathname?.startsWith(href + "/");
+              href === "/assistant"
+                ? pathname === "/assistant"
+                : href === "/home"
+                  ? pathname === "/home" || pathname === "/communication"
+                  : pathname === href || pathname?.startsWith(href + "/");
             return (
               <Link
                 key={href}

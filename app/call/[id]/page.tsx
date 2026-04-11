@@ -7,6 +7,7 @@ import { ChevronLeft, FileText, Settings } from "lucide-react";
 import { RecordingPlayer } from "@/components/RecordingPlayer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { openDevelopmentStub } from "@/lib/developmentStub";
 import { getCallById } from "@/lib/mockData";
 
 export default function CallDetailPage() {
@@ -19,7 +20,7 @@ export default function CallDetailPage() {
     return (
       <div className="safe-px mx-auto min-h-dvh max-w-[430px] pb-8 pt-4">
         <Link
-          href="/"
+          href="/communication"
           className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-500 text-white">
@@ -41,7 +42,7 @@ export default function CallDetailPage() {
     <div className="safe-px mx-auto min-h-dvh max-w-[430px] pb-8 pt-3">
       <div className="flex items-center justify-between gap-2">
         <Link
-          href="/"
+          href="/communication"
           className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 pr-3 text-sm font-semibold text-slate-800 shadow-softSm transition hover:bg-slate-50"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-500 text-white">
@@ -51,6 +52,7 @@ export default function CallDetailPage() {
         </Link>
         <button
           type="button"
+          onClick={() => openDevelopmentStub("Настройки записи звонка.")}
           className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50"
           aria-label="Настройки"
         >
@@ -105,7 +107,11 @@ export default function CallDetailPage() {
       <Card className="mt-4">
         <CardContent className="pb-4 pt-4">
           <p className="text-sm text-slate-600">срок хранения 60 дней — осталось 43 дня</p>
-          <Button variant="secondary" className="mt-3 w-full rounded-full">
+          <Button
+            variant="secondary"
+            className="mt-3 w-full rounded-full"
+            onClick={() => openDevelopmentStub("Продление срока хранения записи.")}
+          >
             Увеличить срок хранения
           </Button>
         </CardContent>

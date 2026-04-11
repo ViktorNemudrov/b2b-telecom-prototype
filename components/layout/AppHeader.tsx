@@ -1,7 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { Bell, Search, User2 } from "lucide-react";
 import { cn } from "@/components/ui/cn";
+
+import { openDevelopmentStub } from "@/lib/developmentStub";
 
 export function AppHeader() {
   return (
@@ -9,6 +12,7 @@ export function AppHeader() {
       <div className="safe-px flex items-center justify-between gap-2 py-2">
         <button
           type="button"
+          onClick={() => openDevelopmentStub("Профиль и карточка контрагента.")}
           className={cn(
             "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white transition",
             "active:translate-y-[1px] hover:bg-slate-50"
@@ -22,9 +26,12 @@ export function AppHeader() {
 
         <div className="flex min-w-0 flex-1 flex-col items-center px-1">
           <div className="flex items-center gap-2">
-            <span
-              className="h-7 w-7 shrink-0 rounded-full bg-gradient-to-br from-accent-yellow to-neutral-800 shadow-softSm"
-              aria-hidden
+            <Image
+              src="/beeline-sphere.svg"
+              alt=""
+              width={28}
+              height={28}
+              className="h-7 w-7 shrink-0 rounded-full object-cover shadow-softSm ring-1 ring-black/5"
             />
             <div className="min-w-0 text-center leading-tight">
               <div className="text-[13px] font-bold tracking-tight text-slate-900">
@@ -38,6 +45,7 @@ export function AppHeader() {
         <div className="flex shrink-0 items-center gap-1.5">
           <button
             type="button"
+            onClick={() => openDevelopmentStub("Поиск по сервисам.")}
             className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 active:translate-y-[1px]"
             aria-label="Поиск"
           >
@@ -45,6 +53,7 @@ export function AppHeader() {
           </button>
           <button
             type="button"
+            onClick={() => openDevelopmentStub("Центр уведомлений.")}
             className="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white transition hover:bg-slate-50 active:translate-y-[1px]"
             aria-label="Уведомления"
           >

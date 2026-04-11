@@ -3,6 +3,7 @@
 import { ThumbsDown, ThumbsUp, Volume2 } from "lucide-react";
 import { cn } from "@/components/ui/cn";
 import { Button } from "@/components/ui/button";
+import { openDevelopmentStub } from "@/lib/developmentStub";
 import type { ChatMessage } from "@/lib/mockData";
 
 function canSpeak() {
@@ -49,10 +50,22 @@ export function ChatBubble({
             >
               <Volume2 className="h-4 w-4" />
             </Button>
-            <Button size="icon" variant="ghost" className="h-9 w-9 rounded-xl" aria-label="Полезно">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-9 w-9 rounded-xl"
+              aria-label="Полезно"
+              onClick={() => openDevelopmentStub("Оценка ответа и обратная связь.")}
+            >
               <ThumbsUp className="h-4 w-4" />
             </Button>
-            <Button size="icon" variant="ghost" className="h-9 w-9 rounded-xl" aria-label="Не полезно">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-9 w-9 rounded-xl"
+              aria-label="Не полезно"
+              onClick={() => openDevelopmentStub("Сбор негативных оценок для улучшения модели.")}
+            >
               <ThumbsDown className="h-4 w-4" />
             </Button>
           </div>

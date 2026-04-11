@@ -1,5 +1,6 @@
 "use client";
 
+import { openDevelopmentStub } from "@/lib/developmentStub";
 import type { FeedItem as FeedItemT } from "@/lib/mockData";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -87,6 +88,13 @@ export function FeedItem({
               <div className="mt-1 text-sm text-slate-700">{item.description}</div>
             </div>
           </div>
+          <Button
+            variant="secondary"
+            className="mt-4 w-full rounded-full"
+            onClick={() => openDevelopmentStub("Экспорт сводки в PDF.")}
+          >
+            Открыть сводку
+          </Button>
         </CardContent>
       </Card>
     );

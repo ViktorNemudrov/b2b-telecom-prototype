@@ -10,6 +10,7 @@ import { SegmentedControl } from "@/components/SegmentedControl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { communicationLogMock } from "@/lib/dashboardMock";
+import { openDevelopmentStub } from "@/lib/developmentStub";
 import { feedDateLabel, feedItems } from "@/lib/mockData";
 
 type CommTab = "records" | "secretary";
@@ -21,13 +22,6 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
   const [date, setDate] = React.useState(() => new Date("2026-04-14T10:00:00.000Z"));
   const [openDatePicker, setOpenDatePicker] = React.useState(false);
   const [expandedTranscriptById, setExpandedTranscriptById] = React.useState<Record<string, boolean>>({});
-  const [toast, setToast] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    if (!toast) return;
-    const t = window.setTimeout(() => setToast(null), 2400);
-    return () => window.clearTimeout(t);
-  }, [toast]);
 
   const filteredComm = React.useMemo(() => {
     if (commTab !== "records") return [];
@@ -86,6 +80,7 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
             <h1 className="text-lg font-semibold text-slate-900">Коммуникация</h1>
             <button
               type="button"
+              onClick={() => openDevelopmentStub("Настройки ленты коммуникаций.")}
               className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50"
               aria-label="Настройки"
             >
@@ -103,6 +98,7 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
+              onClick={() => openDevelopmentStub("Поиск по коммуникациям.")}
               className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 active:translate-y-[1px]"
               aria-label="Поиск"
             >
@@ -120,7 +116,7 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
               type="button"
               onClick={() => {
                 setFilter("team");
-                setToast("Команда: фильтр по ответственным (демо).");
+                openDevelopmentStub("Фильтр «Команда» и привязка ответственных.");
               }}
               className={[
                 "rounded-full border px-3 py-2 text-xs font-semibold transition active:translate-y-[1px]",
@@ -218,8 +214,8 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
                   setExpandedTranscriptById((p) => ({ ...p, [id]: !p[id] }))
                 }
                 onAction={(a) => {
-                  if (a.type === "pay") setToast("Пополнение: черновик платежа подготовлен.");
-                  if (a.type === "report") setToast("Отчет: сформирован черновик и отправка поставлена в очередь.");
+                  if (a.type === "pay") openDevelopmentStub("Пополнение баланса и оплата из ленты.");
+                  if (a.type === "report") openDevelopmentStub("Формирование отчёта из карточки ленты.");
                 }}
               />
             ))}
@@ -233,22 +229,15 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
               Принимает пропущенные, фиксирует суть и ставит задачи. В демо — заглушка; сценарии можно подключить к
               CRM.
             </p>
-            <Button className="mt-4 w-full rounded-full">Настроить сценарии</Button>
+            <Button
+              className="mt-4 w-full rounded-full"
+              onClick={() => openDevelopmentStub("Мастер сценариев секретаря.")}
+            >
+              Настроить сценарии
+            </Button>
           </CardContent>
         </Card>
       )}
-
-      {toast ? (
-        <div className="fixed bottom-24 left-0 right-0 z-40 mx-auto w-full max-w-[430px]">
-          <div className="safe-px">
-            <Card className="border-slate-200">
-              <CardContent className="pb-3 pt-3">
-                <div className="text-sm text-slate-800">{toast}</div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      ) : null}
 
       <DatePickerModal
         open={openDatePicker}

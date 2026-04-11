@@ -198,9 +198,11 @@ export function AiAssistantScreen() {
                           subtitle={a.subtitle}
                           ctaLabel={a.ctaLabel}
                           onCta={() => {
-                            if (a.intent === "start-campaign") setToast("Рассылка: черновик создан, отправка поставлена в очередь.");
-                            if (a.intent === "pay-balance") setToast("Платеж: черновик пополнения подготовлен.");
-                            if (a.intent === "generate-report") setToast("Отчет: черновик сформирован.");
+                            if (a.intent === "start-campaign")
+                              setToast("Рассылка: черновик создан, отправка поставлена в очередь.");
+                            else if (a.intent === "pay-balance") setToast("Платеж: черновик пополнения подготовлен.");
+                            else if (a.intent === "generate-report") setToast("Отчет: черновик сформирован.");
+                            else setToast("Действие выполнено (демо).");
                           }}
                         />
                       ))

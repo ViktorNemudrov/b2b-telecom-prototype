@@ -1,5 +1,6 @@
 "use client";
 
+import { openDevelopmentStub } from "@/lib/developmentStub";
 import type { TariffStats } from "@/lib/mockData";
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart3, Infinity, Settings } from "lucide-react";
@@ -16,6 +17,7 @@ export function TariffSubscriptionCard({ stats: s }: { stats: TariffStats }) {
           <h3 className="text-base font-semibold text-slate-900">Связь для бизнеса</h3>
           <button
             type="button"
+            onClick={() => openDevelopmentStub("Настройки и параметры тарифа.")}
             className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50"
             aria-label="Настройки тарифа"
           >

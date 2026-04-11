@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { CommLogRow } from "@/lib/dashboardMock";
+import { openDevelopmentStub } from "@/lib/developmentStub";
 import { cn } from "@/components/ui/cn";
 
 export function CommunicationLogRow({ row }: { row: CommLogRow }) {
@@ -36,5 +37,13 @@ export function CommunicationLogRow({ row }: { row: CommLogRow }) {
     );
   }
 
-  return <div className="-mx-1 rounded-xl px-1">{content}</div>;
+  return (
+    <button
+      type="button"
+      className="-mx-1 block w-full rounded-xl px-1 text-left transition hover:bg-slate-50"
+      onClick={() => openDevelopmentStub(`Карточка «${row.title}» — детальная карточка в CRM.`)}
+    >
+      {content}
+    </button>
+  );
 }

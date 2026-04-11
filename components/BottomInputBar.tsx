@@ -3,6 +3,7 @@
 import { Clock3, Mic, MicOff, Paperclip, SendHorizonal } from "lucide-react";
 import * as React from "react";
 import { cn } from "@/components/ui/cn";
+import { openDevelopmentStub } from "@/lib/developmentStub";
 
 type SpeechRecognitionCtor = new () => SpeechRecognition;
 
@@ -65,9 +66,7 @@ export function BottomInputBar({
           <button
             aria-label="Прикрепить"
             className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 active:translate-y-[1px]"
-            onClick={() => {
-              // prototype: no-op
-            }}
+            onClick={() => openDevelopmentStub("Прикрепление файлов к сообщению.")}
           >
             <Paperclip className="h-5 w-5" />
           </button>

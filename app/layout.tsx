@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { DevelopmentStubHost } from "@/components/DevelopmentStubHost";
+import { SessionGate } from "@/components/SessionGate";
 import "./globals.css";
 
 const inter = Inter({
@@ -17,7 +19,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru">
       <body className={`min-h-dvh antialiased ${inter.variable} font-sans`}>
-        <div className="mx-auto min-h-dvh w-full max-w-[430px]">{children}</div>
+        <div className="relative mx-auto min-h-dvh w-full max-w-[430px]">
+          <SessionGate>{children}</SessionGate>
+          <DevelopmentStubHost />
+        </div>
       </body>
     </html>
   );

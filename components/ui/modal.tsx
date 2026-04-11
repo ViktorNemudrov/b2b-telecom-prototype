@@ -9,13 +9,15 @@ export function Modal({
   onClose,
   title,
   children,
-  className
+  className,
+  contentClassName
 }: {
   open: boolean;
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
   className?: string;
+  contentClassName?: string;
 }) {
   React.useEffect(() => {
     if (!open) return;
@@ -63,7 +65,7 @@ export function Modal({
                 </button>
               </div>
             ) : null}
-            <div className="safe-px pb-6 pt-4">{children}</div>
+            <div className={cn("safe-px pb-6 pt-4", contentClassName)}>{children}</div>
           </motion.div>
         </motion.div>
       ) : null}
