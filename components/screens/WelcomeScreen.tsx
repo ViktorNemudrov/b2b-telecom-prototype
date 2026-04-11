@@ -4,15 +4,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { hasDemoSession } from "@/lib/demoSession";
+import { useDemoSession } from "@/components/DemoSessionProvider";
 import { openDevelopmentStub } from "@/lib/developmentStub";
 
 export function WelcomeScreen() {
   const router = useRouter();
+  const { authenticated } = useDemoSession();
 
   useEffect(() => {
-    if (hasDemoSession()) router.replace("/assistant");
-  }, [router]);
+    if (authenticated) router.replace("/assistant");
+  }, [authenticated, router]);
 
   return (
     <div className="safe-px flex min-h-dvh flex-col bg-[#121417] text-white">

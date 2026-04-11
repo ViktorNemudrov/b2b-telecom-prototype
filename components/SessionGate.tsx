@@ -2,13 +2,14 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { hasDemoSession } from "@/lib/demoSession";
+import { useDemoSession } from "@/components/DemoSessionProvider";
 
 const PUBLIC = new Set(["/", "/auth"]);
 
 export function SessionGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "";
   const router = useRouter();
+  const { authenticated } = useDemoSession();
   const isPublic = PUBLIC.has(pathname);
   const [allowed, setAllowed] = useState(isPublic);
 
@@ -17,12 +18,12 @@ export function SessionGate({ children }: { children: React.ReactNode }) {
       setAllowed(true);
       return;
     }
-    if (!hasDemoSession()) {
+    if (!authenticated) {
       router.replace("/");
       return;
     }
     setAllowed(true);
-  }, [pathname, router]);
+  }, [pathname, router, authenticated]);
 
   if (!allowed) {
     return <div className="min-h-dvh bg-[rgb(var(--bg))]" aria-busy="true" />;

@@ -4,16 +4,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
+import { useDemoSession } from "@/components/DemoSessionProvider";
 import { openDevelopmentStub } from "@/lib/developmentStub";
 import { formatRuMobileMask } from "@/lib/phoneMaskRu";
-import { setDemoSession } from "@/lib/demoSession";
 
 export function AuthPhoneScreen() {
   const router = useRouter();
+  const { signIn } = useDemoSession();
   const [phone, setPhone] = useState("+7 ");
 
   const submit = () => {
-    setDemoSession();
+    signIn();
     router.push("/assistant?promo=1");
   };
 
@@ -38,7 +39,17 @@ export function AuthPhoneScreen() {
 
       <h1 className="mt-10 text-[32px] font-medium lowercase leading-tight tracking-tight">введите номер</h1>
 
-      <div className="mt-10">
+      <div
+        className="mt-5 rounded-2xl border-2 border-[#FFD429] bg-[#FFD429]/12 px-4 py-3.5 text-center shadow-[0_0_24px_rgba(255,212,41,0.12)]"
+        role="note"
+      >
+        <p className="text-[15px] font-bold leading-snug text-[#FFD429]">Введите любой номер</p>
+        <p className="mt-1.5 text-xs font-medium leading-relaxed text-white/75">
+          Для демо подойдут любые цифры после +7 — вход сработает в любом случае.
+        </p>
+      </div>
+
+      <div className="mt-8">
         <label className="text-xs font-medium uppercase tracking-wide text-white/45">логин</label>
         <div className="relative mt-2 flex items-center border-b border-white/25 pb-2">
           <input
