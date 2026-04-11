@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: 243 243 248;
+  --card: 255 255 255;
+  --text: 39 40 57;
+  --muted: 140 143 158;
+  --border: 231 232 239;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  color: rgb(var(--text));
+  background: rgb(var(--bg));
+  font-feature-settings: "ss01" 1, "ss02" 1, "cv10" 1;
+  letter-spacing: -0.01em;
+}
+
+.safe-px {
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+

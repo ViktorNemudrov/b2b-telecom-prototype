@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <clipPath id="c">
+      <circle cx="32" cy="32" r="30" />
+    </clipPath>
+  </defs>
+  <circle cx="32" cy="32" r="30" fill="#111" />
+  <g clip-path="url(#c)">
+    <g transform="rotate(38 32 32)">
+      <rect x="-40" y="-40" width="18" height="160" fill="#FFD429" />
+      <rect x="-22" y="-40" width="18" height="160" fill="#111" />
+      <rect x="-4" y="-40" width="18" height="160" fill="#FFD429" />
+      <rect x="14" y="-40" width="18" height="160" fill="#111" />
+      <rect x="32" y="-40" width="18" height="160" fill="#FFD429" />
+      <rect x="50" y="-40" width="18" height="160" fill="#111" />
+      <rect x="68" y="-40" width="18" height="160" fill="#FFD429" />
+    </g>
+  </g>
+  <circle cx="32" cy="32" r="30" stroke="rgba(0,0,0,0.08)" stroke-width="1" fill="none" />
+</svg>

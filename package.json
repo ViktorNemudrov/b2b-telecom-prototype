@@ -1,34 +1,24 @@
 {
-  "name": "b2b-telecom-mobile-prototype",
+  "name": "b2b-telecom-monorepo",
   "private": true,
   "version": "0.1.0",
-  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "clsx": "^2.1.1",
-    "framer-motion": "^12.23.12",
-    "lucide-react": "^0.545.0",
-    "next": "^14.2.25",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "tailwind-merge": "^2.6.0",
-    "zod": "^3.24.2"
+    "dev:ai": "npm run dev -w @b2b/ai-first",
+    "dev:classic": "npm run dev -w @b2b/classic",
+    "build:ai": "npm run build -w @b2b/ai-first",
+    "build:classic": "npm run build -w @b2b/classic",
+    "build": "npm run build:ai && npm run build:classic",
+    "lint:ai": "npm run lint -w @b2b/ai-first",
+    "lint:classic": "npm run lint -w @b2b/classic",
+    "lint": "npm run lint:ai && npm run lint:classic",
+    "mobile:sync": "npm run mobile:sync -w @b2b/ai-first",
+    "mobile:android": "npm run mobile:android -w @b2b/ai-first"
   },
   "devDependencies": {
-    "@types/node": "^22.15.17",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
-    "autoprefixer": "^10.4.21",
-    "eslint": "^8.57.1",
-    "eslint-config-next": "^14.2.25",
-    "postcss": "^8.5.3",
-    "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3"
   }
 }
-
