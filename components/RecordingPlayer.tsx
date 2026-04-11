@@ -10,11 +10,16 @@ const speeds = [0.5, 1, 1.5, 2] as const;
 export function RecordingPlayer({
   src,
   fileName = "recording.mp3",
-  className
+  className,
+  layout = "default",
+  centerLabel
 }: {
   src: string;
   fileName?: string;
   className?: string;
+  /** «Полоса» как в макете детали звонка */
+  layout?: "default" | "bar";
+  centerLabel?: string;
 }) {
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = React.useState(false);
@@ -54,16 +59,21 @@ export function RecordingPlayer({
     return `${m}:${String(ss).padStart(2, "0")}`;
   };
 
+  const cycleSpeed = () => {
+    const i = speeds.indexOf(speed);
+    setSpeed(speeds[(i + 1) % speeds.length]);
+  };
+
   return (
     <div className={cn("rounded-2xl border border-slate-200 bg-white p-3 shadow-soft", className)}>
       <audio ref={audioRef} src={src} preload="metadata" />
 
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      {layout === "bar" ? (
+        <div className="flex items-center gap-3">
           <Button
             size="icon"
             variant="outline"
-            className="h-10 w-10 rounded-2xl"
+            className="h-11 w-11 shrink-0 rounded-full"
             onClick={() => {
               const a = audioRef.current;
               if (!a) return;
@@ -74,47 +84,87 @@ export function RecordingPlayer({
           >
             {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-10 w-10 rounded-2xl"
-            onClick={() => {
-              const a = audioRef.current;
-              if (!a) return;
-              a.currentTime = 0;
-            }}
-            aria-label="Сначала"
+          <span className="min-w-0 flex-1 text-center text-sm font-medium text-slate-800">
+            {centerLabel ?? "Запись звонка"}
+          </span>
+          <button
+            type="button"
+            onClick={cycleSpeed}
+            className="shrink-0 rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 active:translate-y-[1px]"
           >
-            <RotateCcw className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {speeds.map((s) => (
-            <button
-              key={s}
-              onClick={() => setSpeed(s)}
-              className={cn(
-                "h-10 rounded-2xl border px-3 text-xs font-semibold transition active:translate-y-[1px]",
-                s === speed
-                  ? "border-transparent bg-gradient-to-r from-accent-teal to-accent-violet text-white shadow-softSm"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-              )}
-            >
-              {s}x
-            </button>
-          ))}
+            ×{speed}
+          </button>
           <a
             href={src}
             download={fileName}
-            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-softSm transition hover:bg-slate-50 active:translate-y-[1px]"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 active:translate-y-[1px]"
             aria-label="Скачать"
             title="Скачать"
           >
             <Download className="h-4 w-4" />
           </a>
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Button
+                size="icon"
+                variant="outline"
+                className="h-10 w-10 rounded-2xl"
+                onClick={() => {
+                  const a = audioRef.current;
+                  if (!a) return;
+                  if (a.paused) void a.play();
+                  else a.pause();
+                }}
+                aria-label={playing ? "Пауза" : "Воспроизвести"}
+              >
+                {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-10 w-10 rounded-2xl"
+                onClick={() => {
+                  const a = audioRef.current;
+                  if (!a) return;
+                  a.currentTime = 0;
+                }}
+                aria-label="Сначала"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {speeds.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setSpeed(s)}
+                  className={cn(
+                    "h-10 rounded-2xl border px-3 text-xs font-semibold transition active:translate-y-[1px]",
+                    s === speed
+                      ? "border-transparent bg-accent-dark text-white shadow-softSm"
+                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  )}
+                >
+                  {s}x
+                </button>
+              ))}
+              <a
+                href={src}
+                download={fileName}
+                className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-softSm transition hover:bg-slate-50 active:translate-y-[1px]"
+                aria-label="Скачать"
+                title="Скачать"
+              >
+                <Download className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
+        </>
+      )}
 
       <div className="mt-3">
         <div className="flex items-center justify-between text-xs text-slate-500">
@@ -122,7 +172,7 @@ export function RecordingPlayer({
           <span>{dur ? mmss(dur) : "—:—"}</span>
         </div>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-          <div className="h-full bg-gradient-to-r from-accent-teal to-accent-violet" style={{ width: `${pct * 100}%` }} />
+          <div className="h-full bg-gradient-to-r from-accent-violet to-accent-yellow" style={{ width: `${pct * 100}%` }} />
         </div>
       </div>
     </div>

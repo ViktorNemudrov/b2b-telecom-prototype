@@ -58,8 +58,8 @@ export function BottomInputBar({
       >
         <div
           className={cn(
-            "flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-soft",
-            focused && "ring-2 ring-accent-violet/20"
+            "flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-softSm",
+            focused && "ring-2 ring-accent-yellow/40"
           )}
         >
           <button
@@ -165,7 +165,7 @@ export function BottomInputBar({
             className={cn(
               "flex h-10 w-10 items-center justify-center rounded-xl transition active:translate-y-[1px]",
               value.trim()
-                ? "bg-gradient-to-r from-accent-teal to-accent-violet text-white shadow-softSm hover:opacity-95"
+                ? "bg-accent-yellow text-accent-dark shadow-softSm hover:brightness-95"
                 : "bg-slate-100 text-slate-400"
             )}
             onClick={onSend}

@@ -3,7 +3,8 @@
 import type { FeedItem as FeedItemT } from "@/lib/mockData";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, BarChart3, Calendar, Sparkles } from "lucide-react";
+import { AlertTriangle, Calendar, Sparkles } from "lucide-react";
+import { TariffSubscriptionCard } from "@/components/TariffSubscriptionCard";
 import { RecordingPlayer } from "@/components/RecordingPlayer";
 import { CallSummaryCard } from "@/components/CallSummaryCard";
 
@@ -27,6 +28,7 @@ export function FeedItem({
             call={c}
             expanded={expandedTranscript}
             onToggleTranscript={() => onToggleTranscript(item.id)}
+            detailHref={`/call/${c.id}`}
           />
 
           {c.recordingUrl ? (
@@ -46,44 +48,7 @@ export function FeedItem({
   }
 
   if (item.kind === "tariff") {
-    const s = item.stats;
-    const Row = ({ label, used, total }: { label: string; used: number; total: number }) => {
-      const pct = total > 0 ? Math.min(1, used / total) : 0;
-      return (
-        <div>
-          <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>{label}</span>
-            <span className="font-semibold text-slate-700">
-              {used}/{total}
-            </span>
-          </div>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-            <div
-              className="h-full bg-gradient-to-r from-accent-teal to-accent-violet"
-              style={{ width: `${pct * 100}%` }}
-            />
-          </div>
-        </div>
-      );
-    };
-
-    return (
-      <Card>
-        <CardContent className="pb-4 pt-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50">
-              <BarChart3 className="h-5 w-5 text-slate-700" />
-            </div>
-            <div className="text-sm font-semibold text-slate-900">Статистика тарифа</div>
-          </div>
-          <div className="mt-4 space-y-4">
-            <Row label="GB" used={s.gbUsed} total={s.gbTotal} />
-            <Row label="Минуты" used={s.minutesUsed} total={s.minutesTotal} />
-            <Row label="SMS" used={s.smsUsed} total={s.smsTotal} />
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <TariffSubscriptionCard stats={item.stats} />;
   }
 
   if (item.kind === "alert") {
@@ -132,8 +97,8 @@ export function FeedItem({
     <Card>
       <CardContent className="pb-4 pt-4">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-violet/15 to-accent-teal/15">
-            <Sparkles className="h-5 w-5 text-accent-teal" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EFEAFF]">
+            <Sparkles className="h-5 w-5 text-accent-violet" />
           </div>
           <div className="flex-1">
             <div className="text-sm font-semibold text-slate-900">{item.title}</div>

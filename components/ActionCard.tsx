@@ -19,8 +19,8 @@ export function ActionCard({
     <Card className="mt-3 overflow-hidden">
       <CardContent className="pb-4 pt-4">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-violet/15 to-accent-teal/15">
-            <Sparkles className="h-5 w-5 text-accent-teal" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EFEAFF]">
+            <Sparkles className="h-5 w-5 text-accent-violet" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-sm font-semibold text-slate-900">{title}</div>
@@ -29,7 +29,7 @@ export function ActionCard({
         </div>
 
         <div className="mt-4">
-          <Button className="w-full" onClick={onCta}>
+          <Button className="w-full rounded-full" onClick={onCta}>
             {ctaLabel} <ArrowRight className="h-4 w-4" />
           </Button>
         </div>

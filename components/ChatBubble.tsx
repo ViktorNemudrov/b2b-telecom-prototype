@@ -24,7 +24,7 @@ export function ChatBubble({
         className={cn(
           "max-w-[86%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-softSm",
           isUser
-            ? "bg-gradient-to-r from-accent-teal to-accent-violet text-white"
+            ? "bg-[#E8F4DE] text-[#2A2D3A]"
             : "border border-slate-200 bg-white text-slate-900"
         )}
       >

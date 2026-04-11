@@ -108,8 +108,9 @@ export function AiAssistantScreen() {
   const hasChat = messages.length > 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-6">
       <div>
+        <div className="text-lg font-semibold text-slate-900">AI-команда</div>
         <div className="text-xl font-semibold text-slate-900">Доброе утро, {userProfile.name}</div>
         <div className="mt-1 text-sm text-slate-500">С чего мы начнём?</div>
       </div>
@@ -145,7 +146,7 @@ export function AiAssistantScreen() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.18, ease: "easeOut" }}
             >
-              <Card>
+              <Card className="bg-[#FAFAFC]">
                 <CardContent className="pb-5 pt-5">
                   <div className="text-sm font-semibold text-slate-900">Интеллектуальный центр</div>
                   <div className="mt-1 text-sm text-slate-700">

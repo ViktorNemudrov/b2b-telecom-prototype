@@ -28,10 +28,10 @@ export function Button({
         size === "sm" && "h-9 px-3",
         size === "icon" && "h-11 w-11 px-0",
         variant === "primary" &&
-          "bg-gradient-to-r from-accent-teal to-accent-violet text-white shadow-softSm hover:opacity-95",
-        variant === "secondary" && "bg-white text-slate-900 shadow-softSm hover:bg-slate-50",
-        variant === "outline" && "border border-slate-200 bg-white text-slate-900 hover:bg-slate-50",
-        variant === "ghost" && "bg-transparent text-slate-800 hover:bg-slate-100",
+          "bg-accent-yellow text-accent-dark shadow-softSm hover:brightness-95",
+        variant === "secondary" && "bg-white text-accent-dark shadow-softSm hover:bg-slate-50",
+        variant === "outline" && "border border-slate-200 bg-white text-accent-dark hover:bg-slate-50",
+        variant === "ghost" && "bg-transparent text-slate-700 hover:bg-slate-100",
         className
       )}
       {...props}

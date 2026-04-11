@@ -118,7 +118,7 @@ export function DatePickerModal({
                 "h-10 rounded-2xl text-sm font-semibold transition active:translate-y-[1px]",
                 inMonth ? "text-slate-900" : "text-slate-400",
                 selected
-                  ? "bg-gradient-to-r from-accent-teal to-accent-violet text-white shadow-softSm"
+                  ? "bg-accent-dark text-white shadow-softSm"
                   : "border border-slate-200 bg-white hover:bg-slate-50"
               ].join(" ")}
               onClick={() => {

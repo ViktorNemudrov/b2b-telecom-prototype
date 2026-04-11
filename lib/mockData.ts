@@ -21,6 +21,8 @@ export type CallItem = {
   companyHint?: string;
   transcript: string;
   recordingUrl?: string;
+  /** Короткие тезисы для карточки «Итоги разговора» на экране детали */
+  talkBullets?: string[];
 };
 
 export type TariffStats = {
@@ -103,22 +105,27 @@ export const defaultChat: ChatMessage[] = [];
 
 export const feedDateLabel = "Сегодня, 14 апреля 2026";
 
-export const feedItems: FeedItem[] = [
+/** Звонки вне карточек ленты (деталь / мок списка коммуникации) */
+export const standaloneCalls: CallItem[] = [
   {
-    id: "f1",
-    kind: "call",
-    call: {
-      id: "c1",
-      time: "09:45",
-      phone: "+7 (999) 123-45-67",
-      missed: true,
-      summary: "Клиент по оплате. Просили счет и сроки.",
-      companyHint: "В профиле: «Компания вместо номера»",
-      transcript:
-        "Клиент: Добрый день. Уточните, пожалуйста, по счету за март — не проходит оплата.\n\nОператор: Проверяю. Вижу отклонение по реквизитам. Могу продублировать счет и подсказать корректный шаблон платежа.\n\nКлиент: Да, пришлите на почту и скажите срок зачисления.\n\nОператор: Обычно 1–2 рабочих дня. Я отправлю обновленный счет прямо сейчас.",
-      recordingUrl: "/greeting.wav"
-    }
-  },
+    id: "c1",
+    time: "09:45",
+    phone: "+7 (999) 123-45-67",
+    missed: true,
+    summary: "Клиент по оплате. Просили счет и сроки.",
+    companyHint: "В профиле: «Компания вместо номера»",
+    transcript:
+      "Клиент: Добрый день. Уточните, пожалуйста, по счету за март — не проходит оплата.\n\nОператор: Проверяю. Вижу отклонение по реквизитам. Могу продублировать счет и подсказать корректный шаблон платежа.\n\nКлиент: Да, пришлите на почту и скажите срок зачисления.\n\nОператор: Обычно 1–2 рабочих дня. Я отправлю обновленный счет прямо сейчас.",
+    recordingUrl: "/greeting.wav",
+    talkBullets: [
+      "Запрос по счёту за март и срокам оплаты",
+      "Выявлено отклонение платежа по реквизитам",
+      "Договорились отправить счёт повторно на почту"
+    ]
+  }
+];
+
+export const feedItems: FeedItem[] = [
   {
     id: "f2",
     kind: "tariff",
@@ -152,4 +159,19 @@ export const feedItems: FeedItem[] = [
     cta: "Генерировать отчет"
   }
 ];
+
+/** Найти звонок по id (мок) */
+export function getCallById(callId: string): CallItem | undefined {
+  const s = standaloneCalls.find((c) => c.id === callId);
+  if (s) return s;
+  for (const item of feedItems) {
+    if (item.kind === "call" && item.call.id === callId) return item.call;
+  }
+  return undefined;
+}
+
+export function getTariffFromFeed(): TariffStats | null {
+  const t = feedItems.find((i) => i.kind === "tariff");
+  return t && t.kind === "tariff" ? t.stats : null;
+}
 

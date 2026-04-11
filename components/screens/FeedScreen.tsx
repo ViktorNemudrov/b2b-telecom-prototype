@@ -1,22 +1,22 @@
 "use client";
 
 import * as React from "react";
-import { Calendar } from "lucide-react";
+import Link from "next/link";
+import { Calendar, ChevronLeft, Search, Settings } from "lucide-react";
+import { CommunicationLogRow } from "@/components/CommunicationLogRow";
 import { DatePickerModal } from "@/components/DatePickerModal";
 import { FeedItem } from "@/components/FeedItem";
+import { SegmentedControl } from "@/components/SegmentedControl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { communicationLogMock } from "@/lib/dashboardMock";
 import { feedDateLabel, feedItems } from "@/lib/mockData";
 
-type FilterKey = "all" | "missed" | "incoming" | "reports";
+type CommTab = "records" | "secretary";
+type FilterKey = "all" | "missed" | "incoming" | "reports" | "team";
 
-const filterChips: { key: FilterKey; label: string }[] = [
-  { key: "missed", label: "Пропущенные" },
-  { key: "incoming", label: "Входящие" },
-  { key: "reports", label: "Отчеты" }
-];
-
-export function FeedScreen() {
+export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) {
+  const [commTab, setCommTab] = React.useState<CommTab>("records");
   const [filter, setFilter] = React.useState<FilterKey>("all");
   const [date, setDate] = React.useState(() => new Date("2026-04-14T10:00:00.000Z"));
   const [openDatePicker, setOpenDatePicker] = React.useState(false);
@@ -29,78 +29,214 @@ export function FeedScreen() {
     return () => window.clearTimeout(t);
   }, [toast]);
 
-  const visible = React.useMemo(() => {
-    if (filter === "all") return feedItems;
-    if (filter === "missed") return feedItems.filter((i) => i.kind !== "call" || i.call.missed);
-    if (filter === "incoming") return feedItems.filter((i) => i.kind === "call" && !i.call.missed);
-    return feedItems.filter((i) => i.kind === "tool" || i.kind === "summary");
-  }, [filter]);
+  const filteredComm = React.useMemo(() => {
+    if (commTab !== "records") return [];
+    if (filter === "reports") return [];
+    if (filter === "missed")
+      return communicationLogMock.filter((r) => r.variant === "secretary" || r.variant === "waiting");
+    if (filter === "incoming")
+      return communicationLogMock.filter((r) => r.subtitle.includes("Входящий"));
+    if (filter === "team") return communicationLogMock;
+    return communicationLogMock;
+  }, [commTab, filter]);
+
+  const commGroups = React.useMemo(() => {
+    const m = new Map<string, typeof communicationLogMock>();
+    for (const row of filteredComm) {
+      const g = row.dateGroup;
+      if (!m.has(g)) m.set(g, []);
+      m.get(g)!.push(row);
+    }
+    return Array.from(m.entries());
+  }, [filteredComm]);
+
+  const feedRest = React.useMemo(() => {
+    if (commTab !== "records") return [];
+    let list = feedItems.filter((i) => i.kind !== "call");
+    if (filter === "missed" || filter === "incoming" || filter === "team") return list;
+    if (filter === "reports") return list.filter((i) => i.kind === "tool" || i.kind === "summary");
+    return list;
+  }, [commTab, filter]);
+
+  const commTabs = React.useMemo(
+    () => [
+      { key: "records" as const, label: "Записи" },
+      { key: "secretary" as const, label: "Секретарь" }
+    ],
+    []
+  );
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <div className="text-sm font-semibold text-slate-900">{feedDateLabel}</div>
-            <div className="mt-0.5 text-xs text-slate-500">
-              Фильтр:{" "}
-              <span className="font-semibold text-slate-700">
-                {filter === "all"
-                  ? "Все"
-                  : filterChips.find((c) => c.key === filter)?.label ?? "Все"}
-              </span>
-            </div>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => setOpenDatePicker(true)}>
-            <Calendar className="h-4 w-4" /> Дата
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-4 gap-2 pb-1">
-          <button
-            onClick={() => setFilter("all")}
-            className={[
-              "min-w-0 rounded-full border px-2 py-2 text-xs font-semibold transition active:translate-y-[1px]",
-              filter === "all"
-                ? "border-transparent bg-gradient-to-r from-accent-teal to-accent-violet text-white shadow-softSm"
-                : "border-slate-200 bg-white text-slate-800 shadow-softSm hover:bg-slate-50"
-            ].join(" ")}
+    <div className="space-y-4 pb-6">
+      {leadingBack ? (
+        <div className="flex items-center gap-2">
+          <Link
+            href={leadingBack.href}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-rose-500 text-white shadow-softSm transition hover:brightness-95"
+            aria-label="Назад"
           >
-            <span className="block truncate">Все</span>
-          </button>
-          {filterChips.map((c) => (
+            <ChevronLeft className="h-5 w-5" />
+          </Link>
+        </div>
+      ) : null}
+
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-semibold text-slate-900">Коммуникация</h1>
             <button
-              key={c.key}
-              onClick={() => setFilter(c.key)}
+              type="button"
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50"
+              aria-label="Настройки"
+            >
+              <Settings className="h-4 w-4" />
+            </button>
+          </div>
+          <p className="mt-0.5 text-xs text-slate-500">{feedDateLabel}</p>
+        </div>
+      </div>
+
+      <SegmentedControl value={commTab} options={commTabs} onChange={setCommTab} />
+
+      {commTab === "records" ? (
+        <>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 active:translate-y-[1px]"
+              aria-label="Поиск"
+            >
+              <Search className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setOpenDatePicker(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 active:translate-y-[1px]"
+              aria-label="Календарь"
+            >
+              <Calendar className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFilter("team");
+                setToast("Команда: фильтр по ответственным (демо).");
+              }}
               className={[
-                "min-w-0 rounded-full border px-2 py-2 text-xs font-semibold transition active:translate-y-[1px]",
-                filter === c.key
-                  ? "border-transparent bg-gradient-to-r from-accent-teal to-accent-violet text-white shadow-softSm"
+                "rounded-full border px-3 py-2 text-xs font-semibold transition active:translate-y-[1px]",
+                filter === "team"
+                  ? "border-transparent bg-accent-dark text-white shadow-softSm"
                   : "border-slate-200 bg-white text-slate-800 shadow-softSm hover:bg-slate-50"
               ].join(" ")}
             >
-              <span className="block truncate">{c.label}</span>
+              Команда
             </button>
-          ))}
-        </div>
-      </div>
+            <button
+              type="button"
+              onClick={() => setFilter("all")}
+              className={[
+                "rounded-full border px-3 py-2 text-xs font-semibold transition active:translate-y-[1px]",
+                filter === "all"
+                  ? "border-transparent bg-accent-dark text-white shadow-softSm"
+                  : "border-slate-200 bg-white text-slate-800 shadow-softSm hover:bg-slate-50"
+              ].join(" ")}
+            >
+              Все звонки
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilter("missed")}
+              className={[
+                "inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition active:translate-y-[1px]",
+                filter === "missed"
+                  ? "border-transparent bg-accent-dark text-white shadow-softSm"
+                  : "border-slate-200 bg-white text-slate-800 shadow-softSm hover:bg-slate-50"
+              ].join(" ")}
+            >
+              Пропущенные
+              <span className="rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">16</span>
+            </button>
+          </div>
 
-      <div className="space-y-3">
-        {visible.map((item) => (
-          <FeedItem
-            key={item.id}
-            item={item}
-            expandedTranscript={!!expandedTranscriptById[item.id]}
-            onToggleTranscript={(id) =>
-              setExpandedTranscriptById((p) => ({ ...p, [id]: !p[id] }))
-            }
-            onAction={(a) => {
-              if (a.type === "pay") setToast("Пополнение: черновик платежа подготовлен.");
-              if (a.type === "report") setToast("Отчет: сформирован черновик и отправка поставлена в очередь.");
-            }}
-          />
-        ))}
-      </div>
+          <p className="text-[11px] leading-relaxed text-slate-500">
+            Доступное хранилище <span className="font-semibold text-slate-700">0.15%</span> · 1.5 МБ из 1 ГБ
+          </p>
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setFilter("incoming")}
+              className={[
+                "rounded-full border px-3 py-1.5 text-[11px] font-semibold transition active:translate-y-[1px]",
+                filter === "incoming"
+                  ? "border-transparent bg-slate-800 text-white"
+                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              ].join(" ")}
+            >
+              Входящие
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilter("reports")}
+              className={[
+                "rounded-full border px-3 py-1.5 text-[11px] font-semibold transition active:translate-y-[1px]",
+                filter === "reports"
+                  ? "border-transparent bg-slate-800 text-white"
+                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              ].join(" ")}
+            >
+              Отчёты
+            </button>
+          </div>
+
+          {filter !== "reports" ? (
+            <Card>
+              <CardContent className="px-2 pb-2 pt-1">
+                {commGroups.map(([date, rows]) => (
+                  <div key={date}>
+                    <div className="px-2 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                      {date}
+                    </div>
+                    <div className="divide-y divide-slate-100 px-2">
+                      {rows.map((row) => (
+                        <CommunicationLogRow key={row.id} row={row} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          ) : null}
+
+          <div className="space-y-3">
+            {feedRest.map((item) => (
+              <FeedItem
+                key={item.id}
+                item={item}
+                expandedTranscript={!!expandedTranscriptById[item.id]}
+                onToggleTranscript={(id) =>
+                  setExpandedTranscriptById((p) => ({ ...p, [id]: !p[id] }))
+                }
+                onAction={(a) => {
+                  if (a.type === "pay") setToast("Пополнение: черновик платежа подготовлен.");
+                  if (a.type === "report") setToast("Отчет: сформирован черновик и отправка поставлена в очередь.");
+                }}
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        <Card>
+          <CardContent className="pb-5 pt-5">
+            <div className="text-sm font-semibold text-slate-900">Секретарь</div>
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">
+              Принимает пропущенные, фиксирует суть и ставит задачи. В демо — заглушка; сценарии можно подключить к
+              CRM.
+            </p>
+            <Button className="mt-4 w-full rounded-full">Настроить сценарии</Button>
+          </CardContent>
+        </Card>
+      )}
 
       {toast ? (
         <div className="fixed bottom-24 left-0 right-0 z-40 mx-auto w-full max-w-[430px]">
@@ -123,4 +259,3 @@ export function FeedScreen() {
     </div>
   );
 }
-

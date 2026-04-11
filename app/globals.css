@@ -3,11 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --bg: 250 252 255;
+  --bg: 243 243 248;
   --card: 255 255 255;
-  --text: 12 18 28;
-  --muted: 102 112 133;
-  --border: 226 232 240;
+  --text: 39 40 57;
+  --muted: 140 143 158;
+  --border: 231 232 239;
 }
 
 html,
@@ -19,6 +19,7 @@ body {
   color: rgb(var(--text));
   background: rgb(var(--bg));
   font-feature-settings: "ss01" 1, "ss02" 1, "cv10" 1;
+  letter-spacing: -0.01em;
 }
 
 .safe-px {

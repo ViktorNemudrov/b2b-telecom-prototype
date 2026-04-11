@@ -1,32 +1,21 @@
 "use client";
 
 import { Bell, Search, User2 } from "lucide-react";
-import { SegmentedControl } from "@/components/SegmentedControl";
 import { cn } from "@/components/ui/cn";
 
-export function TopNav<T extends string>({
-  tabs,
-  value,
-  onChange
-}: {
-  tabs: { key: T; label: string }[];
-  value: T;
-  onChange: (next: T) => void;
-}) {
+export function AppHeader() {
   return (
-    <div className="sticky top-0 z-40 border-b border-slate-100 bg-[rgb(var(--bg))]/90 backdrop-blur">
-      <div className="safe-px flex items-center justify-between gap-2 pb-2 pt-2">
+    <div className="sticky top-0 z-40 border-b border-slate-100 bg-[rgb(var(--bg))]/95 backdrop-blur">
+      <div className="safe-px flex items-center justify-between gap-2 py-2">
         <button
+          type="button"
           className={cn(
             "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white transition",
             "active:translate-y-[1px] hover:bg-slate-50"
           )}
           aria-label="Профиль"
-          onClick={() => {
-            // prototype: no-op
-          }}
         >
-          <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-2xl bg-accent-dark/5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-accent-dark/5">
             <User2 className="h-5 w-5 text-slate-700" />
           </div>
         </button>
@@ -55,25 +44,15 @@ export function TopNav<T extends string>({
             <Search className="h-5 w-5" />
           </button>
           <button
-            className={cn(
-              "relative flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white transition",
-              "active:translate-y-[1px] hover:bg-slate-50"
-            )}
+            type="button"
+            className="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white transition hover:bg-slate-50 active:translate-y-[1px]"
             aria-label="Уведомления"
-            onClick={() => {
-              // prototype: no-op
-            }}
           >
             <Bell className="h-5 w-5 text-slate-700" />
             <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-accent-yellow" />
           </button>
         </div>
       </div>
-
-      <div className="safe-px pb-3">
-        <SegmentedControl value={value} options={tabs} onChange={onChange} />
-      </div>
     </div>
   );
 }
-

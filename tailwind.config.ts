@@ -21,13 +21,14 @@ const config: Config = {
       },
       colors: {
         accent: {
-          teal: "#1A5F7A",
-          violet: "#6C63FF"
+          dark: "#1F2035",
+          yellow: "#FFD429",
+          violet: "#8F6BFF"
         }
       },
       boxShadow: {
-        soft: "0 10px 30px rgba(16, 24, 40, 0.08)",
-        softSm: "0 6px 18px rgba(16, 24, 40, 0.10)"
+        soft: "0 8px 20px rgba(31, 32, 53, 0.06)",
+        softSm: "0 3px 10px rgba(31, 32, 53, 0.08)"
       },
       borderRadius: {
         xl: "16px",
