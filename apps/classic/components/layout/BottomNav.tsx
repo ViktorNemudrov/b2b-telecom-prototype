@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, Headphones, Home, Sparkles, MessageCircle } from "lucide-react";
+import { FileText, Headphones, Home, LayoutGrid, MessageCircle, Sparkles } from "lucide-react";
 import { cn } from "@shared/components/ui/cn";
 
-/** Классическая навигация: главная = дашборд, AI отдельной вкладкой. */
 const items = [
   { href: "/", label: "Главная", Icon: Home },
+  { href: "/products", label: "Мои продукты", Icon: LayoutGrid },
   { href: "/communication", label: "Связь", Icon: MessageCircle },
   { href: "/assistant", label: "AI", Icon: Sparkles },
   { href: "/documents", label: "Документы", Icon: FileText },
@@ -17,14 +17,14 @@ const items = [
 export function BottomNav() {
   const pathname = usePathname();
   const onCallRoute = pathname?.startsWith("/call/");
-  const hideNav = pathname === "/welcome" || pathname === "/auth" || onCallRoute;
+  const hideNav = pathname === "/auth" || onCallRoute || pathname === "/settings";
 
   if (hideNav) return null;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 mx-auto w-full max-w-[430px]">
       <div className="safe-px pb-[max(12px,env(safe-area-inset-bottom))] pt-2">
-        <div className="flex items-stretch justify-between gap-1 rounded-[26px] border border-slate-200/90 bg-white/95 px-2 py-2 shadow-soft backdrop-blur">
+        <div className="flex items-stretch justify-between gap-0.5 rounded-[26px] border border-slate-200/90 bg-white/95 px-1 py-2 shadow-soft backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
           {items.map(({ href, label, Icon }) => {
             const active =
               href === "/"
@@ -37,14 +37,14 @@ export function BottomNav() {
                 key={href}
                 href={href}
                 className={cn(
-                  "flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl py-1.5 text-[10px] font-semibold transition active:scale-[0.98]",
-                  active ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-800"
+                  "flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl py-1.5 text-[9px] font-semibold transition active:scale-[0.98]",
+                  active ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100" : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
                 )}
               >
-                <span className="relative flex h-8 w-8 items-center justify-center">
-                  <Icon className={cn("h-5 w-5", active && "text-slate-900")} />
+                <span className="relative flex h-7 w-7 items-center justify-center">
+                  <Icon className={cn("h-4 w-4", active && "text-slate-900 dark:text-slate-100")} />
                 </span>
-                <span className="max-w-[3.5rem] truncate">{label}</span>
+                <span className="max-w-[3.25rem] truncate leading-tight">{label}</span>
               </Link>
             );
           })}

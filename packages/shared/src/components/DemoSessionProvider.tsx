@@ -13,7 +13,8 @@ type DemoSessionContextValue = {
 const DemoSessionContext = createContext<DemoSessionContextValue | null>(null);
 
 export function DemoSessionProvider({ children }: { children: React.ReactNode }) {
-  const [authenticated, setAuthenticated] = useState(false);
+  /** Демо без экрана входа: сразу «авторизован». */
+  const [authenticated, setAuthenticated] = useState(true);
 
   useEffect(() => {
     try {

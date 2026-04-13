@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { DemoSessionProvider } from "@shared/components/DemoSessionProvider";
 import { DevelopmentStubHost } from "@shared/components/DevelopmentStubHost";
 import { SessionGate } from "@shared/components/SessionGate";
+import { ThemeProvider } from "@shared/components/ThemeProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -18,15 +19,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru">
+    <html lang="ru" suppressHydrationWarning>
       <body className={`min-h-dvh antialiased ${inter.variable} font-sans`}>
         <div className="relative mx-auto min-h-dvh w-full max-w-[430px]">
-          <DemoSessionProvider>
-            <SessionGate publicPaths={["/welcome", "/auth"]} unauthenticatedRedirect="/welcome">
-              {children}
-            </SessionGate>
-            <DevelopmentStubHost />
-          </DemoSessionProvider>
+          <ThemeProvider>
+            <DemoSessionProvider>
+              <SessionGate publicPaths={["/"]} unauthenticatedRedirect="/">
+                {children}
+              </SessionGate>
+              <DevelopmentStubHost />
+            </DemoSessionProvider>
+          </ThemeProvider>
         </div>
       </body>
     </html>

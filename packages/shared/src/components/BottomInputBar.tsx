@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock3, Mic, MicOff, Paperclip, SendHorizonal } from "lucide-react";
+import { Clock3, Mic, MicOff, Paperclip, Plus, SendHorizonal } from "lucide-react";
 import * as React from "react";
 import { cn } from "@shared/components/ui/cn";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
@@ -21,15 +21,21 @@ export function BottomInputBar({
   onChange,
   onSend,
   onOpenHistory,
-  placement = "fixedBottom"
+  placement = "inline",
+  variant = "default"
 }: {
   value: string;
   onChange: (v: string) => void;
-  onSend: () => void;
+  /** Если передан текст (после диктовки), используется он. */
+  onSend: (overrideText?: string) => void;
   onOpenHistory: () => void;
   placement?: "fixedBottom" | "inline";
+  /** Макет нижней панели ассистента (1722.png): «лист» с закруглением сверху. */
+  variant?: "default" | "assistant";
 }) {
   const inputRef = React.useRef<HTMLInputElement | null>(null);
+  const fileRef = React.useRef<HTMLInputElement | null>(null);
+  const pendingVoiceRef = React.useRef("");
   const [focused, setFocused] = React.useState(false);
   const [listening, setListening] = React.useState(false);
   const recognitionRef = React.useRef<SpeechRecognition | null>(null);
@@ -46,27 +52,44 @@ export function BottomInputBar({
     <div
       className={cn(
         placement === "fixedBottom" &&
-          "fixed bottom-0 left-0 right-0 z-40 mx-auto w-full max-w-[430px]",
+          "fixed left-0 right-0 z-40 mx-auto w-full max-w-[430px]",
+        placement === "fixedBottom" && variant === "assistant" && "bottom-0",
+        placement === "fixedBottom" && variant === "default" && "bottom-0",
         placement === "inline" && "w-full"
       )}
     >
       <div
         className={cn(
-          "safe-px bg-[rgb(var(--bg))]/85 backdrop-blur",
-          placement === "fixedBottom" && "border-t border-slate-100 pb-4 pt-3",
-          placement === "inline" && "pb-2 pt-1"
+          "safe-px backdrop-blur",
+          variant === "assistant" &&
+            "rounded-t-[28px] border-t border-[#E8EAED] bg-white pb-[max(14px,env(safe-area-inset-bottom))] pt-4 shadow-[0_-8px_32px_rgba(0,0,0,0.06)] dark:border-slate-700 dark:bg-slate-900",
+          variant === "default" && "bg-[rgb(var(--bg))]/85",
+          placement === "fixedBottom" && variant === "default" && "border-t border-slate-100 pb-4 pt-3",
+          placement === "inline" && variant === "default" && "pb-2 pt-1"
         )}
       >
         <div
           className={cn(
-            "flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-softSm",
-            focused && "ring-2 ring-accent-yellow/40"
+            "flex items-center gap-1.5 rounded-[20px] border border-[#E5E5EA] bg-white p-2 shadow-[0_2px_12px_rgba(0,0,0,0.05)] dark:border-slate-600 dark:bg-slate-800",
+            focused && "ring-2 ring-accent-yellow/35",
+            variant === "assistant" && "min-h-[52px]"
           )}
         >
+          <input
+            ref={fileRef}
+            type="file"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              e.target.value = "";
+              if (f) openDevelopmentStub(`Файл «${f.name}» выбран (демо: не сохраняется).`);
+            }}
+          />
           <button
             aria-label="Прикрепить"
+            type="button"
             className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 active:translate-y-[1px]"
-            onClick={() => openDevelopmentStub("Прикрепление файлов к сообщению.")}
+            onClick={() => fileRef.current?.click()}
           >
             <Paperclip className="h-5 w-5" />
           </button>
@@ -79,10 +102,24 @@ export function BottomInputBar({
             <Clock3 className="h-5 w-5" />
           </button>
 
+          <input
+            ref={inputRef}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Чем можем помочь?"
+            className="h-10 min-h-[44px] flex-1 bg-transparent px-1 text-[15px] outline-none placeholder:text-[#C7C7CC] dark:placeholder:text-slate-500"
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") onSend();
+            }}
+            aria-label="Поле ввода"
+          />
+
           <button
             aria-label={listening ? "Остановить диктовку" : "Диктовать вопрос"}
             className={cn(
-              "flex h-10 w-10 items-center justify-center rounded-xl transition active:translate-y-[1px]",
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition active:translate-y-[1px]",
               listening ? "bg-rose-50 text-rose-700" : "text-slate-500 hover:bg-slate-100",
               !supported && "cursor-not-allowed opacity-50"
             )}
@@ -116,7 +153,9 @@ export function BottomInputBar({
                 }
                 const spoken = parts.join(" ").trim();
                 const merged = (prevValue ? `${prevValue} ` : "") + spoken;
-                onChange(merged.trim());
+                const trimmed = merged.trim();
+                pendingVoiceRef.current = trimmed;
+                onChange(trimmed);
               };
 
               rec.onend = () => {
@@ -124,7 +163,11 @@ export function BottomInputBar({
                 recognitionRef.current = null;
                 inputRef.current?.focus();
                 if (hadFinal) {
-                  // optional: keep it as text; user can press send
+                  const t = pendingVoiceRef.current.trim();
+                  window.setTimeout(() => {
+                    if (t) onSend(t);
+                    else onSend();
+                  }, 80);
                 }
               };
 
@@ -146,28 +189,24 @@ export function BottomInputBar({
             {listening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </button>
 
-          <input
-            ref={inputRef}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder="Чем можем помочь?"
-            className="h-10 flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-slate-400"
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") onSend();
-            }}
-          />
+          <button
+            type="button"
+            aria-label="Ещё действия"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#E5E5EA] bg-[#F7F7FA] text-slate-600 transition hover:bg-slate-100 active:translate-y-[1px] dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
+            onClick={() => openDevelopmentStub("Дополнительные действия (мок).")}
+          >
+            <Plus className="h-5 w-5" strokeWidth={2.25} />
+          </button>
 
           <button
             aria-label="Отправить"
             className={cn(
-              "flex h-10 w-10 items-center justify-center rounded-xl transition active:translate-y-[1px]",
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition active:translate-y-[1px]",
               value.trim()
                 ? "bg-accent-yellow text-accent-dark shadow-softSm hover:brightness-95"
-                : "bg-slate-100 text-slate-400"
+                : "bg-[#F2F2F7] text-slate-400 dark:bg-slate-700"
             )}
-            onClick={onSend}
+            onClick={() => onSend()}
             disabled={!value.trim()}
           >
             <SendHorizonal className="h-5 w-5" />

@@ -3,11 +3,20 @@
 @tailwind utilities;
 
 :root {
-  --bg: 243 243 248;
+  /* Макет 1722 / 966 — холст #F7F8FA */
+  --bg: 247 248 250;
   --card: 255 255 255;
   --text: 39 40 57;
   --muted: 140 143 158;
   --border: 231 232 239;
+}
+
+.dark {
+  --bg: 24 24 32;
+  --card: 35 36 48;
+  --text: 245 246 250;
+  --muted: 160 163 176;
+  --border: 55 58 72;
 }
 
 html,
@@ -25,5 +34,22 @@ body {
 .safe-px {
   padding-left: max(16px, env(safe-area-inset-left));
   padding-right: max(16px, env(safe-area-inset-right));
+}
+
+/* Пульсация шара на экране запуска (888) */
+@keyframes launch-sphere-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.88;
+  }
+}
+
+.launch-sphere-pulse {
+  animation: launch-sphere-pulse 1.8s ease-in-out infinite;
 }
 

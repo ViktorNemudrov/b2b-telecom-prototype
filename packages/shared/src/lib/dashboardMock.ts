@@ -63,42 +63,68 @@ export type CommLogRow = {
 export const communicationLogMock: CommLogRow[] = [
   {
     id: "r1",
-    dateGroup: "25 марта, пн",
+    dateGroup: "18 мая, вт",
+    title: "+7 (946) 525 00-24",
+    subtitle: "Принял секретарь",
+    duration: "2:42 сек",
+    time: "16:02",
+    variant: "secretary",
+    hasRecordingDot: true,
+    callId: "c2"
+  },
+  {
+    id: "r2",
+    dateGroup: "18 мая, вт",
     title: "Доставка офисной техники",
-    subtitle: "Входящий: Филатов",
-    duration: "42 сек",
-    time: "12:32",
-    variant: "default",
+    subtitle: "Принял секретарь",
+    duration: "54 сек",
+    time: "16:02",
+    variant: "secretary",
     hasRecordingDot: true,
     callId: "c1"
   },
   {
-    id: "r2",
-    dateGroup: "25 марта, пн",
-    title: "Флорист",
-    subtitle: "Обработан: Филатов",
-    duration: "1:32 мин",
-    time: "11:05",
-    variant: "default",
-    hasRecordingDot: true
-  },
-  {
     id: "r3",
-    dateGroup: "24 марта, вс",
+    dateGroup: "18 мая, вт",
     title: "+7 (906) 062 60-26",
-    subtitle: "Ожидает ответа",
-    duration: "—",
-    time: "09:15",
-    variant: "waiting"
+    subtitle: "Принял секретарь",
+    duration: "25 сек",
+    time: "14:15",
+    variant: "secretary",
+    hasRecordingDot: true,
+    callId: "c3"
   },
   {
     id: "r4",
-    dateGroup: "24 марта, вс",
-    title: "ООО Технологии",
+    dateGroup: "19 мая, ср",
+    title: "+7 (904) 023 53-21",
     subtitle: "Принял секретарь",
-    duration: "18 сек",
-    time: "08:40",
+    duration: "48 сек",
+    time: "11:04",
     variant: "secretary",
-    hasRecordingDot: true
+    hasRecordingDot: true,
+    callId: "c4"
+  },
+  {
+    id: "r5",
+    dateGroup: "19 мая, ср",
+    title: "Вода офис",
+    subtitle: "Принял секретарь",
+    duration: "32 сек",
+    time: "09:02",
+    variant: "secretary",
+    hasRecordingDot: true,
+    callId: "c5"
+  },
+  {
+    id: "r6",
+    dateGroup: "19 мая, ср",
+    title: "Канцелярия",
+    subtitle: "Принял секретарь",
+    duration: "12 сек",
+    time: "09:01",
+    variant: "secretary",
+    hasRecordingDot: true,
+    callId: "c6"
   }
 ];

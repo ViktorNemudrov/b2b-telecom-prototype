@@ -1,16 +1,10 @@
-import { AppHeader } from "@/components/layout/AppHeader";
-import { AppShell } from "@/components/layout/AppShell";
-import { HomeDashboardScreen } from "@shared/components/screens/HomeDashboardScreen";
+import { Suspense } from "react";
+import { ClassicHomeClient } from "@/components/ClassicHomeClient";
 
 export default function ClassicHomePage() {
   return (
-    <>
-      <AppHeader />
-      <AppShell>
-        <div className="safe-px pt-2">
-          <HomeDashboardScreen />
-        </div>
-      </AppShell>
-    </>
+    <Suspense fallback={<div className="min-h-dvh bg-[rgb(var(--bg))]" aria-hidden />}>
+      <ClassicHomeClient />
+    </Suspense>
   );
 }

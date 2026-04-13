@@ -1,29 +1,38 @@
 "use client";
 
+import Link from "next/link";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
-import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
-import { openDevelopmentStub } from "@shared/lib/developmentStub";
+import { ChevronRight } from "lucide-react";
+const sections = [
+  { href: "/invoices", title: "Счета", desc: "Как в AI-ветке: статусы, PDF, оплата" },
+  { href: "/documents/payments", title: "Платежи", desc: "История и фильтры (мок)" },
+  { href: "/documents/contracts", title: "Договоры", desc: "Список договоров (мок)" }
+];
 
 export default function DocumentsPage() {
   return (
     <>
       <AppHeader />
       <AppShell>
-        <div className="safe-px pt-4">
-          <h1 className="text-lg font-semibold text-slate-900">Документы</h1>
-          <Card className="mt-4">
-            <CardContent className="space-y-4 py-10 text-center text-sm text-slate-600">
-              <p>Раздел в разработке (демо-прототип).</p>
-              <Button
-                className="rounded-full"
-                onClick={() => openDevelopmentStub("Список документов и примеры файлов.")}
-              >
-                Показать примеры
-              </Button>
-            </CardContent>
-          </Card>
+        <div className="safe-px space-y-4 pb-6 pt-4">
+          <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Документы</h1>
+          <div className="space-y-3">
+            {sections.map((s) => (
+              <Link key={s.href} href={s.href}>
+                <Card className="transition hover:brightness-[1.02] dark:border-slate-700">
+                  <CardContent className="flex items-center gap-3 py-4">
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{s.title}</div>
+                      <div className="text-xs text-slate-500">{s.desc}</div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 shrink-0 text-slate-300" />
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
         </div>
       </AppShell>
     </>

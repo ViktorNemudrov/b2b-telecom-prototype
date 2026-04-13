@@ -9,7 +9,14 @@ import { Card, CardContent } from "@shared/components/ui/card";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { getCallById } from "@shared/lib/mockData";
 
-export function CallDetailClient({ id }: { id: string }) {
+export function CallDetailClient({
+  id,
+  backHref = "/communication"
+}: {
+  id: string;
+  /** Куда вести «Назад» (AI: /assistant, Classic: /communication). */
+  backHref?: string;
+}) {
   const call = id ? getCallById(id) : undefined;
   const [showTranscript, setShowTranscript] = React.useState(false);
 
@@ -17,7 +24,7 @@ export function CallDetailClient({ id }: { id: string }) {
     return (
       <div className="safe-px mx-auto min-h-dvh max-w-[430px] pb-8 pt-4">
         <Link
-          href="/communication"
+          href={backHref}
           className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-500 text-white">
@@ -30,7 +37,7 @@ export function CallDetailClient({ id }: { id: string }) {
     );
   }
 
-  const title = call.summary.split(".")[0]?.trim() || "Звонок";
+  const title = (call.title || call.summary.split(".")[0])?.trim() || "Звонок";
   const bullets =
     call.talkBullets ??
     call.summary.split(/[.!?]\s+/).filter(Boolean).slice(0, 4).map((s) => s.trim());
@@ -39,7 +46,7 @@ export function CallDetailClient({ id }: { id: string }) {
     <div className="safe-px mx-auto min-h-dvh max-w-[430px] pb-8 pt-3">
       <div className="flex items-center justify-between gap-2">
         <Link
-          href="/communication"
+          href={backHref}
           className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 pr-3 text-sm font-semibold text-slate-800 shadow-softSm transition hover:bg-slate-50"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-500 text-white">

@@ -1,20 +1,29 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
+import { X } from "lucide-react";
+import { InvoicesMarchWidget } from "@shared/components/ai/InvoicesMarchWidget";
+import { WeeklyStatsWidget } from "@shared/components/ai/WeeklyStatsWidget";
+import { MissedCallSummaryCard } from "@shared/components/MissedCallSummaryCard";
 import { ActionCard } from "@shared/components/ActionCard";
 import { BottomInputBar } from "@shared/components/BottomInputBar";
 import { ChatBubble } from "@shared/components/ChatBubble";
 import { PromptTag } from "@shared/components/PromptTag";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { Modal } from "@shared/components/ui/modal";
+import { cn } from "@shared/components/ui/cn";
 import {
   chatHistoryPresets,
   defaultChat,
-  quickPrompts,
+  recentQueryChips,
   userProfile,
   type ChatMessage
 } from "@shared/lib/mockData";
+
+const sphereSrc = "/mockups/%D0%A8%D0%B0%D1%80.png";
 
 function id() {
   return Math.random().toString(16).slice(2);
@@ -26,6 +35,28 @@ function nowIso() {
 
 function mockAiResponse(prompt: string): ChatMessage {
   const p = prompt.toLowerCase();
+
+  if (p.includes("звонки за неделю")) {
+    return {
+      id: id(),
+      role: "ai",
+      text: "Сводка по звонкам за неделю — ниже. Могу детализировать пропущенные или сравнить с прошлой неделей.",
+      createdAt: nowIso(),
+      widget: "weekly-stats",
+      suggested: ["Пропущенные звонки", "Статистика по времени суток"]
+    };
+  }
+
+  if ((p.includes("счет") || p.includes("счета")) && (p.includes("март") || p.includes("2026"))) {
+    return {
+      id: id(),
+      role: "ai",
+      text: "По счетам за март 2026: ниже список и суммы. Могу подготовить финансовый отчёт или выгрузку.",
+      createdAt: nowIso(),
+      widget: "invoices-march",
+      suggested: ["Финансовый отчет", "Архив платежей"]
+    };
+  }
 
   if (p.includes("рассылк")) {
     return {
@@ -79,11 +110,15 @@ function mockAiResponse(prompt: string): ChatMessage {
   };
 }
 
+const pillBase =
+  "inline-flex items-center gap-2 rounded-full bg-white px-[14px] py-[10px] text-[13px] font-medium text-[#3C4858] shadow-[0_2px_10px_rgba(0,0,0,0.07)] transition hover:brightness-[1.02] active:scale-[0.99] dark:border dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100";
+
 export function AiAssistantScreen() {
   const [messages, setMessages] = React.useState<ChatMessage[]>(defaultChat);
   const [input, setInput] = React.useState("");
   const [openHistory, setOpenHistory] = React.useState(false);
   const [toast, setToast] = React.useState<string | null>(null);
+  const [chipTags, setChipTags] = React.useState<string[]>(() => [...recentQueryChips]);
 
   React.useEffect(() => {
     if (!toast) return;
@@ -108,33 +143,86 @@ export function AiAssistantScreen() {
   const hasChat = messages.length > 0;
 
   return (
-    <div className="space-y-4 pb-6">
-      <div>
-        <div className="text-lg font-semibold text-slate-900">AI-команда</div>
-        <div className="text-xl font-semibold text-slate-900">Доброе утро, {userProfile.name}</div>
-        <div className="mt-1 text-sm text-slate-500">С чего мы начнём?</div>
-      </div>
+    <div className="space-y-5 pb-[140px]">
+      {!hasChat ? (
+        <>
+          <MissedCallSummaryCard />
 
-      <BottomInputBar
-        placement="inline"
-        value={input}
-        onChange={setInput}
-        onSend={() => send()}
-        onOpenHistory={() => setOpenHistory(true)}
-      />
+          <div className="flex flex-col items-center px-1 pt-1 text-center">
+            <div className="flex items-center justify-center gap-1.5">
+              <span className="text-[22px] font-semibold tracking-tight text-[#212529] dark:text-slate-100">
+                Билайн
+              </span>
+              <Image
+                src={sphereSrc}
+                alt=""
+                width={28}
+                height={28}
+                className="h-7 w-7 rounded-full object-cover shadow-sm ring-1 ring-black/5"
+              />
+              <span className="text-[22px] font-semibold tracking-tight text-accent-yellow">One</span>
+            </div>
+            <h1 className="mt-3 max-w-[18rem] text-[26px] font-semibold leading-[1.15] tracking-tight text-[#212529] dark:text-slate-100">
+              Ваш бизнес ассистент
+            </h1>
+            <p className="mt-2 text-[13px] text-[#8E8E93] dark:text-slate-400">{userProfile.legalName}</p>
+          </div>
 
-      <div className="grid grid-cols-3 gap-2 pb-1">
-        {quickPrompts.map((p) => (
-          <PromptTag
-            key={p}
-            label={p}
-            onClick={() => {
-              setInput(p);
-              window.setTimeout(() => send(p), 120);
-            }}
-          />
-        ))}
-      </div>
+          <div className="flex flex-col items-center gap-2.5">
+            <div className="flex w-full max-w-[360px] justify-center gap-2.5">
+              <Link href="/missed-calls" className={pillBase}>
+                <span className="h-2 w-2 rounded-full bg-[#FF3B4E]" aria-hidden />
+                <span>Пропущенные звонки</span>
+                <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#FF3B4E] px-1.5 text-[11px] font-bold text-white">
+                  6
+                </span>
+              </Link>
+              <Link href="/appeals" className={pillBase}>
+                <span>Обращения</span>
+                <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#2D2D2D] px-1.5 text-[11px] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
+                  3
+                </span>
+              </Link>
+            </div>
+            <Link href="/invoices" className={cn(pillBase, "max-w-[360px] justify-center")}>
+              <span>Счета на оплату</span>
+              <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#2D2D2D] px-1.5 text-[11px] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
+                3
+              </span>
+            </Link>
+          </div>
+
+          {chipTags.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {chipTags.map((label) => (
+                <div
+                  key={label}
+                  className="inline-flex items-center overflow-hidden rounded-full border border-[#E8EAED] bg-white text-[12px] font-medium text-[#3C4858] shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+                >
+                  <button
+                    type="button"
+                    className="px-3 py-1.5 text-left hover:bg-slate-50 dark:hover:bg-slate-700"
+                    onClick={() => {
+                      setInput(label);
+                      window.setTimeout(() => send(label), 50);
+                    }}
+                  >
+                    {label}
+                  </button>
+                  <button
+                    type="button"
+                    className="border-l border-[#E8EAED] px-2 py-1.5 text-[#C7C7CC] hover:bg-slate-100 hover:text-slate-600 dark:border-slate-600 dark:hover:bg-slate-700"
+                    aria-label="Убрать"
+                    onClick={() => setChipTags((t) => t.filter((x) => x !== label))}
+                  >
+                    <X className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </>
+      ) : null}
 
       <div className="space-y-3">
         <AnimatePresence initial={false}>
@@ -146,26 +234,28 @@ export function AiAssistantScreen() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.18, ease: "easeOut" }}
             >
-              <Card className="bg-[#FAFAFC]">
+              <Card className="border-[#E8EAED] bg-white dark:border-slate-700 dark:bg-slate-800">
                 <CardContent className="pb-5 pt-5">
-                  <div className="text-sm font-semibold text-slate-900">Интеллектуальный центр</div>
-                  <div className="mt-1 text-sm text-slate-700">
+                  <div className="text-sm font-semibold text-[#212529] dark:text-slate-100">Интеллектуальный центр</div>
+                  <div className="mt-1 text-[13px] leading-relaxed text-[#3C4858] dark:text-slate-300">
                     Задай вопрос или выбери быстрый сценарий — я предложу действия и подготовлю черновики.
                   </div>
                   <div className="mt-4 grid gap-2">
                     <button
-                      className="rounded-2xl border border-slate-200 bg-white p-3 text-left shadow-softSm transition hover:bg-slate-50 active:translate-y-[1px]"
+                      type="button"
+                      className="rounded-[18px] border border-[#E8EAED] bg-white p-3 text-left shadow-sm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:hover:bg-slate-800"
                       onClick={() => send("Сводка дня")}
                     >
-                      <div className="text-sm font-semibold text-slate-900">Сводка дня</div>
-                      <div className="mt-1 text-xs text-slate-500">Пропущенные, риски, приоритеты на сегодня</div>
+                      <div className="text-sm font-semibold text-[#212529] dark:text-slate-100">Сводка дня</div>
+                      <div className="mt-1 text-xs text-[#8E8E93]">Пропущенные, риски, приоритеты на сегодня</div>
                     </button>
                     <button
-                      className="rounded-2xl border border-slate-200 bg-white p-3 text-left shadow-softSm transition hover:bg-slate-50 active:translate-y-[1px]"
+                      type="button"
+                      className="rounded-[18px] border border-[#E8EAED] bg-white p-3 text-left shadow-sm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:hover:bg-slate-800"
                       onClick={() => send("Запусти рассылку")}
                     >
-                      <div className="text-sm font-semibold text-slate-900">Запуск рассылки</div>
-                      <div className="mt-1 text-xs text-slate-500">Подготовка текста + сегмента + очереди отправки</div>
+                      <div className="text-sm font-semibold text-[#212529] dark:text-slate-100">Запуск рассылки</div>
+                      <div className="mt-1 text-xs text-[#8E8E93]">Подготовка текста + сегмента + очереди отправки</div>
                     </button>
                   </div>
                 </CardContent>
@@ -189,6 +279,14 @@ export function AiAssistantScreen() {
                       window.setTimeout(() => send(s), 100);
                     }}
                   />
+
+                  {m.role === "ai" && m.widget === "weekly-stats" ? (
+                    <WeeklyStatsWidget variant="weekly-stats" />
+                  ) : null}
+                  {m.role === "ai" && m.widget === "weekly-stats-expanded" ? (
+                    <WeeklyStatsWidget variant="weekly-stats-expanded" />
+                  ) : null}
+                  {m.role === "ai" && m.widget === "invoices-march" ? <InvoicesMarchWidget /> : null}
 
                   {m.role === "ai" && m.actions?.length
                     ? m.actions.map((a, idx) => (
@@ -214,12 +312,36 @@ export function AiAssistantScreen() {
         </AnimatePresence>
       </div>
 
+      {!hasChat ? (
+        <div className="grid grid-cols-3 gap-2">
+          {["Счета за март", "Запусти рассылку", "Сводка дня"].map((p) => (
+            <PromptTag
+              key={p}
+              label={p}
+              onClick={() => {
+                setInput(p);
+                window.setTimeout(() => send(p), 120);
+              }}
+            />
+          ))}
+        </div>
+      ) : null}
+
+      <BottomInputBar
+        placement="fixedBottom"
+        variant="assistant"
+        value={input}
+        onChange={setInput}
+        onSend={(t) => send(t)}
+        onOpenHistory={() => setOpenHistory(true)}
+      />
+
       {toast ? (
-        <div className="fixed bottom-24 left-0 right-0 z-40 mx-auto w-full max-w-[430px]">
+        <div className="fixed bottom-[120px] left-0 right-0 z-40 mx-auto w-full max-w-[430px]">
           <div className="safe-px">
-            <Card className="border-slate-200">
+            <Card className="border-[#E8EAED] dark:border-slate-600">
               <CardContent className="pb-3 pt-3">
-                <div className="text-sm text-slate-800">{toast}</div>
+                <div className="text-sm text-[#212529] dark:text-slate-100">{toast}</div>
               </CardContent>
             </Card>
           </div>
@@ -231,15 +353,16 @@ export function AiAssistantScreen() {
           {chatHistoryPresets.map((h) => (
             <button
               key={h.id}
-              className="w-full rounded-2xl border border-slate-200 bg-white p-3 text-left shadow-softSm transition hover:bg-slate-50 active:translate-y-[1px]"
+              type="button"
+              className="w-full rounded-[18px] border border-[#E8EAED] bg-white p-3 text-left shadow-sm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
               onClick={() => {
                 setMessages(h.messages);
                 setOpenHistory(false);
                 setToast(`Загружено: «${h.title}».`);
               }}
             >
-              <div className="text-sm font-semibold text-slate-900">{h.title}</div>
-              <div className="mt-1 line-clamp-2 text-xs text-slate-500">{h.preview}</div>
+              <div className="text-sm font-semibold text-[#212529] dark:text-slate-100">{h.title}</div>
+              <div className="mt-1 line-clamp-2 text-xs text-[#8E8E93]">{h.preview}</div>
             </button>
           ))}
         </div>
@@ -247,4 +370,3 @@ export function AiAssistantScreen() {
     </div>
   );
 }
-
