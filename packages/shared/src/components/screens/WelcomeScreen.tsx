@@ -9,7 +9,7 @@ import { openDevelopmentStub } from "@shared/lib/developmentStub";
 
 export function WelcomeScreen({
   loginHref = "/auth",
-  whenAuthedHref = "/assistant"
+  whenAuthedHref = "/assistant/"
 }: {
   /** Куда вести кнопку «войти» */
   loginHref?: string;

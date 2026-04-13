@@ -31,7 +31,7 @@ export function CommunicationLogRow({ row }: { row: CommLogRow }) {
 
   if (row.callId) {
     return (
-      <Link href={`/call/${row.callId}`} className="-mx-1 block rounded-xl px-1 transition hover:bg-slate-50">
+      <Link href={`/call/${row.callId}/`} className="-mx-1 block rounded-xl px-1 transition hover:bg-slate-50">
         {content}
       </Link>
     );

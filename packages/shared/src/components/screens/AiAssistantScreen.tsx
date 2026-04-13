@@ -3,6 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { InvoicesMarchWidget } from "@shared/components/ai/InvoicesMarchWidget";
@@ -18,6 +19,7 @@ import { cn } from "@shared/components/ui/cn";
 import {
   chatHistoryPresets,
   defaultChat,
+  getDemoNavigationIntent,
   recentQueryChips,
   userProfile,
   type ChatMessage
@@ -31,6 +33,13 @@ function id() {
 
 function nowIso() {
   return new Date().toISOString();
+}
+
+/** Разнообразные ответы без повторения одной и той же фразы (демо). */
+function hashPick(prompt: string, modulo: number) {
+  let h = 0;
+  for (let i = 0; i < prompt.length; i++) h = (h * 31 + prompt.charCodeAt(i)) | 0;
+  return Math.abs(h) % modulo;
 }
 
 function mockAiResponse(prompt: string): ChatMessage {
@@ -54,7 +63,19 @@ function mockAiResponse(prompt: string): ChatMessage {
       text: "По счетам за март 2026: ниже список и суммы. Могу подготовить финансовый отчёт или выгрузку.",
       createdAt: nowIso(),
       widget: "invoices-march",
-      suggested: ["Финансовый отчет", "Архив платежей"]
+      suggested: ["Финансовый отчет", "Архив платежей"],
+      navigateTo: "/invoices/"
+    };
+  }
+
+  const navIntent = getDemoNavigationIntent(prompt);
+  if (navIntent) {
+    return {
+      id: id(),
+      role: "ai",
+      text: navIntent.ack,
+      createdAt: nowIso(),
+      navigateTo: navIntent.to
     };
   }
 
@@ -100,13 +121,40 @@ function mockAiResponse(prompt: string): ChatMessage {
     };
   }
 
+  const fallbacks: Pick<ChatMessage, "text" | "suggested">[] = [
+    {
+      text:
+        "Понял запрос. Могу кратко сверить цифры по последним данным или собрать развёрнутую сводку — что удобнее сейчас?",
+      suggested: ["Кратко по цифрам", "Развёрнуто", "Сравни с прошлой неделей"]
+    },
+    {
+      text:
+        "Ок, работаю с этим. Если нужно, подтяну счета, звонки или обращения в один ответ — с чего начнём?",
+      suggested: ["Счета", "Звонки", "Обращения"]
+    },
+    {
+      text:
+        "Записал(а). Могу предложить следующий шаг: напоминание клиенту, черновик письма или отчёт для руководителя.",
+      suggested: ["Напоминание", "Черновик письма", "Отчёт"]
+    },
+    {
+      text:
+        "Есть. Уточни, пожалуйста: это про оплату, про связь с клиентом или про внутреннюю аналитику?",
+      suggested: ["Оплата", "Клиенты", "Аналитика"]
+    },
+    {
+      text:
+        "Сейчас посмотрю контекст. Нужен ответ «в лоб» или с проверкой по договору и счетам?",
+      suggested: ["В лоб", "С проверкой", "Только факты"]
+    }
+  ];
+  const fb = fallbacks[hashPick(prompt, fallbacks.length)];
   return {
     id: id(),
     role: "ai",
-    text:
-      "Принял(а). Уточни, пожалуйста, что важнее: скорость (быстрый ответ) или точность (сверка по источникам)?",
+    text: fb.text,
     createdAt: nowIso(),
-    suggested: ["Быстро", "Точно", "Сбалансировано"]
+    suggested: fb.suggested
   };
 }
 
@@ -114,6 +162,7 @@ const pillBase =
   "inline-flex items-center gap-2 rounded-full bg-white px-[14px] py-[10px] text-[13px] font-medium text-[#3C4858] shadow-[0_2px_10px_rgba(0,0,0,0.07)] transition hover:brightness-[1.02] active:scale-[0.99] dark:border dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100";
 
 export function AiAssistantScreen() {
+  const router = useRouter();
   const [messages, setMessages] = React.useState<ChatMessage[]>(defaultChat);
   const [input, setInput] = React.useState("");
   const [openHistory, setOpenHistory] = React.useState(false);
@@ -137,6 +186,9 @@ export function AiAssistantScreen() {
     window.setTimeout(() => {
       const ai = mockAiResponse(v);
       setMessages((m) => [...m, ai]);
+      if (ai.navigateTo) {
+        window.setTimeout(() => router.push(ai.navigateTo!), 320);
+      }
     }, 350);
   };
 
@@ -170,26 +222,31 @@ export function AiAssistantScreen() {
 
           <div className="flex flex-col items-center gap-2.5">
             <div className="flex w-full max-w-[360px] justify-center gap-2.5">
-              <Link href="/missed-calls" className={pillBase}>
+              <Link href="/missed-calls/" className={pillBase}>
                 <span className="h-2 w-2 rounded-full bg-[#FF3B4E]" aria-hidden />
                 <span>Пропущенные звонки</span>
                 <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#FF3B4E] px-1.5 text-[11px] font-bold text-white">
                   6
                 </span>
               </Link>
-              <Link href="/appeals" className={pillBase}>
+              <Link href="/appeals/" className={pillBase}>
                 <span>Обращения</span>
                 <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#2D2D2D] px-1.5 text-[11px] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
                   3
                 </span>
               </Link>
             </div>
-            <Link href="/invoices" className={cn(pillBase, "max-w-[360px] justify-center")}>
-              <span>Счета на оплату</span>
-              <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#2D2D2D] px-1.5 text-[11px] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
-                3
-              </span>
-            </Link>
+            <div className="flex w-full max-w-[360px] flex-wrap justify-center gap-2.5">
+              <Link href="/invoices/" className={pillBase}>
+                <span>Мои счета</span>
+              </Link>
+              <Link href="/invoices/" className={pillBase}>
+                <span>Счета на оплату</span>
+                <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#2D2D2D] px-1.5 text-[11px] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
+                  3
+                </span>
+              </Link>
+            </div>
           </div>
 
           {chipTags.length > 0 ? (

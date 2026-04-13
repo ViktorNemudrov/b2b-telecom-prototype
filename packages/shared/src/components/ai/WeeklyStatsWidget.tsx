@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import * as React from "react";
-import { ChevronRight, ThumbsDown, ThumbsUp, Volume2 } from "lucide-react";
-import { Button } from "@shared/components/ui/button";
+import { ChevronRight, Volume2 } from "lucide-react";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { followUpQuestionsWeekly, weeklyCallStatsMock } from "@shared/lib/mockData";
@@ -64,15 +63,6 @@ export function WeeklyStatsWidget({
             <Volume2 className="h-4 w-4 text-slate-500" />
           </button>
         </div>
-        <div className="flex gap-2">
-          <Button size="icon" variant="ghost" className="h-9 w-9" aria-label="Полезно">
-            <ThumbsUp className="h-4 w-4" />
-          </Button>
-          <Button size="icon" variant="ghost" className="h-9 w-9" aria-label="Не полезно">
-            <ThumbsDown className="h-4 w-4" />
-          </Button>
-        </div>
-
         <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-3 dark:border-slate-700 dark:bg-slate-800/50">
           <div className="flex items-center justify-between">
             <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{s.chartLabel}</span>
@@ -97,7 +87,7 @@ export function WeeklyStatsWidget({
               У вас 6 пропущенных звонков, которые требуется обработать.
             </p>
             <Link
-              href="/missed-calls"
+              href="/missed-calls/"
               className="inline-flex text-sm font-semibold text-accent-dark underline dark:text-accent-yellow"
             >
               Открыть список
@@ -110,14 +100,24 @@ export function WeeklyStatsWidget({
           <ul className="mt-2 divide-y divide-slate-100 dark:divide-slate-600">
             {followUpQuestionsWeekly.map((q) => (
               <li key={q}>
-                <button
-                  type="button"
-                  className="flex w-full items-center justify-between py-2.5 text-left text-sm text-slate-800 dark:text-slate-200"
-                  onClick={() => openDevelopmentStub(`Раздел: ${q}`)}
-                >
-                  {q}
-                  <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
-                </button>
+                {q === "Пропущенные звонки" ? (
+                  <Link
+                    href="/missed-calls/"
+                    className="flex w-full items-center justify-between py-2.5 text-left text-sm font-semibold text-accent-dark dark:text-accent-yellow"
+                  >
+                    {q}
+                    <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-between py-2.5 text-left text-sm text-slate-800 dark:text-slate-200"
+                    onClick={() => openDevelopmentStub(`Раздел: ${q}`)}
+                  >
+                    {q}
+                    <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
+                  </button>
+                )}
               </li>
             ))}
           </ul>

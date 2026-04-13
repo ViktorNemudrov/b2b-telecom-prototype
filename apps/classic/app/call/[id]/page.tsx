@@ -1,3 +1,5 @@
+import { AppHeader } from "@/components/layout/AppHeader";
+import { AppShell } from "@/components/layout/AppShell";
 import { CallDetailClient } from "@shared/components/screens/CallDetailClient";
 import { allCallIds } from "@shared/lib/mockData";
 
@@ -6,5 +8,14 @@ export function generateStaticParams() {
 }
 
 export default function CallDetailPage({ params }: { params: { id: string } }) {
-  return <CallDetailClient id={params.id} backHref="/communication" />;
+  return (
+    <>
+      <AppHeader />
+      <AppShell>
+        <div className="safe-px pt-2">
+          <CallDetailClient id={params.id} backHref="/communication" />
+        </div>
+      </AppShell>
+    </>
+  );
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
+import { PageBackLink } from "@shared/components/PageBackLink";
 import { cn } from "@shared/components/ui/cn";
 import { invoicesMarch2026 } from "@shared/lib/mockData";
 
@@ -12,12 +13,13 @@ export default function InvoicesListPage() {
       <AppHeader />
       <AppShell>
         <div className="safe-px space-y-4 pb-6 pt-2">
+          <PageBackLink />
           <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Счета за март 2026</h1>
           <div className="space-y-2">
             {invoicesMarch2026.map((inv) => (
               <Link
                 key={inv.id}
-                href={`/invoices/${inv.id}`}
+                href={`/invoices/${inv.id}/`}
                 className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white p-4 shadow-softSm dark:border-slate-700 dark:bg-slate-800"
               >
                 <div>

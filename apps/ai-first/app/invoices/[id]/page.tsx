@@ -13,7 +13,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
       <AppHeader />
       <AppShell>
         <div className="safe-px pt-2">
-          <InvoiceDetailClient id={params.id} backHref="/invoices" />
+          <InvoiceDetailClient id={params.id} backHref="/invoices/" />
         </div>
       </AppShell>
     </>

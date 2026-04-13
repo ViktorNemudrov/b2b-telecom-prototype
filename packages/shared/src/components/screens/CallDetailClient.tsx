@@ -1,13 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { ChevronLeft, FileText, Settings } from "lucide-react";
 import { RecordingPlayer } from "@shared/components/RecordingPlayer";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { getCallById } from "@shared/lib/mockData";
+import { goSmartBack } from "@shared/lib/smartBack";
 
 export function CallDetailClient({
   id,
@@ -17,21 +18,23 @@ export function CallDetailClient({
   /** Куда вести «Назад» (AI: /assistant, Classic: /communication). */
   backHref?: string;
 }) {
+  const router = useRouter();
   const call = id ? getCallById(id) : undefined;
   const [showTranscript, setShowTranscript] = React.useState(false);
 
   if (!call) {
     return (
       <div className="safe-px mx-auto min-h-dvh max-w-[430px] pb-8 pt-4">
-        <Link
-          href={backHref}
+        <button
+          type="button"
           className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900"
+          onClick={() => goSmartBack(router, backHref)}
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-500 text-white">
             <ChevronLeft className="h-4 w-4" />
           </span>
           Назад
-        </Link>
+        </button>
         <p className="mt-8 text-center text-sm text-slate-500">Звонок не найден (демо).</p>
       </div>
     );
@@ -45,15 +48,16 @@ export function CallDetailClient({
   return (
     <div className="safe-px mx-auto min-h-dvh max-w-[430px] pb-8 pt-3">
       <div className="flex items-center justify-between gap-2">
-        <Link
-          href={backHref}
+        <button
+          type="button"
           className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 pr-3 text-sm font-semibold text-slate-800 shadow-softSm transition hover:bg-slate-50"
+          onClick={() => goSmartBack(router, backHref)}
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-500 text-white">
             <ChevronLeft className="h-4 w-4" />
           </span>
           Назад
-        </Link>
+        </button>
         <button
           type="button"
           onClick={() => openDevelopmentStub("Настройки записи звонка.")}

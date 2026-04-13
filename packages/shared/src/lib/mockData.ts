@@ -15,6 +15,9 @@ export type ChatWidget =
   | "invoices-march"
   | "appeals-summary";
 
+/** После ответа ассистента — клиентский переход (демо-навигация по ТЗ). */
+export type ChatNavigateTo = "/missed-calls/" | "/appeals/" | "/invoices/";
+
 export type ChatMessage = {
   id: string;
   role: ChatRole;
@@ -23,6 +26,7 @@ export type ChatMessage = {
   actions?: ChatAction[];
   suggested?: string[];
   widget?: ChatWidget;
+  navigateTo?: ChatNavigateTo;
 };
 
 export type CallItem = {
@@ -75,6 +79,10 @@ export type AppealItem = {
   badgeLabel: string;
   category: string;
   dateLabel: string;
+  /** Текст для карточки обращения (ТЗ: провалиться в обращение). */
+  description: string;
+  /** История коммуникации (мок). */
+  history: { at: string; text: string }[];
 };
 
 export const userProfile = {
@@ -326,7 +334,13 @@ export const appealsMock: AppealItem[] = [
     status: "active",
     badgeLabel: "В работе",
     category: "Техподдержка",
-    dateLabel: "22.11.26"
+    dateLabel: "22.11.26",
+    description:
+      "Со стороны абонента не проходят входящие на основной номер с 20.11. Проверены переадресации и режим «Не беспокоить» — отключены.",
+    history: [
+      { at: "22.11, 10:12", text: "Заявка зарегистрирована, назначен инженер 2-й линии." },
+      { at: "22.11, 14:40", text: "Запрошена диагностика на стороне АТС, ожидаем ответ до конца дня." }
+    ]
   },
   {
     id: "a2",
@@ -334,7 +348,13 @@ export const appealsMock: AppealItem[] = [
     status: "active",
     badgeLabel: "В работе",
     category: "Финансы",
-    dateLabel: "22.11.26"
+    dateLabel: "22.11.26",
+    description:
+      "По адресу подключения фиксируются обрывы канала, перезагрузка оборудования не помогла. Нужна выездная проверка линии.",
+    history: [
+      { at: "22.11, 09:05", text: "Создан тикет, приложены скриншоты с роутера." },
+      { at: "22.11, 11:20", text: "Согласовано окно визита техника на 25.11, 10:00–14:00." }
+    ]
   },
   {
     id: "a3",
@@ -342,7 +362,13 @@ export const appealsMock: AppealItem[] = [
     status: "active",
     badgeLabel: "Ожидает подписания",
     category: "Прочие операции",
-    dateLabel: "22.11.26"
+    dateLabel: "22.11.26",
+    description:
+      "Перевод договора на новое юрлицо, пакет документов сформирован. Ожидается подпись УКЭП у контактного лица.",
+    history: [
+      { at: "21.11, 16:00", text: "Подготовлен проект доп. соглашения." },
+      { at: "22.11, 08:30", text: "Документы отправлены в кабинет для подписания." }
+    ]
   },
   {
     id: "a4",
@@ -350,7 +376,12 @@ export const appealsMock: AppealItem[] = [
     status: "done",
     badgeLabel: "Выполнено",
     category: "Техподдержка",
-    dateLabel: "10.10.26"
+    dateLabel: "10.10.26",
+    description: "По результатам проверки обновлена прошивка CPE, канал стабилизирован, жалоб нет.",
+    history: [
+      { at: "09.10, 12:00", text: "Замер скорости подтвердил просадку." },
+      { at: "10.10, 09:00", text: "Работы закрыты, заявка завершена." }
+    ]
   },
   {
     id: "a5",
@@ -358,7 +389,9 @@ export const appealsMock: AppealItem[] = [
     status: "rejected",
     badgeLabel: "Отклонено",
     category: "Финансы",
-    dateLabel: "01.09.26"
+    dateLabel: "01.09.26",
+    description: "Запрос на возврат не подтверждён: платёж соответствует выставленному счёту.",
+    history: [{ at: "01.09, 15:00", text: "Отказ с пояснением направлен на e-mail." }]
   }
 ];
 
@@ -420,6 +453,32 @@ export function getInvoiceById(id: string): InvoiceItem | undefined {
   return invoicesMarch2026.find((i) => i.id === id);
 }
 
+export function getAppealById(id: string): AppealItem | undefined {
+  return appealsMock.find((a) => a.id === id);
+}
+
+/** Навигация из чата (ТЗ: «мои обращения», «пропущенные звонки», «мои счета» / «счета за …»). */
+export function getDemoNavigationIntent(
+  prompt: string
+): { to: ChatNavigateTo; ack: string } | undefined {
+  const q = prompt.trim().toLowerCase();
+  if (!q) return undefined;
+
+  if (q.includes("пропущенные") && (q.includes("звон") || q.includes("вызов"))) {
+    return { to: "/missed-calls/", ack: "Открываю список пропущенных звонков." };
+  }
+
+  if (q === "обращения" || q.includes("мои обращения") || q.includes("активные обращения")) {
+    return { to: "/appeals/", ack: "Открываю раздел обращений." };
+  }
+
+  if (q.includes("мои счета") || q.includes("счета за")) {
+    return { to: "/invoices/", ack: "Открываю список счетов." };
+  }
+
+  return undefined;
+}
+
 export function getTariffFromFeed(): TariffStats | null {
   const t = feedItems.find((i) => i.kind === "tariff");
   return t && t.kind === "tariff" ? t.stats : null;
@@ -429,4 +488,12 @@ export function getAppealsFiltered(filter: "all" | "done" | "rejected"): AppealI
   if (filter === "done") return appealsMock.filter((a) => a.status === "done");
   if (filter === "rejected") return appealsMock.filter((a) => a.status === "rejected");
   return appealsMock;
+}
+
+export function filterAppealsBySearch(list: AppealItem[], query: string): AppealItem[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return list;
+  return list.filter((a) =>
+    `${a.title} ${a.category} ${a.dateLabel} ${a.badgeLabel}`.toLowerCase().includes(q)
+  );
 }

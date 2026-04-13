@@ -1,9 +1,8 @@
 "use client";
 
-import { ThumbsDown, ThumbsUp, Volume2 } from "lucide-react";
+import { Volume2 } from "lucide-react";
 import { cn } from "@shared/components/ui/cn";
 import { Button } from "@shared/components/ui/button";
-import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import type { ChatMessage } from "@shared/lib/mockData";
 
 function canSpeak() {
@@ -25,8 +24,8 @@ export function ChatBubble({
         className={cn(
           "max-w-[86%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-softSm",
           isUser
-            ? "bg-[#E8F4DE] text-[#2A2D3A]"
-            : "border border-slate-200 bg-white text-slate-900"
+            ? "bg-[#E8F4DE] text-[#2A2D3A] dark:bg-emerald-950/50 dark:text-slate-100"
+            : "border border-slate-200 bg-white text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
         )}
       >
         <div className="whitespace-pre-wrap">{message.text}</div>
@@ -36,7 +35,7 @@ export function ChatBubble({
             <Button
               size="icon"
               variant="ghost"
-              className="h-9 w-9 rounded-xl"
+              className="h-9 w-9 rounded-xl dark:text-slate-300 dark:hover:bg-slate-700"
               onClick={() => {
                 if (!canSpeak()) return;
                 const u = new SpeechSynthesisUtterance(message.text);
@@ -49,24 +48,6 @@ export function ChatBubble({
               title={!canSpeak() ? "SpeechSynthesis недоступен" : "Озвучить"}
             >
               <Volume2 className="h-4 w-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-9 w-9 rounded-xl"
-              aria-label="Полезно"
-              onClick={() => openDevelopmentStub("Оценка ответа и обратная связь.")}
-            >
-              <ThumbsUp className="h-4 w-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-9 w-9 rounded-xl"
-              aria-label="Не полезно"
-              onClick={() => openDevelopmentStub("Сбор негативных оценок для улучшения модели.")}
-            >
-              <ThumbsDown className="h-4 w-4" />
             </Button>
           </div>
         ) : null}

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Calendar, ChevronLeft, Search, Settings } from "lucide-react";
 import { CommunicationLogRow } from "@shared/components/CommunicationLogRow";
 import { DatePickerModal } from "@shared/components/DatePickerModal";
@@ -12,11 +13,13 @@ import { Card, CardContent } from "@shared/components/ui/card";
 import { communicationLogMock } from "@shared/lib/dashboardMock";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { feedDateLabel, feedItems } from "@shared/lib/mockData";
+import { goSmartBack } from "@shared/lib/smartBack";
 
 type CommTab = "records" | "secretary";
 type FilterKey = "all" | "missed" | "incoming" | "reports" | "team";
 
 export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) {
+  const router = useRouter();
   const [commTab, setCommTab] = React.useState<CommTab>("records");
   const [filter, setFilter] = React.useState<FilterKey>("all");
   const [date, setDate] = React.useState(() => new Date("2026-04-14T10:00:00.000Z"));
@@ -64,13 +67,14 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
     <div className="space-y-4 pb-6">
       {leadingBack ? (
         <div className="flex items-center gap-2">
-          <Link
-            href={leadingBack.href}
+          <button
+            type="button"
             className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-rose-500 text-white shadow-softSm transition hover:brightness-95"
             aria-label="Назад"
+            onClick={() => goSmartBack(router, leadingBack.href)}
           >
             <ChevronLeft className="h-5 w-5" />
-          </Link>
+          </button>
         </div>
       ) : null}
 

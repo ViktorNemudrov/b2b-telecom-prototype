@@ -1,5 +1,6 @@
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
+import { PageBackLink } from "@shared/components/PageBackLink";
 import { EventsFeedScreen } from "@shared/components/screens/EventsFeedScreen";
 
 export default function EventsPage() {
@@ -8,6 +9,7 @@ export default function EventsPage() {
       <AppHeader />
       <AppShell>
         <div className="safe-px pt-2">
+          <PageBackLink label="К ассистенту" />
           <EventsFeedScreen />
         </div>
       </AppShell>

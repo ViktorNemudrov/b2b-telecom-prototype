@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, ThumbsDown, ThumbsUp, Volume2 } from "lucide-react";
+import { ChevronRight, Volume2 } from "lucide-react";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { cn } from "@shared/components/ui/cn";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
@@ -45,7 +45,7 @@ export function InvoicesMarchWidget() {
           {invoicesMarch2026.map((inv) => (
             <Link
               key={inv.id}
-              href={`/invoices/${inv.id}`}
+              href={`/invoices/${inv.id}/`}
               className="flex items-start justify-between gap-2 rounded-xl bg-white p-3 shadow-softSm dark:bg-slate-800"
             >
               <div>
@@ -67,23 +67,11 @@ export function InvoicesMarchWidget() {
             </Link>
           ))}
           <Link
-            href="/invoices"
+            href="/invoices/"
             className="flex w-full items-center justify-center py-2 text-sm font-semibold text-slate-700 dark:text-slate-200"
           >
             Счета за март <ChevronRight className="h-4 w-4" />
           </Link>
-        </div>
-
-        <p className="text-xs text-slate-600 dark:text-slate-400">
-          Для поиска конкретного счета укажите дату, номер договора или счета, сумму, статус.
-        </p>
-        <div className="flex gap-2">
-          <button type="button" aria-label="Полезно">
-            <ThumbsUp className="h-4 w-4 text-slate-500" />
-          </button>
-          <button type="button" aria-label="Не полезно">
-            <ThumbsDown className="h-4 w-4 text-slate-500" />
-          </button>
         </div>
 
         <div className="rounded-2xl border border-slate-100 bg-white p-3 dark:border-slate-700 dark:bg-slate-800">

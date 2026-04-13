@@ -1,5 +1,8 @@
 {
   "name": "@b2b/shared",
   "version": "0.1.0",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "pdf-lib": "^1.17.1"
+  }
 }

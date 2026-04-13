@@ -1,33 +1,46 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronLeft, Headphones, Lock, Sliders, Sun } from "lucide-react";
 import { useAppTheme } from "@shared/components/ThemeProvider";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
+import { cn } from "@shared/components/ui/cn";
 import { userProfile } from "@shared/lib/mockData";
+import { goSmartBack } from "@shared/lib/smartBack";
 
 export function SettingsScreen({
-  appealsHref = "/appeals",
-  backHref = "/assistant"
+  appealsHref = "/appeals/",
+  backHref = "/assistant/"
 }: {
   appealsHref?: string;
   backHref?: string;
 }) {
-  const { mode, setMode, resolved } = useAppTheme();
+  const router = useRouter();
+  const { mode, setMode } = useAppTheme();
+  const [notificationsOn, setNotificationsOn] = React.useState(true);
+
+  const onExit = () => {
+    openDevelopmentStub(
+      "Подождите, вы еще не все посмотрели в нашей демо-версии продукта"
+    );
+  };
 
   return (
     <div className="safe-px mx-auto max-w-[430px] space-y-4 pb-10 pt-2">
-      <Link
-        href={backHref}
+      <button
+        type="button"
         className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200"
+        onClick={() => goSmartBack(router, backHref)}
       >
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700">
           <ChevronLeft className="h-4 w-4" />
         </span>
         Назад
-      </Link>
+      </button>
 
       <div className="flex flex-col items-center gap-1 text-center">
         <div className="text-lg font-bold text-slate-900 dark:text-slate-100">
@@ -36,15 +49,15 @@ export function SettingsScreen({
         <div className="text-sm text-slate-600 dark:text-slate-400">{userProfile.legalName}</div>
       </div>
 
-      <Card className="border-violet-200/50 bg-gradient-to-br from-violet-50 to-white dark:border-violet-900/40 dark:from-violet-950/30 dark:to-slate-900">
+      <Card className="border-violet-200/50 bg-gradient-to-br from-violet-50 to-white dark:border-violet-800/50 dark:from-violet-950/40 dark:to-slate-900">
         <CardContent className="space-y-3 pb-5 pt-5">
-          <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white dark:bg-slate-100 dark:text-slate-900">
+          <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white dark:bg-slate-200 dark:text-slate-900">
             <span className="text-accent-yellow">✓</span> Подписка
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">Связь для бизнеса</div>
+          <div className="text-2xl font-bold text-slate-900 dark:text-slate-50">Связь для бизнеса</div>
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-3xl font-bold">1 999 ₽</span>
-            <span className="text-right text-xs text-slate-500">
+            <span className="text-3xl font-bold text-slate-900 dark:text-slate-50">1 999 ₽</span>
+            <span className="text-right text-xs text-slate-500 dark:text-slate-400">
               списание
               <br />
               25.04
@@ -60,8 +73,8 @@ export function SettingsScreen({
         </CardContent>
       </Card>
 
-      <Card className="dark:border-slate-700">
-        <CardContent className="divide-y divide-slate-100 p-0 dark:divide-slate-700">
+      <Card className="border-slate-200 bg-white dark:border-slate-600 dark:bg-slate-800/90">
+        <CardContent className="divide-y divide-slate-100 p-0 dark:divide-slate-600">
           <button
             type="button"
             className="flex w-full items-center gap-3 px-4 py-3 text-left"
@@ -80,7 +93,7 @@ export function SettingsScreen({
             <Sun className="h-5 w-5 text-slate-500" />
             <span className="flex-1 text-sm font-medium text-slate-900 dark:text-slate-100">Тема приложения</span>
             <select
-              className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800"
+              className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
               value={mode}
               onChange={(e) => setMode(e.target.value as "light" | "dark" | "system")}
             >
@@ -102,14 +115,21 @@ export function SettingsScreen({
             <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Уведомления</span>
             <button
               type="button"
-              className={`
-                relative h-7 w-12 rounded-full transition
-                ${resolved === "dark" ? "bg-accent-yellow" : "bg-slate-300"}
-              `}
+              role="switch"
+              aria-checked={notificationsOn}
+              className={cn(
+                "relative h-7 w-12 rounded-full transition",
+                notificationsOn ? "bg-accent-yellow" : "bg-slate-300 dark:bg-slate-600"
+              )}
               aria-label="Уведомления"
-              onClick={() => openDevelopmentStub("Настройки уведомлений.")}
+              onClick={() => setNotificationsOn((v) => !v)}
             >
-              <span className="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow transition" />
+              <span
+                className={cn(
+                  "absolute top-1 h-5 w-5 rounded-full bg-white shadow transition",
+                  notificationsOn ? "right-1" : "left-1"
+                )}
+              />
             </button>
           </div>
         </CardContent>
@@ -117,10 +137,8 @@ export function SettingsScreen({
 
       <button
         type="button"
-        className="flex w-full items-center justify-center gap-2 py-3 text-sm font-semibold text-rose-600"
-        onClick={() => {
-          openDevelopmentStub("Подождите, вы ещё не всё посмотрели в нашей демо-версии продукта.");
-        }}
+        className="flex w-full items-center justify-center gap-2 py-3 text-sm font-semibold text-rose-600 dark:text-rose-400"
+        onClick={onExit}
       >
         Выход
       </button>

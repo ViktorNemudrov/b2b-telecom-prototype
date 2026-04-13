@@ -121,13 +121,23 @@ export function BottomInputBar({
             className={cn(
               "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition active:translate-y-[1px]",
               listening ? "bg-rose-50 text-rose-700" : "text-slate-500 hover:bg-slate-100",
-              !supported && "cursor-not-allowed opacity-50"
+              !supported && "opacity-80"
             )}
-            disabled={!supported}
-            title={!supported ? "Диктовка недоступна в этом браузере" : listening ? "Остановить" : "Диктовать"}
+            title={
+              !supported
+                ? "Нажмите для подсказки: в части браузеров (например Яндекс на Android) распознавание речи недоступно"
+                : listening
+                  ? "Остановить"
+                  : "Диктовать"
+            }
             onClick={() => {
               const Ctor = getSpeechRecognitionCtor();
-              if (!Ctor) return;
+              if (!Ctor) {
+                openDevelopmentStub(
+                  "Распознавание речи недоступно: в этом браузере нет Web Speech API. В Яндекс.Браузере на Android оно часто отключено — попробуйте Chrome или введите текст вручную."
+                );
+                return;
+              }
 
               if (listening) {
                 recognitionRef.current?.stop();

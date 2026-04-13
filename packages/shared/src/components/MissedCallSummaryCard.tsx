@@ -9,7 +9,7 @@ export function MissedCallSummaryCard({
   subtitle = "Пропущенный",
   time = "12:42",
   missedBadge = "x2",
-  href = "/missed-calls"
+  href = "/missed-calls/"
 }: {
   title?: string;
   subtitle?: string;

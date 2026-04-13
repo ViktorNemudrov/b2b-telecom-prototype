@@ -15,13 +15,13 @@ const sphereSrc = "/mockups/%D0%A8%D0%B0%D1%80.png";
  */
 export function BeelineAssistantHeader() {
   const pathname = usePathname() ?? "";
-  const isEvents = pathname === "/events";
+  const isEvents = pathname === "/events" || pathname === "/events/";
   const isAssistantTab = !isEvents;
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#E8EAED] bg-[#F7F8FA]/95 backdrop-blur dark:border-slate-800 dark:bg-[rgb(var(--bg))]/95">
       <div className="safe-px flex items-center justify-between gap-2 py-2.5">
-        <Link href="/settings" className="relative shrink-0" aria-label="Профиль">
+        <Link href="/settings/" className="relative shrink-0" aria-label="Профиль">
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#007AFF] text-[13px] font-bold leading-none text-white shadow-sm dark:bg-blue-600">
             БВ
           </span>
@@ -34,7 +34,7 @@ export function BeelineAssistantHeader() {
         <div className="flex min-w-0 flex-1 justify-center px-1">
           <div className="inline-flex rounded-full bg-[#E8E8ED]/90 p-[3px] dark:bg-slate-700/80">
             <Link
-              href="/assistant"
+              href="/assistant/"
               className={cn(
                 "relative flex h-9 min-w-[100px] items-center justify-center gap-1 rounded-full px-3 text-slate-600 transition dark:text-slate-300",
                 isAssistantTab && "bg-white shadow-sm dark:bg-slate-800"
@@ -51,7 +51,7 @@ export function BeelineAssistantHeader() {
               />
             </Link>
             <Link
-              href="/events"
+              href="/events/"
               className={cn(
                 "relative flex h-9 min-w-[100px] items-center justify-center rounded-full px-3 text-slate-600 transition dark:text-slate-300",
                 isEvents && "bg-white shadow-sm dark:bg-slate-800"

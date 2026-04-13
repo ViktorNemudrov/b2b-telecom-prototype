@@ -17,7 +17,7 @@ export function AssistantClient() {
 
   const closePromo = useCallback(() => {
     setPromoOpen(false);
-    router.replace("/assistant");
+    router.replace("/assistant/");
   }, [router]);
 
   const onOrder = useCallback(() => {

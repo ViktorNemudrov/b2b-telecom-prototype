@@ -1,16 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useDemoSession } from "@shared/components/DemoSessionProvider";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { formatRuMobileMask } from "@shared/lib/phoneMaskRu";
+import { goSmartBack } from "@shared/lib/smartBack";
 
 export function AuthPhoneScreen({
   backHref = "/",
-  afterSignInHref = "/assistant?promo=1"
+  afterSignInHref = "/assistant/?promo=1"
 }: {
   backHref?: string;
   afterSignInHref?: string;
@@ -27,13 +27,14 @@ export function AuthPhoneScreen({
   return (
     <div className="safe-px flex min-h-dvh flex-col bg-[rgb(var(--bg))] text-slate-900">
       <header className="flex items-center justify-between border-b border-slate-200/80 bg-[rgb(var(--bg))]/95 pt-3 pb-3 backdrop-blur">
-        <Link
-          href={backHref}
+        <button
+          type="button"
           className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-softSm transition hover:bg-slate-50"
           aria-label="Назад"
+          onClick={() => goSmartBack(router, backHref)}
         >
           <ChevronLeft className="h-5 w-5" />
-        </Link>
+        </button>
         <button
           type="button"
           onClick={() => openDevelopmentStub("Справка по входу появится в релизе.")}

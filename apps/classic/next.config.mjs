@@ -4,6 +4,7 @@ const nextConfig = {
   transpilePackages: ["@b2b/shared"],
   /** Статический экспорт для сборки APK (Capacitor). */
   output: "export",
+  trailingSlash: true,
   images: {
     unoptimized: true
   }
