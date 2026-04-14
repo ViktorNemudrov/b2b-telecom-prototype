@@ -10,6 +10,8 @@ import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { getCallById } from "@shared/lib/mockData";
 import { goSmartBack } from "@shared/lib/smartBack";
 
+const missedCallsSeenKey = "missed-calls-seen";
+
 export function CallDetailClient({
   id,
   backHref = "/communication"
@@ -21,6 +23,10 @@ export function CallDetailClient({
   const router = useRouter();
   const call = id ? getCallById(id) : undefined;
   const [showTranscript, setShowTranscript] = React.useState(false);
+
+  React.useEffect(() => {
+    window.localStorage.setItem(missedCallsSeenKey, "1");
+  }, []);
 
   if (!call) {
     return (

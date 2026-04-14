@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { Pause, PhoneCall, PhoneOff, Play, Sparkles, X } from "lucide-react";
+import { RecordingPlayer } from "@shared/components/RecordingPlayer";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { getCallById } from "@shared/lib/mockData";
 
@@ -18,14 +19,20 @@ function FeedCallCard({
   subtitle,
   time,
   tags,
+  recordingUrl,
+  transcript,
   missed = false
 }: {
   title: string;
   subtitle: string;
   time: string;
   tags: string[];
+  recordingUrl?: string;
+  transcript: string;
   missed?: boolean;
 }) {
+  const [expanded, setExpanded] = React.useState(false);
+
   return (
     <Card className="rounded-[22px] border-[#E5E7EE] bg-white shadow-none">
       <CardContent className="space-y-3 pb-3 pt-3">
@@ -54,18 +61,32 @@ function FeedCallCard({
           ))}
         </div>
 
-        <button
-          type="button"
-          className="flex w-full items-center justify-between rounded-full border border-[#ECEEF3] bg-[#FAFBFD] px-3 py-2 text-sm text-[#A2A8B8]"
-        >
-          <span className="flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#ECEEF3]">
-              <Play className="h-3 w-3 text-[#4B5563]" />
-            </span>
-            Запись звонка
-          </span>
-          <span className="rounded-full border border-[#ECEEF3] px-2 text-xs">x1</span>
-        </button>
+        {recordingUrl ? (
+          <RecordingPlayer
+            src={recordingUrl}
+            fileName={`${title}.mp3`}
+            layout="bar"
+            centerLabel="Запись звонка"
+            className="border-[#ECEEF3] bg-[#FAFBFD] p-2"
+          />
+        ) : null}
+        <div className="rounded-xl border border-[#ECEEF3] bg-[#FBFCFF] px-3 py-2">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9AA0AF]">Расшифровка</div>
+          <p
+            className={`mt-1 whitespace-pre-line text-sm leading-relaxed text-[#4B5563] ${
+              expanded ? "" : "line-clamp-2"
+            }`}
+          >
+            {transcript}
+          </p>
+          <button
+            type="button"
+            className="mt-1 text-xs font-medium text-[#2B6CE0] hover:underline"
+            onClick={() => setExpanded((v) => !v)}
+          >
+            {expanded ? "Скрыть" : "Показать полностью"}
+          </button>
+        </div>
       </CardContent>
     </Card>
   );
@@ -75,8 +96,6 @@ export function EventsFeedScreen() {
   const [dismissDaily, setDismissDaily] = React.useState(false);
   const [speaking, setSpeaking] = React.useState(false);
   const chipsRef = React.useRef<HTMLDivElement | null>(null);
-  const [canScrollLeft, setCanScrollLeft] = React.useState(false);
-  const [canScrollRight, setCanScrollRight] = React.useState(false);
   const dragRef = React.useRef<{ active: boolean; startX: number; startLeft: number }>({
     active: false,
     startX: 0,
@@ -85,13 +104,6 @@ export function EventsFeedScreen() {
   const c1 = getCallById("c1");
   const c2 = getCallById("c2");
 
-  const updateChipShadows = React.useCallback(() => {
-    const el = chipsRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 4);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
-  }, []);
-
   React.useEffect(() => {
     return () => {
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
@@ -99,19 +111,6 @@ export function EventsFeedScreen() {
       }
     };
   }, []);
-
-  React.useEffect(() => {
-    updateChipShadows();
-    const el = chipsRef.current;
-    if (!el) return;
-    const onScroll = () => updateChipShadows();
-    el.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      el.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, [updateChipShadows]);
 
   return (
     <div className="space-y-3 pb-6">
@@ -164,19 +163,7 @@ export function EventsFeedScreen() {
         </Card>
       ) : null}
 
-      <div className="relative">
-        {canScrollLeft ? (
-          <div
-            aria-hidden
-            className="pointer-events-none absolute bottom-1 left-0 top-0 z-10 w-5 bg-gradient-to-r from-[#F4F5FA] to-transparent"
-          />
-        ) : null}
-        {canScrollRight ? (
-          <div
-            aria-hidden
-            className="pointer-events-none absolute bottom-1 right-0 top-0 z-10 w-5 bg-gradient-to-l from-[#F4F5FA] to-transparent"
-          />
-        ) : null}
+      <div>
         <div
           ref={chipsRef}
           className={chipScroll}
@@ -231,6 +218,11 @@ export function EventsFeedScreen() {
           subtitle="Ответственный: Филатов"
           time={c2.time}
           tags={["ожидают договор к 18:00", "ответственный Андрей Карпов"]}
+          recordingUrl={c2.recordingUrl}
+          transcript={
+            c2.transcript ??
+            "Клиент подтвердил доставку цветов к 18:00. Ответственный Андрей Карпов просит прислать договор заранее."
+          }
         />
       ) : null}
       {c1 ? (
@@ -239,6 +231,11 @@ export function EventsFeedScreen() {
           subtitle="Пропущенный"
           time={c1.time}
           tags={["доставка в 14:20", "встретит Сергей", "A3530A190"]}
+          recordingUrl={c1.recordingUrl}
+          transcript={
+            c1.transcript ??
+            "Клиент уточнил поставку офисной техники на 14:20. Встречает Сергей, просит предупредить за 30 минут до приезда."
+          }
           missed
         />
       ) : null}

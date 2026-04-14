@@ -169,6 +169,7 @@ function mockAiResponse(prompt: string): ChatMessage {
 
 const pillBase =
   "inline-flex items-center gap-2 rounded-full bg-white px-[14px] py-[10px] text-[13px] font-medium text-[#3C4858] shadow-[0_2px_10px_rgba(0,0,0,0.07)] transition hover:brightness-[1.02] active:scale-[0.99] dark:border dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100";
+const missedCallsSeenKey = "missed-calls-seen";
 
 export function AiAssistantScreen() {
   const router = useRouter();
@@ -178,7 +179,13 @@ export function AiAssistantScreen() {
   const [openHistory, setOpenHistory] = React.useState(false);
   const [toast, setToast] = React.useState<string | null>(null);
   const [chipTags, setChipTags] = React.useState<string[]>(() => [...recentQueryChips]);
+  const [showMissedCard, setShowMissedCard] = React.useState(false);
   const chatEndRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    setShowMissedCard(window.localStorage.getItem(missedCallsSeenKey) !== "1");
+  }, []);
 
   React.useEffect(() => {
     if (!toast) return;
@@ -236,7 +243,14 @@ export function AiAssistantScreen() {
     <div className="space-y-5 pb-[140px]">
       {!hasChat ? (
         <>
-          <MissedCallSummaryCard />
+          {showMissedCard ? (
+            <MissedCallSummaryCard
+              onDismiss={() => {
+                setShowMissedCard(false);
+                window.localStorage.setItem(missedCallsSeenKey, "1");
+              }}
+            />
+          ) : null}
 
           <div className="flex flex-col items-center px-1 pt-1 text-center">
             <div className="flex items-center justify-center gap-1.5">

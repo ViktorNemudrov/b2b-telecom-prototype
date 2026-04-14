@@ -1,4 +1,5 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import fontkit from "@pdf-lib/fontkit";
 
 /** Минимальный валидный PDF (пустая страница) — запасной вариант без pdf-lib или при ошибке. */
 export const MINIMAL_PDF_BASE64 =
@@ -25,6 +26,7 @@ const NOTO_SANS_TTF =
 export async function downloadInvoicePdf(filename: string) {
   try {
     const pdfDoc = await PDFDocument.create();
+    pdfDoc.registerFontkit(fontkit);
     const page = pdfDoc.addPage([595.28, 841.89]);
     let font;
     let cyrillic = false;

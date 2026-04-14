@@ -7,6 +7,8 @@ import { CommunicationLogRow } from "@shared/components/CommunicationLogRow";
 import { communicationLogMock } from "@shared/lib/dashboardMock";
 import { goSmartBack } from "@shared/lib/smartBack";
 
+const missedCallsSeenKey = "missed-calls-seen";
+
 export function MissedCallsListScreen() {
   const router = useRouter();
   const groups = React.useMemo(() => {
@@ -16,6 +18,10 @@ export function MissedCallsListScreen() {
       m.get(row.dateGroup)!.push(row);
     }
     return Array.from(m.entries());
+  }, []);
+
+  React.useEffect(() => {
+    window.localStorage.setItem(missedCallsSeenKey, "1");
   }, []);
 
   return (

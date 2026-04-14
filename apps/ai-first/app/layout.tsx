@@ -4,6 +4,7 @@ import { DemoSessionProvider } from "@shared/components/DemoSessionProvider";
 import { DevelopmentStubHost } from "@shared/components/DevelopmentStubHost";
 import { SessionGate } from "@shared/components/SessionGate";
 import { ThemeProvider } from "@shared/components/ThemeProvider";
+import { PwaInstallPrompt } from "./PwaInstallPrompt";
 import "./globals.css";
 
 const inter = Inter({
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <SessionGate publicPaths={["/"]} unauthenticatedRedirect="/">
                 {children}
               </SessionGate>
+              <PwaInstallPrompt />
               <DevelopmentStubHost />
             </DemoSessionProvider>
           </ThemeProvider>

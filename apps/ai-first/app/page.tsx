@@ -10,7 +10,7 @@ export default function HomePage() {
   useEffect(() => {
     const t = window.setTimeout(() => {
       router.replace("/assistant/");
-    }, 2000);
+    }, 3000);
     return () => window.clearTimeout(t);
   }, [router]);
 
