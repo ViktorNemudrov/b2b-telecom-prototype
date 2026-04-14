@@ -45,12 +45,39 @@ function hashPick(prompt: string, modulo: number) {
 
 function mockAiResponse(prompt: string): ChatMessage {
   const p = prompt.toLowerCase();
-  const clean = p.replace(/[^a-zа-яё0-9\s]/gi, " ").replace(/\s+/g, " ").trim();
-  const hasGreeting =
-    /\b(привет|здравствуй|здравствуйте|добрый день|доброго дня|доброе утро|добрый вечер|хай)\b/i.test(clean);
-  const asksHowAreYou = /\b(как дела|как ты|как поживаешь|как жизнь)\b/i.test(clean);
-  const hasProfanity =
-    /\b(бля|бляд|блять|сука|хер|нахер|на хер|пизд|еба|ёба|ебл|мудак|урод)\b/i.test(clean);
+  const clean = p
+    .replace(/[^a-zа-яё0-9\s]/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const compact = clean.replace(/\s+/g, "");
+  const hasAny = (samples: string[]) => samples.some((s) => clean.includes(s) || compact.includes(s.replace(/\s+/g, "")));
+
+  const hasGreeting = hasAny([
+    "привет",
+    "здравствуй",
+    "здравствуйте",
+    "добрый день",
+    "доброго дня",
+    "доброе утро",
+    "добрый вечер",
+    "хай"
+  ]);
+  const asksHowAreYou = hasAny(["как дела", "как ты", "как поживаешь", "как жизнь"]);
+  const asksCapabilities = hasAny(["что ты умеешь", "что умеешь", "что ты можешь", "твои возможности", "что можешь"]);
+  const hasProfanity = hasAny([
+    "бля",
+    "бляд",
+    "блять",
+    "сука",
+    "хер",
+    "нахер",
+    "пизд",
+    "еба",
+    "ёба",
+    "ебл",
+    "мудак",
+    "урод"
+  ]);
 
   if (hasProfanity) {
     return {
@@ -66,6 +93,15 @@ function mockAiResponse(prompt: string): ChatMessage {
       id: id(),
       role: "ai",
       text: "Дела у меня хорошо, вот работаю на благо В2В в Билайн",
+      createdAt: nowIso()
+    };
+  }
+
+  if (asksCapabilities) {
+    return {
+      id: id(),
+      role: "ai",
+      text: "что именно я умею, можете спросить у моего создателя Виктора Немудрова",
       createdAt: nowIso()
     };
   }
