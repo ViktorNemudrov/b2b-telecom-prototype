@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import { Volume2 } from "lucide-react";
 import { CommunicationLogRow } from "@shared/components/CommunicationLogRow";
 import { communicationLogMock } from "@shared/lib/dashboardMock";
+import { markMissedCallsSeen } from "@shared/lib/runtimeFlags";
 import { goSmartBack } from "@shared/lib/smartBack";
-
-const missedCallsSeenKey = "missed-calls-seen";
 
 export function MissedCallsListScreen() {
   const router = useRouter();
@@ -21,7 +20,7 @@ export function MissedCallsListScreen() {
   }, []);
 
   React.useEffect(() => {
-    window.localStorage.setItem(missedCallsSeenKey, "1");
+    markMissedCallsSeen();
   }, []);
 
   return (

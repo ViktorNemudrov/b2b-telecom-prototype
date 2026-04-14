@@ -8,9 +8,8 @@ import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { getCallById } from "@shared/lib/mockData";
+import { markMissedCallsSeen } from "@shared/lib/runtimeFlags";
 import { goSmartBack } from "@shared/lib/smartBack";
-
-const missedCallsSeenKey = "missed-calls-seen";
 
 export function CallDetailClient({
   id,
@@ -25,7 +24,7 @@ export function CallDetailClient({
   const [showTranscript, setShowTranscript] = React.useState(false);
 
   React.useEffect(() => {
-    window.localStorage.setItem(missedCallsSeenKey, "1");
+    markMissedCallsSeen();
   }, []);
 
   if (!call) {

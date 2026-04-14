@@ -23,6 +23,7 @@ import {
   userProfile,
   type ChatMessage
 } from "@shared/lib/mockData";
+import { isMissedCallsSeen, markMissedCallsSeen } from "@shared/lib/runtimeFlags";
 
 const sphereSrc = "/mockups/%D0%A8%D0%B0%D1%80.png";
 
@@ -43,6 +44,39 @@ function hashPick(prompt: string, modulo: number) {
 
 function mockAiResponse(prompt: string): ChatMessage {
   const p = prompt.toLowerCase();
+  const clean = p.replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
+  const hasGreeting =
+    /\b(привет|здравствуйте|добрый день|доброго дня|доброе утро|добрый вечер|хай)\b/u.test(clean);
+  const asksHowAreYou = /\b(как дела|как ты|как поживаешь|как жизнь)\b/u.test(clean);
+  const hasProfanity =
+    /\b(бля|бляд|блять|сука|хер|нахер|на хер|пизд|еба|ёба|ебл|мудак|урод)\b/u.test(clean);
+
+  if (hasProfanity) {
+    return {
+      id: id(),
+      role: "ai",
+      text: "Вроде бы взрослый человек, предприниматель, а такой некультурный",
+      createdAt: nowIso()
+    };
+  }
+
+  if (asksHowAreYou) {
+    return {
+      id: id(),
+      role: "ai",
+      text: "Дела у меня хорошо, вот работаю на благо В2В в Билайн",
+      createdAt: nowIso()
+    };
+  }
+
+  if (hasGreeting) {
+    return {
+      id: id(),
+      role: "ai",
+      text: "И вам здравствуйте, желаю вам хорошего дня",
+      createdAt: nowIso()
+    };
+  }
 
   if (p.includes("звонки за неделю")) {
     return {
@@ -169,7 +203,6 @@ function mockAiResponse(prompt: string): ChatMessage {
 
 const pillBase =
   "inline-flex items-center gap-2 rounded-full bg-white px-[14px] py-[10px] text-[13px] font-medium text-[#3C4858] shadow-[0_2px_10px_rgba(0,0,0,0.07)] transition hover:brightness-[1.02] active:scale-[0.99] dark:border dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100";
-const missedCallsSeenKey = "missed-calls-seen";
 
 export function AiAssistantScreen() {
   const router = useRouter();
@@ -179,12 +212,11 @@ export function AiAssistantScreen() {
   const [openHistory, setOpenHistory] = React.useState(false);
   const [toast, setToast] = React.useState<string | null>(null);
   const [chipTags, setChipTags] = React.useState<string[]>(() => [...recentQueryChips]);
-  const [showMissedCard, setShowMissedCard] = React.useState(false);
+  const [showMissedCard, setShowMissedCard] = React.useState(true);
   const chatEndRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    setShowMissedCard(window.localStorage.getItem(missedCallsSeenKey) !== "1");
+    setShowMissedCard(!isMissedCallsSeen());
   }, []);
 
   React.useEffect(() => {
@@ -246,8 +278,8 @@ export function AiAssistantScreen() {
           {showMissedCard ? (
             <MissedCallSummaryCard
               onDismiss={() => {
+                markMissedCallsSeen();
                 setShowMissedCard(false);
-                window.localStorage.setItem(missedCallsSeenKey, "1");
               }}
             />
           ) : null}
@@ -276,9 +308,11 @@ export function AiAssistantScreen() {
             <div className="flex w-full max-w-[360px] justify-center gap-2.5">
               <Link href="/missed-calls/" className={pillBase}>
                 <span>Пропущенные звонки</span>
-                <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#FF3B4E] px-1.5 text-[11px] font-bold text-white">
-                  6
-                </span>
+                {!isMissedCallsSeen() ? (
+                  <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#FF3B4E] px-1.5 text-[11px] font-bold text-white">
+                    6
+                  </span>
+                ) : null}
               </Link>
               <Link href="/appeals/" className={pillBase}>
                 <span>Обращения</span>
