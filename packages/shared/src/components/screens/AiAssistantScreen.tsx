@@ -205,6 +205,14 @@ export function AiAssistantScreen() {
     router.replace("/assistant/");
   }, [router, searchParams]);
 
+  React.useEffect(() => {
+    const q = searchParams.get("q");
+    if (!q) return;
+    setInput(q);
+    window.setTimeout(() => send(q), 60);
+    router.replace("/assistant/");
+  }, [router, searchParams]);
+
   const send = (text?: string) => {
     const v = (text ?? input).trim();
     if (!v) return;
@@ -300,7 +308,7 @@ export function AiAssistantScreen() {
               setChipTags([...recentQueryChips]);
             }}
           >
-            Назад к ассистенту
+            Назад
           </button>
         ) : null}
         <AnimatePresence initial={false}>

@@ -56,7 +56,7 @@ export function MissedCallsListScreen() {
         className="block w-full text-center text-sm font-semibold text-accent-dark dark:text-accent-yellow"
         onClick={() => goSmartBack(router, "/assistant/")}
       >
-        Вернуться в чат
+        Назад
       </button>
     </div>
   );

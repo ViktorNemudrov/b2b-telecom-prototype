@@ -9,7 +9,7 @@ export default function EventsPage() {
       <AppHeader />
       <AppShell>
         <div className="safe-px pt-2">
-          <PageBackLink label="К ассистенту" />
+          <PageBackLink label="Назад" />
           <EventsFeedScreen />
         </div>
       </AppShell>
