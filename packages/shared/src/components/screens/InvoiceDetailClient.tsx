@@ -8,9 +8,8 @@ import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { Modal } from "@shared/components/ui/modal";
 import { cn } from "@shared/components/ui/cn";
-import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { downloadInvoicePdf } from "@shared/lib/minimalPdf";
-import { getInvoiceById } from "@shared/lib/mockData";
+import { markInvoicePaid, useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
 import { goSmartBack } from "@shared/lib/smartBack";
 
 export function InvoiceDetailClient({
@@ -21,9 +20,11 @@ export function InvoiceDetailClient({
   backHref?: string;
 }) {
   const router = useRouter();
-  const inv = getInvoiceById(id);
+  const invoices = useRuntimeInvoices();
+  const inv = invoices.find((item) => item.id === id);
   const [payOpen, setPayOpen] = React.useState(false);
   const [qrActive, setQrActive] = React.useState(false);
+  const [toast, setToast] = React.useState<string | null>(null);
 
   if (!inv) {
     return (
@@ -42,6 +43,12 @@ export function InvoiceDetailClient({
 
   const statusLabel =
     inv.status === "paid" ? "Оплачен" : inv.status === "pending" ? "В оплате" : "Оплатить";
+  const completePayment = () => {
+    markInvoicePaid(inv.id);
+    setPayOpen(false);
+    setQrActive(false);
+    setToast("Оплата прошла, но это не точно");
+  };
 
   return (
     <div className="space-y-4 pb-8">
@@ -84,7 +91,7 @@ export function InvoiceDetailClient({
         >
           Скачать PDF
         </Button>
-        {inv.status === "pay" ? (
+        {inv.status !== "paid" ? (
           <Button className="flex-1 rounded-2xl" onClick={() => setPayOpen(true)}>
             Оплатить
           </Button>
@@ -98,13 +105,13 @@ export function InvoiceDetailClient({
             className="w-full rounded-2xl"
             onClick={() => {
               setQrActive(true);
-              navigator.mediaDevices
+              void navigator.mediaDevices
                 ?.getUserMedia?.({ video: { facingMode: "environment" } })
                 .then((stream) => {
                   stream.getTracks().forEach((t) => t.stop());
-                  openDevelopmentStub("Камера: поиск QR (демо).");
+                  completePayment();
                 })
-                .catch(() => openDevelopmentStub("Камера недоступна — имитация сканирования QR."));
+                .catch(() => completePayment());
             }}
           >
             Оплатить по QR-коду
@@ -117,7 +124,7 @@ export function InvoiceDetailClient({
           <Button
             variant="secondary"
             className="w-full justify-start gap-2 rounded-2xl"
-            onClick={() => openDevelopmentStub("Оплата через Сбербанк (мок).")}
+            onClick={completePayment}
           >
             <Image src="/mockups/sber-icon.svg" alt="" width={18} height={18} className="h-[18px] w-[18px]" />
             Сбербанк
@@ -125,7 +132,7 @@ export function InvoiceDetailClient({
           <Button
             variant="secondary"
             className="w-full justify-start gap-2 rounded-2xl"
-            onClick={() => openDevelopmentStub("Оплата через Тинькофф (мок).")}
+            onClick={completePayment}
           >
             <Image src="/mockups/tinkoff-icon.svg" alt="" width={18} height={18} className="h-[18px] w-[18px]" />
             Тинькофф
@@ -133,14 +140,14 @@ export function InvoiceDetailClient({
           <Button
             variant="secondary"
             className="w-full justify-start gap-2 rounded-2xl"
-            onClick={() => openDevelopmentStub("Оплата через Яндекс Банк (мок).")}
+            onClick={completePayment}
           >
             <Image src="/mockups/yandex-bank-icon.svg" alt="" width={18} height={18} className="h-[18px] w-[18px]" />
             Яндекс Банк
           </Button>
           <Button
             className="w-full rounded-2xl bg-accent-yellow text-accent-dark hover:brightness-95"
-            onClick={() => openDevelopmentStub("Реквизиты для перевода (мок).")}
+            onClick={completePayment}
           >
             Оплата по реквизитам
           </Button>
@@ -162,13 +169,29 @@ export function InvoiceDetailClient({
             </div>
             <Button
               className="w-full rounded-xl bg-accent-yellow text-accent-dark hover:brightness-95"
-              onClick={() => openDevelopmentStub("Оплата картой (мок).")}
+              onClick={completePayment}
             >
               Оплатить картой
             </Button>
           </div>
         </div>
       </Modal>
+      {toast ? (
+        <Card className="border-[#E8EAED] dark:border-slate-600">
+          <CardContent className="pb-3 pt-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-sm text-[#212529] dark:text-slate-100">{toast}</div>
+              <button
+                type="button"
+                className="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-300"
+                onClick={() => setToast(null)}
+              >
+                Закрыть
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   );
 }

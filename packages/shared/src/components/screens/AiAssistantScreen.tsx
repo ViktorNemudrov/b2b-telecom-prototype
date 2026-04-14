@@ -23,6 +23,7 @@ import {
   userProfile,
   type ChatMessage
 } from "@shared/lib/mockData";
+import { useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
 import { isMissedCallsSeen, markMissedCallsSeen } from "@shared/lib/runtimeFlags";
 
 const sphereSrc = "/mockups/%D0%A8%D0%B0%D1%80.png";
@@ -44,12 +45,12 @@ function hashPick(prompt: string, modulo: number) {
 
 function mockAiResponse(prompt: string): ChatMessage {
   const p = prompt.toLowerCase();
-  const clean = p.replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
+  const clean = p.replace(/[^a-zа-яё0-9\s]/gi, " ").replace(/\s+/g, " ").trim();
   const hasGreeting =
-    /\b(привет|здравствуйте|добрый день|доброго дня|доброе утро|добрый вечер|хай)\b/u.test(clean);
-  const asksHowAreYou = /\b(как дела|как ты|как поживаешь|как жизнь)\b/u.test(clean);
+    /\b(привет|здравствуй|здравствуйте|добрый день|доброго дня|доброе утро|добрый вечер|хай)\b/i.test(clean);
+  const asksHowAreYou = /\b(как дела|как ты|как поживаешь|как жизнь)\b/i.test(clean);
   const hasProfanity =
-    /\b(бля|бляд|блять|сука|хер|нахер|на хер|пизд|еба|ёба|ебл|мудак|урод)\b/u.test(clean);
+    /\b(бля|бляд|блять|сука|хер|нахер|на хер|пизд|еба|ёба|ебл|мудак|урод)\b/i.test(clean);
 
   if (hasProfanity) {
     return {
@@ -214,6 +215,8 @@ export function AiAssistantScreen() {
   const [chipTags, setChipTags] = React.useState<string[]>(() => [...recentQueryChips]);
   const [showMissedCard, setShowMissedCard] = React.useState(true);
   const chatEndRef = React.useRef<HTMLDivElement | null>(null);
+  const runtimeInvoices = useRuntimeInvoices();
+  const unpaidInvoicesCount = runtimeInvoices.filter((inv) => inv.status !== "paid").length;
 
   React.useEffect(() => {
     setShowMissedCard(!isMissedCallsSeen());
@@ -334,9 +337,11 @@ export function AiAssistantScreen() {
               </button>
               <Link href="/invoices/" className={pillBase}>
                 <span>Счета на оплату</span>
-                <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#2D2D2D] px-1.5 text-[11px] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
-                  3
-                </span>
+                {unpaidInvoicesCount > 0 ? (
+                  <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#2D2D2D] px-1.5 text-[11px] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
+                    {unpaidInvoicesCount}
+                  </span>
+                ) : null}
               </Link>
             </div>
           </div>

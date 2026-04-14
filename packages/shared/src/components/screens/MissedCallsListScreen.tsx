@@ -25,9 +25,6 @@ export function MissedCallsListScreen() {
 
   return (
     <div className="space-y-4 pb-6">
-      <div className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
-        Пропущенные звонки
-      </div>
       <div className="flex items-start justify-between gap-2">
         <p className="flex-1 text-sm leading-relaxed text-slate-800 dark:text-slate-100">
           У вас 6 пропущенных звонков, которые требуется обработать.

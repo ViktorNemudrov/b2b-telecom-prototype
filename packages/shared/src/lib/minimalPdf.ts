@@ -1,5 +1,4 @@
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import fontkit from "@pdf-lib/fontkit";
+import { PDFDocument, rgb } from "pdf-lib";
 
 /** Минимальный валидный PDF (пустая страница) — запасной вариант без pdf-lib или при ошибке. */
 export const MINIMAL_PDF_BASE64 =
@@ -16,9 +15,27 @@ export function downloadMinimalPdf(filename: string) {
   URL.revokeObjectURL(url);
 }
 
-/** Noto Sans TTF (Google Fonts) — для кириллицы в счёте-демо (ТЗ: PDF сформировать самостоятельно). */
-const NOTO_SANS_TTF =
-  "https://fonts.gstatic.com/s/notosans/v36/o-0IIpQlx3QUlC5A4PNb4j5Ba_2c7.ttf";
+async function createTextImagePng(lines: string[]) {
+  if (typeof document === "undefined") return null;
+  const canvas = document.createElement("canvas");
+  canvas.width = 1600;
+  canvas.height = 420;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#1F2937";
+  ctx.font = "600 52px Inter, Arial, sans-serif";
+  ctx.textBaseline = "top";
+
+  let y = 24;
+  for (const line of lines) {
+    ctx.fillText(line, 24, y);
+    y += 92;
+  }
+  return canvas.toDataURL("image/png");
+}
 
 /**
  * Скачивает PDF со счётом-демо (кириллица при успешной загрузке шрифта).
@@ -26,37 +43,24 @@ const NOTO_SANS_TTF =
 export async function downloadInvoicePdf(filename: string) {
   try {
     const pdfDoc = await PDFDocument.create();
-    pdfDoc.registerFontkit(fontkit);
     const page = pdfDoc.addPage([595.28, 841.89]);
-    let font;
-    let cyrillic = false;
-    try {
-      const fontBytes = await fetch(NOTO_SANS_TTF).then((r) => r.arrayBuffer());
-      font = await pdfDoc.embedFont(fontBytes, { subset: true });
-      cyrillic = true;
-    } catch {
-      font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    }
+    const lines = [
+      "Счёт (демо)",
+      "Сквозь тернии к звёздам",
+      "Билайн One — бизнес",
+      "Оплата: по реквизитам или карте (макет)."
+    ];
 
-    const lines = cyrillic
-      ? [
-          "Счёт (демо)",
-          "Сквозь тернии к звёздам",
-          "Билайн One — бизнес",
-          "Оплата: по реквизитам или карте (макет)."
-        ]
-      : ["Invoice demo", "B2B Beeline One", "PDF fallback (no Cyrillic font)."];
-
-    let y = 760;
-    for (const line of lines) {
-      page.drawText(line, {
-        x: 50,
-        y,
-        size: 13,
-        font,
-        color: rgb(0.12, 0.16, 0.22)
-      });
-      y -= 22;
+    const textPngDataUrl = await createTextImagePng(lines);
+    if (textPngDataUrl) {
+      const pngBytes = await fetch(textPngDataUrl).then((r) => r.arrayBuffer());
+      const pngImage = await pdfDoc.embedPng(pngBytes);
+      const imgW = 520;
+      const imgH = (pngImage.height / pngImage.width) * imgW;
+      page.drawImage(pngImage, { x: 38, y: 841.89 - imgH - 60, width: imgW, height: imgH });
+    } else {
+      page.drawText("Invoice demo", { x: 50, y: 760, size: 14, color: rgb(0.12, 0.16, 0.22) });
+      page.drawText("B2B Beeline One", { x: 50, y: 735, size: 14, color: rgb(0.12, 0.16, 0.22) });
     }
 
     const bytes = await pdfDoc.save();

@@ -5,7 +5,7 @@ import { ChevronRight, Volume2 } from "lucide-react";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { cn } from "@shared/components/ui/cn";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
-import { invoicesMarch2026 } from "@shared/lib/mockData";
+import { useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
 
 const statusLabel: Record<string, string> = {
   pay: "Оплатить",
@@ -14,8 +14,9 @@ const statusLabel: Record<string, string> = {
 };
 
 export function InvoicesMarchWidget() {
-  const total = invoicesMarch2026.reduce((a, i) => a + i.amountRub, 0);
-  const paidCount = invoicesMarch2026.filter((i) => i.status === "paid").length;
+  const invoices = useRuntimeInvoices();
+  const total = invoices.reduce((a, i) => a + i.amountRub, 0);
+  const paidCount = invoices.filter((i) => i.status === "paid").length;
 
   return (
     <Card className="border-slate-200 dark:border-slate-700">
@@ -42,7 +43,7 @@ export function InvoicesMarchWidget() {
         </div>
 
         <div className="space-y-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-2 dark:border-slate-700 dark:bg-slate-800/50">
-          {invoicesMarch2026.map((inv) => (
+          {invoices.map((inv) => (
             <Link
               key={inv.id}
               href={`/invoices/${inv.id}/`}

@@ -279,20 +279,6 @@ export function EventsFeedScreen() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-[20px] border-[#E5E7EE] bg-white shadow-none">
-        <CardContent className="flex items-center gap-3 pb-3 pt-3">
-          <button type="button" className="flex h-9 w-9 items-center justify-center rounded-full bg-[#ECEAFD]">
-            <Play className="h-4 w-4 text-[#4B5563]" />
-          </button>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1 text-sm font-semibold text-[#343A4A]">
-              <Sparkles className="h-4 w-4 text-[#9C8AF2]" />
-              Ежедневный отчет
-            </div>
-            <div className="text-xs text-[#A2A8B8]">за 24 апреля</div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

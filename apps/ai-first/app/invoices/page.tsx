@@ -5,9 +5,11 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageBackLink } from "@shared/components/PageBackLink";
 import { cn } from "@shared/components/ui/cn";
-import { invoicesMarch2026 } from "@shared/lib/mockData";
+import { useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
 
 export default function InvoicesListPage() {
+  const invoices = useRuntimeInvoices();
+
   return (
     <>
       <AppHeader />
@@ -16,7 +18,7 @@ export default function InvoicesListPage() {
           <PageBackLink />
           <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Счета за март 2026</h1>
           <div className="space-y-2">
-            {invoicesMarch2026.map((inv) => (
+            {invoices.map((inv) => (
               <Link
                 key={inv.id}
                 href={`/invoices/${inv.id}/`}
