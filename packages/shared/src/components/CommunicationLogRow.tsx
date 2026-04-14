@@ -21,7 +21,6 @@ export function CommunicationLogRow({ row }: { row: CommLogRow }) {
       </div>
       <div className="shrink-0 text-right">
         <div className="flex items-center justify-end gap-1.5">
-          {row.hasRecordingDot ? <span className="h-2 w-2 rounded-full bg-rose-500" aria-hidden /> : null}
           <span className="text-xs font-medium text-slate-600">{row.duration}</span>
         </div>
         <div className="mt-1 text-xs font-semibold text-slate-800">{row.time}</div>

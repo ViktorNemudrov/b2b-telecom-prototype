@@ -10,7 +10,7 @@ import { goSmartBack } from "@shared/lib/smartBack";
 
 export function AuthPhoneScreen({
   backHref = "/",
-  afterSignInHref = "/assistant/?promo=1"
+  afterSignInHref = "/assistant/"
 }: {
   backHref?: string;
   afterSignInHref?: string;

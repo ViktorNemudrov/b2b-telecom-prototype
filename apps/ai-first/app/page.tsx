@@ -9,7 +9,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const t = window.setTimeout(() => {
-      router.replace("/assistant/?promo=1");
+      router.replace("/assistant/");
     }, 2000);
     return () => window.clearTimeout(t);
   }, [router]);

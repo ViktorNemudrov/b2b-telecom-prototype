@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@shared/components/ui/button";
@@ -115,17 +116,33 @@ export function InvoiceDetailClient({
           ) : null}
           <Button
             variant="secondary"
-            className="w-full rounded-2xl"
+            className="w-full justify-start gap-2 rounded-2xl"
             onClick={() => openDevelopmentStub("Оплата через Сбербанк (мок).")}
           >
+            <Image src="/mockups/sber-icon.svg" alt="" width={18} height={18} className="h-[18px] w-[18px]" />
             Сбербанк
           </Button>
           <Button
             variant="secondary"
-            className="w-full rounded-2xl"
-            onClick={() => openDevelopmentStub("Тинькофф / Яндекс (мок).")}
+            className="w-full justify-start gap-2 rounded-2xl"
+            onClick={() => openDevelopmentStub("Оплата через Тинькофф (мок).")}
           >
-            Другой банк
+            <Image src="/mockups/tinkoff-icon.svg" alt="" width={18} height={18} className="h-[18px] w-[18px]" />
+            Тинькофф
+          </Button>
+          <Button
+            variant="secondary"
+            className="w-full justify-start gap-2 rounded-2xl"
+            onClick={() => openDevelopmentStub("Оплата через Яндекс Банк (мок).")}
+          >
+            <Image src="/mockups/yandex-bank-icon.svg" alt="" width={18} height={18} className="h-[18px] w-[18px]" />
+            Яндекс Банк
+          </Button>
+          <Button
+            className="w-full rounded-2xl bg-accent-yellow text-accent-dark hover:brightness-95"
+            onClick={() => openDevelopmentStub("Реквизиты для перевода (мок).")}
+          >
+            Оплата по реквизитам
           </Button>
           <div className="space-y-1 rounded-xl border border-slate-200 p-3 dark:border-slate-600">
             <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Карта</div>
@@ -150,12 +167,6 @@ export function InvoiceDetailClient({
               Оплатить картой
             </Button>
           </div>
-          <Button
-            className="w-full rounded-2xl bg-accent-yellow text-accent-dark hover:brightness-95"
-            onClick={() => openDevelopmentStub("Реквизиты для перевода (мок).")}
-          >
-            Оплата по реквизитам
-          </Button>
         </div>
       </Modal>
     </div>

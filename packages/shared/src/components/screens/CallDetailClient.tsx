@@ -30,7 +30,7 @@ export function CallDetailClient({
           className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900"
           onClick={() => goSmartBack(router, backHref)}
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-500 text-white">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-100">
             <ChevronLeft className="h-4 w-4" />
           </span>
           Назад
@@ -53,7 +53,7 @@ export function CallDetailClient({
           className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 pr-3 text-sm font-semibold text-slate-800 shadow-softSm transition hover:bg-slate-50"
           onClick={() => goSmartBack(router, backHref)}
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-500 text-white">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-100">
             <ChevronLeft className="h-4 w-4" />
           </span>
           Назад
@@ -102,7 +102,6 @@ export function CallDetailClient({
           >
             <FileText className="h-4 w-4" />
             Расшифровка
-            <span className="h-2 w-2 rounded-full bg-rose-500" aria-hidden />
           </button>
           {showTranscript ? (
             <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm whitespace-pre-wrap text-slate-800">

@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock3, Mic, MicOff, Paperclip, Plus, SendHorizonal } from "lucide-react";
+import { Clock3, Mic, MicOff, Paperclip, SendHorizonal } from "lucide-react";
 import * as React from "react";
 import { cn } from "@shared/components/ui/cn";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
@@ -70,7 +70,7 @@ export function BottomInputBar({
       >
         <div
           className={cn(
-            "flex items-center gap-1.5 rounded-[20px] border border-[#E5E5EA] bg-white p-2 shadow-[0_2px_12px_rgba(0,0,0,0.05)] dark:border-slate-600 dark:bg-slate-800",
+            "flex items-center gap-1 rounded-[20px] border border-[#E5E5EA] bg-white p-1.5 shadow-[0_2px_12px_rgba(0,0,0,0.05)] dark:border-slate-600 dark:bg-slate-800",
             focused && "ring-2 ring-accent-yellow/35",
             variant === "assistant" && "min-h-[52px]"
           )}
@@ -88,7 +88,7 @@ export function BottomInputBar({
           <button
             aria-label="Прикрепить"
             type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 active:translate-y-[1px]"
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 active:translate-y-[1px]"
             onClick={() => fileRef.current?.click()}
           >
             <Paperclip className="h-5 w-5" />
@@ -96,7 +96,7 @@ export function BottomInputBar({
 
           <button
             aria-label="История"
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 active:translate-y-[1px]"
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 active:translate-y-[1px]"
             onClick={onOpenHistory}
           >
             <Clock3 className="h-5 w-5" />
@@ -107,7 +107,7 @@ export function BottomInputBar({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder="Чем можем помочь?"
-            className="h-10 min-h-[44px] flex-1 bg-transparent px-1 text-[15px] outline-none placeholder:text-[#C7C7CC] dark:placeholder:text-slate-500"
+            className="h-9 min-w-0 flex-1 bg-transparent px-1 text-[15px] outline-none placeholder:text-[#C7C7CC] dark:placeholder:text-slate-500"
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             onKeyDown={(e) => {
@@ -119,8 +119,8 @@ export function BottomInputBar({
           <button
             aria-label={listening ? "Остановить диктовку" : "Диктовать вопрос"}
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition active:translate-y-[1px]",
-              listening ? "bg-rose-50 text-rose-700" : "text-slate-500 hover:bg-slate-100",
+              "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition active:translate-y-[1px]",
+              listening ? "bg-rose-50 text-rose-700 animate-pulse" : "text-slate-500 hover:bg-slate-100",
               !supported && "opacity-80"
             )}
             title={
@@ -199,19 +199,16 @@ export function BottomInputBar({
             {listening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </button>
 
-          <button
-            type="button"
-            aria-label="Ещё действия"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#E5E5EA] bg-[#F7F7FA] text-slate-600 transition hover:bg-slate-100 active:translate-y-[1px] dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
-            onClick={() => openDevelopmentStub("Дополнительные действия (мок).")}
-          >
-            <Plus className="h-5 w-5" strokeWidth={2.25} />
-          </button>
+          {listening ? (
+            <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200">
+              Говорите...
+            </span>
+          ) : null}
 
           <button
             aria-label="Отправить"
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition active:translate-y-[1px]",
+              "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition active:translate-y-[1px]",
               value.trim()
                 ? "bg-accent-yellow text-accent-dark shadow-softSm hover:brightness-95"
                 : "bg-[#F2F2F7] text-slate-400 dark:bg-slate-700"

@@ -472,10 +472,6 @@ export function getDemoNavigationIntent(
     return { to: "/appeals/", ack: "Открываю раздел обращений." };
   }
 
-  if (q.includes("мои счета") || q.includes("счета за")) {
-    return { to: "/invoices/", ack: "Открываю список счетов." };
-  }
-
   return undefined;
 }
 

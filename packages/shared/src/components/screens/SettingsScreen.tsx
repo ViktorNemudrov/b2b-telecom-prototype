@@ -24,9 +24,7 @@ export function SettingsScreen({
   const [notificationsOn, setNotificationsOn] = React.useState(true);
 
   const onExit = () => {
-    openDevelopmentStub(
-      "Подождите, вы еще не все посмотрели в нашей демо-версии продукта"
-    );
+    window.location.href = "/";
   };
 
   return (

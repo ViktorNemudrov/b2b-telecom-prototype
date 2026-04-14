@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { InvoicesMarchWidget } from "@shared/components/ai/InvoicesMarchWidget";
@@ -12,7 +12,6 @@ import { MissedCallSummaryCard } from "@shared/components/MissedCallSummaryCard"
 import { ActionCard } from "@shared/components/ActionCard";
 import { BottomInputBar } from "@shared/components/BottomInputBar";
 import { ChatBubble } from "@shared/components/ChatBubble";
-import { PromptTag } from "@shared/components/PromptTag";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { Modal } from "@shared/components/ui/modal";
 import { cn } from "@shared/components/ui/cn";
@@ -63,8 +62,18 @@ function mockAiResponse(prompt: string): ChatMessage {
       text: "По счетам за март 2026: ниже список и суммы. Могу подготовить финансовый отчёт или выгрузку.",
       createdAt: nowIso(),
       widget: "invoices-march",
-      suggested: ["Финансовый отчет", "Архив платежей"],
-      navigateTo: "/invoices/"
+      suggested: ["Финансовый отчет", "Архив платежей"]
+    };
+  }
+
+  if (p.includes("мои счета") || p.includes("счета за")) {
+    return {
+      id: id(),
+      role: "ai",
+      text: "Показываю счета в чате. Можно сразу продолжить диалог — например, про оплату или сверку.",
+      createdAt: nowIso(),
+      widget: "invoices-march",
+      suggested: ["Что просрочено?", "Как оплатить?", "Сверка по платежам"]
     };
   }
 
@@ -163,17 +172,38 @@ const pillBase =
 
 export function AiAssistantScreen() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [messages, setMessages] = React.useState<ChatMessage[]>(defaultChat);
   const [input, setInput] = React.useState("");
   const [openHistory, setOpenHistory] = React.useState(false);
   const [toast, setToast] = React.useState<string | null>(null);
   const [chipTags, setChipTags] = React.useState<string[]>(() => [...recentQueryChips]);
+  const chatEndRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
     if (!toast) return;
     const t = window.setTimeout(() => setToast(null), 2400);
     return () => window.clearTimeout(t);
   }, [toast]);
+
+  React.useEffect(() => {
+    const scrollToEnd = (behavior: ScrollBehavior) => {
+      chatEndRef.current?.scrollIntoView({ behavior, block: "end" });
+    };
+    scrollToEnd("auto");
+    const t = window.setTimeout(() => scrollToEnd("smooth"), 180);
+    return () => window.clearTimeout(t);
+  }, [messages]);
+
+  React.useEffect(() => {
+    if (searchParams.get("reset") !== "1") return;
+    setMessages(defaultChat);
+    setInput("");
+    setOpenHistory(false);
+    setToast(null);
+    setChipTags([...recentQueryChips]);
+    router.replace("/assistant/");
+  }, [router, searchParams]);
 
   const send = (text?: string) => {
     const v = (text ?? input).trim();
@@ -223,7 +253,6 @@ export function AiAssistantScreen() {
           <div className="flex flex-col items-center gap-2.5">
             <div className="flex w-full max-w-[360px] justify-center gap-2.5">
               <Link href="/missed-calls/" className={pillBase}>
-                <span className="h-2 w-2 rounded-full bg-[#FF3B4E]" aria-hidden />
                 <span>Пропущенные звонки</span>
                 <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#FF3B4E] px-1.5 text-[11px] font-bold text-white">
                   6
@@ -237,9 +266,16 @@ export function AiAssistantScreen() {
               </Link>
             </div>
             <div className="flex w-full max-w-[360px] flex-wrap justify-center gap-2.5">
-              <Link href="/invoices/" className={pillBase}>
+              <button
+                type="button"
+                className={pillBase}
+                onClick={() => {
+                  setInput("мои счета");
+                  window.setTimeout(() => send("мои счета"), 50);
+                }}
+              >
                 <span>Мои счета</span>
-              </Link>
+              </button>
               <Link href="/invoices/" className={pillBase}>
                 <span>Счета на оплату</span>
                 <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#2D2D2D] px-1.5 text-[11px] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
@@ -249,76 +285,26 @@ export function AiAssistantScreen() {
             </div>
           </div>
 
-          {chipTags.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {chipTags.map((label) => (
-                <div
-                  key={label}
-                  className="inline-flex items-center overflow-hidden rounded-full border border-[#E8EAED] bg-white text-[12px] font-medium text-[#3C4858] shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
-                >
-                  <button
-                    type="button"
-                    className="px-3 py-1.5 text-left hover:bg-slate-50 dark:hover:bg-slate-700"
-                    onClick={() => {
-                      setInput(label);
-                      window.setTimeout(() => send(label), 50);
-                    }}
-                  >
-                    {label}
-                  </button>
-                  <button
-                    type="button"
-                    className="border-l border-[#E8EAED] px-2 py-1.5 text-[#C7C7CC] hover:bg-slate-100 hover:text-slate-600 dark:border-slate-600 dark:hover:bg-slate-700"
-                    aria-label="Убрать"
-                    onClick={() => setChipTags((t) => t.filter((x) => x !== label))}
-                  >
-                    <X className="h-3.5 w-3.5" strokeWidth={2.5} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : null}
         </>
       ) : null}
 
       <div className="space-y-3">
+        {hasChat ? (
+          <button
+            type="button"
+            className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-softSm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+            onClick={() => {
+              setMessages(defaultChat);
+              setInput("");
+              setToast(null);
+              setChipTags([...recentQueryChips]);
+            }}
+          >
+            Назад к ассистенту
+          </button>
+        ) : null}
         <AnimatePresence initial={false}>
-          {!hasChat ? (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
-            >
-              <Card className="border-[#E8EAED] bg-white dark:border-slate-700 dark:bg-slate-800">
-                <CardContent className="pb-5 pt-5">
-                  <div className="text-sm font-semibold text-[#212529] dark:text-slate-100">Интеллектуальный центр</div>
-                  <div className="mt-1 text-[13px] leading-relaxed text-[#3C4858] dark:text-slate-300">
-                    Задай вопрос или выбери быстрый сценарий — я предложу действия и подготовлю черновики.
-                  </div>
-                  <div className="mt-4 grid gap-2">
-                    <button
-                      type="button"
-                      className="rounded-[18px] border border-[#E8EAED] bg-white p-3 text-left shadow-sm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:hover:bg-slate-800"
-                      onClick={() => send("Сводка дня")}
-                    >
-                      <div className="text-sm font-semibold text-[#212529] dark:text-slate-100">Сводка дня</div>
-                      <div className="mt-1 text-xs text-[#8E8E93]">Пропущенные, риски, приоритеты на сегодня</div>
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded-[18px] border border-[#E8EAED] bg-white p-3 text-left shadow-sm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:hover:bg-slate-800"
-                      onClick={() => send("Запусти рассылку")}
-                    >
-                      <div className="text-sm font-semibold text-[#212529] dark:text-slate-100">Запуск рассылки</div>
-                      <div className="mt-1 text-xs text-[#8E8E93]">Подготовка текста + сегмента + очереди отправки</div>
-                    </button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ) : (
+          {hasChat ? (
             <motion.div
               key="chat"
               initial={{ opacity: 0, y: 8 }}
@@ -364,23 +350,43 @@ export function AiAssistantScreen() {
                     : null}
                 </div>
               ))}
+              <div ref={chatEndRef} className="h-[112px]" />
             </motion.div>
-          )}
+          ) : null}
         </AnimatePresence>
       </div>
 
-      {!hasChat ? (
-        <div className="grid grid-cols-3 gap-2">
-          {["Счета за март", "Запусти рассылку", "Сводка дня"].map((p) => (
-            <PromptTag
-              key={p}
-              label={p}
-              onClick={() => {
-                setInput(p);
-                window.setTimeout(() => send(p), 120);
-              }}
-            />
-          ))}
+      {!hasChat && chipTags.length > 0 ? (
+        <div className="fixed bottom-[104px] left-0 right-0 z-30 mx-auto w-full max-w-[430px]">
+          <div className="safe-px">
+            <div className="flex flex-wrap gap-2">
+              {chipTags.map((label) => (
+                <div
+                  key={label}
+                  className="inline-flex items-center overflow-hidden rounded-full border border-[#E8EAED] bg-white text-[12px] font-medium text-[#3C4858] shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+                >
+                  <button
+                    type="button"
+                    className="px-3 py-1.5 text-left hover:bg-slate-50 dark:hover:bg-slate-700"
+                    onClick={() => {
+                      setInput(label);
+                      window.setTimeout(() => send(label), 50);
+                    }}
+                  >
+                    {label}
+                  </button>
+                  <button
+                    type="button"
+                    className="border-l border-[#E8EAED] px-2 py-1.5 text-[#C7C7CC] hover:bg-slate-100 hover:text-slate-600 dark:border-slate-600 dark:hover:bg-slate-700"
+                    aria-label="Убрать"
+                    onClick={() => setChipTags((t) => t.filter((x) => x !== label))}
+                  >
+                    <X className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       ) : null}
 

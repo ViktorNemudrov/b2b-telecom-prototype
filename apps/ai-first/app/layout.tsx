@@ -13,8 +13,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "B2B Telecom — AI",
-  description: "Прототип с AI в главной роли"
+  title: "Билайн.One",
+  description: "Билайн.One — AI ассистент для бизнеса"
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

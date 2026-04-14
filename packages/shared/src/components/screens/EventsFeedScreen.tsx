@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Play, Sparkles, X } from "lucide-react";
+import { Pause, Play, Sparkles, X } from "lucide-react";
 import { RecordingPlayer } from "@shared/components/RecordingPlayer";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { getCallById } from "@shared/lib/mockData";
@@ -15,8 +15,14 @@ const chipScroll =
 
 export function EventsFeedScreen() {
   const [dismissDaily, setDismissDaily] = React.useState(false);
-  const [dailyAudio, setDailyAudio] = React.useState(false);
+  const [speaking, setSpeaking] = React.useState(false);
   const c1 = getCallById("c1");
+
+  React.useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined") window.speechSynthesis.cancel();
+    };
+  }, []);
 
   return (
     <div className="space-y-4 pb-6">
@@ -27,9 +33,27 @@ export function EventsFeedScreen() {
               type="button"
               className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white shadow-softSm dark:bg-slate-800"
               aria-label="Показать аудиозапись отчёта"
-              onClick={() => setDailyAudio((v) => !v)}
+              onClick={() => {
+                if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+                if (speaking) {
+                  window.speechSynthesis.cancel();
+                  setSpeaking(false);
+                  return;
+                }
+                const u = new SpeechSynthesisUtterance(dailyReportText);
+                u.lang = "ru-RU";
+                u.onend = () => setSpeaking(false);
+                u.onerror = () => setSpeaking(false);
+                setSpeaking(true);
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(u);
+              }}
             >
-              <Play className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+              {speaking ? (
+                <Pause className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+              ) : (
+                <Play className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+              )}
             </button>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
@@ -38,16 +62,9 @@ export function EventsFeedScreen() {
               </div>
               <div className="text-xs text-slate-500 dark:text-slate-400">за 24 апреля</div>
               <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{dailyReportText}</p>
-              {dailyAudio ? (
-                <div className="mt-3">
-                  <RecordingPlayer
-                    src="/greeting.wav"
-                    fileName="daily-report.wav"
-                    layout="bar"
-                    centerLabel="Аудио отчёта (демо)"
-                  />
-                </div>
-              ) : null}
+              <div className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                {speaking ? "Озвучка отчёта идет..." : "Нажмите play, чтобы озвучить текст отчёта."}
+              </div>
             </div>
             <button
               type="button"
@@ -90,7 +107,7 @@ export function EventsFeedScreen() {
                 <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   {c1.title ?? "Звонок"}
                 </div>
-                <div className="text-xs text-rose-600 dark:text-rose-400">Пропущенный · {c1.time}</div>
+                <div className="text-xs text-rose-600 dark:text-rose-400">Пропущенный {c1.time}</div>
               </div>
             </div>
             <div className="flex flex-wrap gap-2 text-[11px] text-sky-700 dark:text-sky-300">

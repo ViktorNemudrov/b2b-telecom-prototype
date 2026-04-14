@@ -2,17 +2,24 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "B2B Telecom — AI",
-    short_name: "Telecom AI",
+    name: "Билайн.One",
+    short_name: "Билайн.One",
     start_url: "/",
     display: "standalone",
-    background_color: "#FAFCFF",
-    theme_color: "#6C63FF",
+    background_color: "#F7F8FA",
+    theme_color: "#F7F8FA",
     icons: [
       {
-        src: "/icon.svg",
-        sizes: "any",
-        type: "image/svg+xml"
+        src: "/mockups/sphere-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any maskable"
+      },
+      {
+        src: "/mockups/sphere-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any maskable"
       }
     ]
   };

@@ -69,7 +69,7 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-rose-500 text-white shadow-softSm transition hover:brightness-95"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-slate-700 shadow-softSm transition hover:brightness-95 dark:bg-slate-700 dark:text-slate-100"
             aria-label="Назад"
             onClick={() => goSmartBack(router, leadingBack.href)}
           >
