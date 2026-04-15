@@ -127,7 +127,8 @@ export function AiAssistantScreen() {
   const handledQueryRef = React.useRef<string>("");
   const sendSeqRef = React.useRef(0);
   const liveAbortRef = React.useRef<AbortController | null>(null);
-  const replyTimeoutRef = React.useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  // Keep browser timer id type to avoid Node.js Timeout mismatch in CI.
+  const replyTimeoutRef = React.useRef<number | null>(null);
   const aiReplyPendingRef = React.useRef(false);
   const [aiReplyPending, setAiReplyPending] = React.useState(false);
   const runtimeInvoices = useRuntimeInvoices();
@@ -282,9 +283,9 @@ export function AiAssistantScreen() {
         if (isLiveEnabled && liveApiKey) {
           const controller = new AbortController();
           liveAbortRef.current = controller;
-          let abortKind: "timeout" | "supersede" = "supersede";
+          const abortMeta: { kind: "timeout" | "supersede" } = { kind: "supersede" };
           const timeout = window.setTimeout(() => {
-            abortKind = "timeout";
+            abortMeta.kind = "timeout";
             controller.abort();
           }, LIVE_FETCH_TIMEOUT_MS);
           try {
@@ -321,7 +322,7 @@ export function AiAssistantScreen() {
             if (e instanceof DOMException && e.name === "AbortError") {
               emitAiMetric({
                 type: "live_aborted",
-                reason: abortKind === "timeout" ? "timeout" : "new_message"
+                reason: abortMeta.kind === "timeout" ? "timeout" : "new_message"
               });
               finishReply();
               return;
