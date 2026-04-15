@@ -26,6 +26,16 @@ describe("resolveAnalyticsResponse", () => {
     expect(res?.text).toContain("50");
   });
 
+  it("does not override explicit show-unpaid command", () => {
+    const res = resolveAnalyticsResponse("Покажи неоплаченные счета", invoices, calls);
+    expect(res).toBeNull();
+  });
+
+  it("counts invoices for month when query has extra spaces", () => {
+    const res = resolveAnalyticsResponse("сколько  счетов  за  февраль", invoices, calls);
+    expect(res?.text).toContain("За февраль найдено");
+  });
+
   it("computes month difference", () => {
     const res = resolveAnalyticsResponse("Какая разница между суммой счетов в феврале и марте?", invoices, calls);
     expect(res?.text).toContain("февраль");

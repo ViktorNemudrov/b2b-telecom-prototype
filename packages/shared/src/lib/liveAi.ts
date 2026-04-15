@@ -1,3 +1,7 @@
+import { LIVE_AI_SYSTEM_PROMPT, OPENROUTER_COMPLETION_DEFAULTS } from "./aiLiveConfig";
+import { emitAiMetric } from "./aiClientMetrics";
+import { shouldRejectModelOutput } from "./liveAiGuards";
+
 export type LiveAiMessage = { role: "user" | "assistant" | "system"; content: string };
 
 type OpenRouterChoice = {
@@ -24,8 +28,7 @@ export function extractAssistantText(payload: OpenRouterResponse): string | null
 export function buildLiveAiMessages(prompt: string, history: LiveAiMessage[]): LiveAiMessage[] {
   const preface: LiveAiMessage = {
     role: "system",
-    content:
-      "Ты помощник для B2B кабинета связи. Отвечай кратко, по делу, на русском языке. Никакой воды, шуток и оффтопа. Если не уверен в данных, честно сообщи, что это предположение."
+    content: LIVE_AI_SYSTEM_PROMPT
   };
   const safeHistory = history.slice(-6).filter((m) => m.content.trim());
   return [preface, ...safeHistory, { role: "user", content: prompt.trim() }];
@@ -41,6 +44,8 @@ export async function getLiveAiText(args: {
 }): Promise<string | null> {
   const { prompt, history, apiKey, signal, contextSummary } = args;
   const model = args.model || "mistralai/mistral-small-3.2-24b-instruct:free";
+  const t0 = typeof performance !== "undefined" ? performance.now() : Date.now();
+  emitAiMetric({ type: "live_fetch_start", at: Date.now() });
   const messages = buildLiveAiMessages(prompt, history);
   if (contextSummary?.trim()) {
     messages.splice(1, 0, {
@@ -48,20 +53,47 @@ export async function getLiveAiText(args: {
       content: `Контекст данных приложения:\n${contextSummary}`
     });
   }
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature: 0.2
-    }),
-    signal
-  });
-  if (!res.ok) return null;
+  let res: Response;
+  try {
+    res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        ...OPENROUTER_COMPLETION_DEFAULTS
+      }),
+      signal
+    });
+  } catch (e) {
+    const ms = typeof performance !== "undefined" ? performance.now() - t0 : 0;
+    emitAiMetric({ type: "live_fetch_end", at: Date.now(), ok: false, ms });
+    throw e;
+  }
+  if (!res.ok) {
+    const ms = typeof performance !== "undefined" ? performance.now() - t0 : 0;
+    emitAiMetric({ type: "live_fetch_end", at: Date.now(), ok: false, ms });
+    return null;
+  }
   const data = (await res.json()) as OpenRouterResponse;
-  return extractAssistantText(data);
+  const raw = extractAssistantText(data);
+  if (!raw) {
+    emitAiMetric({ type: "live_output_rejected", reason: "empty" });
+    const ms = typeof performance !== "undefined" ? performance.now() - t0 : 0;
+    emitAiMetric({ type: "live_fetch_end", at: Date.now(), ok: false, ms });
+    return null;
+  }
+  if (shouldRejectModelOutput(raw)) {
+    emitAiMetric({ type: "live_output_rejected", reason: "repetition" });
+    const ms = typeof performance !== "undefined" ? performance.now() - t0 : 0;
+    emitAiMetric({ type: "live_fetch_end", at: Date.now(), ok: false, ms });
+    return null;
+  }
+  const ms = typeof performance !== "undefined" ? performance.now() - t0 : 0;
+  emitAiMetric({ type: "live_fetch_end", at: Date.now(), ok: true, ms, intent: "live" });
+  return raw;
 }

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Pause, Play, Sparkles, X } from "lucide-react";
+import { Loader2, Pause, PhoneOff, Play, Sparkles, X } from "lucide-react";
 import { InvoicesMarchWidget } from "@shared/components/ai/InvoicesMarchWidget";
 import { WeeklyStatsWidget } from "@shared/components/ai/WeeklyStatsWidget";
 import { ActionCard } from "@shared/components/ActionCard";
@@ -23,7 +23,10 @@ import {
   type ChatMessage,
   type InvoiceItem
 } from "@shared/lib/mockData";
+import { LIVE_FETCH_TIMEOUT_MS } from "@shared/lib/aiLiveConfig";
+import { emitAiMetric } from "@shared/lib/aiClientMetrics";
 import { getLiveAiText, type LiveAiMessage } from "@shared/lib/liveAi";
+import { safeParseLiveUserPrompt } from "@shared/lib/liveUserPromptSchema";
 import {
   buildSafeLiveFallbackResponse,
   isLiveResponseReliable,
@@ -58,14 +61,24 @@ const pillBase =
 function appendChatLog(userText: string, aiText: string, intent: string) {
   if (typeof window === "undefined") return;
   const key = "b2b_chat_logs_v1";
-  const current = JSON.parse(window.localStorage.getItem(key) ?? "[]") as Array<{
-    at: string;
-    user: string;
-    ai: string;
-    intent: string;
-  }>;
+  let current: Array<{ at: string; user: string; ai: string; intent: string }>;
+  try {
+    current = JSON.parse(window.localStorage.getItem(key) ?? "[]") as Array<{
+      at: string;
+      user: string;
+      ai: string;
+      intent: string;
+    }>;
+    if (!Array.isArray(current)) current = [];
+  } catch {
+    current = [];
+  }
   current.push({ at: new Date().toISOString(), user: userText, ai: aiText, intent });
-  window.localStorage.setItem(key, JSON.stringify(current.slice(-300)));
+  try {
+    window.localStorage.setItem(key, JSON.stringify(current.slice(-300)));
+  } catch {
+    // private mode / quota
+  }
 }
 
 function exportChatLogsToFile() {
@@ -112,6 +125,11 @@ export function AiAssistantScreen() {
   const heroWheelLastAt = React.useRef(0);
   const chatEndRef = React.useRef<HTMLDivElement | null>(null);
   const handledQueryRef = React.useRef<string>("");
+  const sendSeqRef = React.useRef(0);
+  const liveAbortRef = React.useRef<AbortController | null>(null);
+  const replyTimeoutRef = React.useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const aiReplyPendingRef = React.useRef(false);
+  const [aiReplyPending, setAiReplyPending] = React.useState(false);
   const runtimeInvoices = useRuntimeInvoices();
   const unpaidInvoicesCount = runtimeInvoices.filter((inv) => inv.status === "pay").length;
   const liveApiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
@@ -127,6 +145,37 @@ export function AiAssistantScreen() {
     const t = window.setTimeout(() => setToast(null), 2400);
     return () => window.clearTimeout(t);
   }, [toast]);
+
+  const setPending = React.useCallback((v: boolean) => {
+    aiReplyPendingRef.current = v;
+    setAiReplyPending(v);
+  }, []);
+
+  const cancelPendingReply = React.useCallback(() => {
+    if (replyTimeoutRef.current) {
+      window.clearTimeout(replyTimeoutRef.current);
+      replyTimeoutRef.current = null;
+    }
+    liveAbortRef.current?.abort();
+    liveAbortRef.current = null;
+    sendSeqRef.current++;
+    setPending(false);
+    emitAiMetric({ type: "live_aborted", reason: "user_cancel" });
+  }, [setPending]);
+
+  React.useEffect(() => {
+    return () => {
+      if (replyTimeoutRef.current) {
+        window.clearTimeout(replyTimeoutRef.current);
+        replyTimeoutRef.current = null;
+      }
+      liveAbortRef.current?.abort();
+      liveAbortRef.current = null;
+      if (aiReplyPendingRef.current) {
+        emitAiMetric({ type: "live_aborted", reason: "unmount" });
+      }
+    };
+  }, []);
 
   React.useEffect(() => {
     const scrollToEnd = (behavior: ScrollBehavior) => {
@@ -157,24 +206,56 @@ export function AiAssistantScreen() {
   }, [router, searchParams]);
 
   const send = (text?: string) => {
-    const v = (text ?? input).trim();
-    if (!v) return;
+    const raw = (text ?? input).trim();
+    if (!raw) return;
+    const validated = safeParseLiveUserPrompt(raw);
+    if (!validated.ok) {
+      setToast(validated.error);
+      return;
+    }
+    const v = validated.value;
     if (/экспорт.*(лог|журнал)|скач.*(лог|журнал)/i.test(v)) {
       const ok = exportChatLogsToFile();
       setToast(ok ? "Журнал чата выгружен в JSON." : "Журнал пуст: пока нет сохраненных диалогов.");
       return;
     }
 
+    if (replyTimeoutRef.current) {
+      window.clearTimeout(replyTimeoutRef.current);
+      replyTimeoutRef.current = null;
+    }
+    liveAbortRef.current?.abort();
+    liveAbortRef.current = null;
+    const mySeq = ++sendSeqRef.current;
+
     const userMsg: ChatMessage = { id: id(), role: "user", text: v, createdAt: nowIso() };
     setMessages((m) => [...m, userMsg]);
     setInput("");
+    setPending(true);
 
-    window.setTimeout(async () => {
+    replyTimeoutRef.current = window.setTimeout(async () => {
+      replyTimeoutRef.current = null;
+      const finishReply = () => {
+        if (mySeq === sendSeqRef.current) setPending(false);
+      };
+
+      if (mySeq !== sendSeqRef.current) return;
+
+      const w =
+        typeof window !== "undefined"
+          ? (window as unknown as { __E2E_ASSISTANT_DELAY_MS?: number }).__E2E_ASSISTANT_DELAY_MS
+          : undefined;
+      if (typeof w === "number" && w > 0 && v === "__E2E_SLOW__") {
+        await new Promise<void>((r) => window.setTimeout(r, w));
+        if (mySeq !== sendSeqRef.current) return;
+      }
+
       const specialMock = resolveSpecialMockResponse(v);
       if (specialMock) {
         const resolved = toAiMessage(specialMock);
         setMessages((m) => [...m, resolved]);
         appendChatLog(v, resolved.text, "special-mock");
+        finishReply();
         return;
       }
 
@@ -186,6 +267,7 @@ export function AiAssistantScreen() {
         if (resolved.navigateTo) {
           window.setTimeout(() => router.push(resolved.navigateTo!), 320);
         }
+        finishReply();
         return;
       }
 
@@ -199,7 +281,12 @@ export function AiAssistantScreen() {
       try {
         if (isLiveEnabled && liveApiKey) {
           const controller = new AbortController();
-          const timeout = window.setTimeout(() => controller.abort(), 2500);
+          liveAbortRef.current = controller;
+          let abortKind: "timeout" | "supersede" = "supersede";
+          const timeout = window.setTimeout(() => {
+            abortKind = "timeout";
+            controller.abort();
+          }, LIVE_FETCH_TIMEOUT_MS);
           try {
             const history: LiveAiMessage[] = [...messages, userMsg]
               .slice(-6)
@@ -212,6 +299,7 @@ export function AiAssistantScreen() {
               contextSummary: buildDataContextSummary(runtimeInvoices),
               signal: controller.signal
             });
+            if (mySeq !== sendSeqRef.current) return;
             if (liveText && isLiveResponseReliable(v, liveText)) {
               resolved = {
                 id: id(),
@@ -223,12 +311,33 @@ export function AiAssistantScreen() {
             } else if (liveText) {
               resolved = toAiMessage(buildSafeLiveFallbackResponse());
               intentUsed = "live-rejected";
+              emitAiMetric({ type: "live_output_rejected", reason: "reliability" });
+            } else {
+              resolved = toAiMessage(buildSafeLiveFallbackResponse());
+              intentUsed = "live-unavailable";
             }
+          } catch (e) {
+            if (mySeq !== sendSeqRef.current) return;
+            if (e instanceof DOMException && e.name === "AbortError") {
+              emitAiMetric({
+                type: "live_aborted",
+                reason: abortKind === "timeout" ? "timeout" : "new_message"
+              });
+              finishReply();
+              return;
+            }
+            resolved = toAiMessage(buildSafeLiveFallbackResponse());
+            intentUsed = "live-error";
           } finally {
             window.clearTimeout(timeout);
+            if (liveAbortRef.current === controller) liveAbortRef.current = null;
           }
         }
-      } catch {}
+      } catch {
+        if (mySeq !== sendSeqRef.current) return;
+      }
+
+      if (mySeq !== sendSeqRef.current) return;
 
       if (resolved.text.includes("нужен live AI-ответ")) {
         intentUsed = "fallback-no-live";
@@ -239,6 +348,7 @@ export function AiAssistantScreen() {
       if (resolved.navigateTo) {
         window.setTimeout(() => router.push(resolved.navigateTo!), 320);
       }
+      finishReply();
     }, 350);
   };
 
@@ -280,87 +390,78 @@ export function AiAssistantScreen() {
             style={{ touchAction: "pan-y" }}
           >
             {heroCard === 0 && showMissedCard ? (
-              <Card className="min-h-[170px] rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
-                <CardContent className="space-y-3 pb-4 pt-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Пропущенные звонки</div>
-                      <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
-                        За неделю пропущено 6 звонков. Рекомендуем обработать их в первую очередь.
-                      </p>
+              <Card className="min-h-[160px] rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
+                <CardContent className="flex min-h-[160px] items-start gap-3 pb-3 pt-3">
+                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FFE7E7] dark:bg-rose-900/40">
+                    <PhoneOff className="h-4 w-4 text-[#EB4A4A]" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1 text-sm font-semibold text-[#343A4A] dark:text-slate-100">
+                      Пропущенные звонки
                     </div>
+                    <div className="text-xs text-[#A2A8B8]">за последнюю неделю</div>
+                    <p className="mt-1 text-xs leading-relaxed text-[#6B7280] dark:text-slate-300">
+                      У вас 6 пропущенных звонков. Откройте список, чтобы быстро перезвонить клиентам.
+                    </p>
                     <button
                       type="button"
-                      className="rounded-full p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-                      onClick={() => setHeroCard(showWeeklyCard ? 1 : 0)}
+                      className="mt-2 text-xs font-semibold text-accent-dark underline dark:text-accent-yellow"
+                      onClick={() => {
+                        markMissedCallsSeen();
+                        setShowMissedCard(false);
+                        router.push("/missed-calls/");
+                      }}
                     >
-                      <X className="h-4 w-4" />
+                      Открыть пропущенные
                     </button>
                   </div>
-                  <button
-                    type="button"
-                    className="text-xs font-semibold text-accent-dark underline dark:text-accent-yellow"
-                    onClick={() => {
-                      markMissedCallsSeen();
-                      setShowMissedCard(false);
-                      router.push("/missed-calls/");
-                    }}
-                  >
-                    Открыть пропущенные
-                  </button>
                 </CardContent>
               </Card>
             ) : null}
             {(heroCard === 1 || !showMissedCard) && showWeeklyCard ? (
-              <Card className="min-h-[170px] rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
-                <CardContent className="space-y-3 pb-4 pt-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        <Sparkles className="h-4 w-4 text-violet-500" />
-                        Еженедельный отчет
-                      </div>
-                      <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
-                        126 звонков, 6 пропущенных, средняя длительность 2:40. Есть 4 клиента в риске по оплате.
-                      </p>
-                    </div>
-                    <button type="button" className="rounded-full p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => setShowWeeklyCard(false)}>
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ECEAFD]"
-                      onClick={() => {
-                        if (
-                          typeof window === "undefined" ||
-                          !("speechSynthesis" in window) ||
-                          !("SpeechSynthesisUtterance" in window)
-                        ) {
-                          return;
-                        }
-                        if (weeklySpeaking) {
-                          window.speechSynthesis.cancel();
-                          setWeeklySpeaking(false);
-                          return;
-                        }
-                        const u = new SpeechSynthesisUtterance(
-                          "Еженедельный отчет: 126 звонков, 6 пропущенных, средняя длительность две минуты сорок секунд. Есть 4 клиента в риске по оплате."
-                        );
-                        u.lang = "ru-RU";
-                        u.onend = () => setWeeklySpeaking(false);
-                        u.onerror = () => setWeeklySpeaking(false);
-                        setWeeklySpeaking(true);
+              <Card className="min-h-[160px] rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
+                <CardContent className="flex min-h-[160px] items-start gap-3 pb-3 pt-3">
+                  <button
+                    type="button"
+                    className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ECEAFD]"
+                    onClick={() => {
+                      if (
+                        typeof window === "undefined" ||
+                        !("speechSynthesis" in window) ||
+                        !("SpeechSynthesisUtterance" in window)
+                      ) {
+                        return;
+                      }
+                      if (weeklySpeaking) {
                         window.speechSynthesis.cancel();
-                        window.speechSynthesis.speak(u);
-                      }}
-                    >
-                      {weeklySpeaking ? <Pause className="h-4 w-4 text-[#4B5563]" /> : <Play className="h-4 w-4 text-[#4B5563]" />}
-                    </button>
+                        setWeeklySpeaking(false);
+                        return;
+                      }
+                      const u = new SpeechSynthesisUtterance(
+                        "Еженедельный отчет: 126 звонков, 6 пропущенных, средняя длительность две минуты сорок секунд. Есть 4 клиента в риске по оплате."
+                      );
+                      u.lang = "ru-RU";
+                      u.onend = () => setWeeklySpeaking(false);
+                      u.onerror = () => setWeeklySpeaking(false);
+                      setWeeklySpeaking(true);
+                      window.speechSynthesis.cancel();
+                      window.speechSynthesis.speak(u);
+                    }}
+                  >
+                    {weeklySpeaking ? <Pause className="h-4 w-4 text-[#4B5563]" /> : <Play className="h-4 w-4 text-[#4B5563]" />}
+                  </button>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1 text-sm font-semibold text-[#343A4A] dark:text-slate-100">
+                      <Sparkles className="h-4 w-4 text-[#9C8AF2]" />
+                      Еженедельный отчет
+                    </div>
+                    <div className="text-xs text-[#A2A8B8]">за 24 апреля</div>
+                    <p className="mt-1 text-xs leading-relaxed text-[#6B7280] dark:text-slate-300">
+                      126 звонков, 6 пропущенных, средняя длительность 2:40. Есть 4 клиента в риске по оплате.
+                    </p>
                     <button
                       type="button"
-                      className="text-xs font-semibold text-accent-dark underline dark:text-accent-yellow"
+                      className="mt-2 text-xs font-semibold text-accent-dark underline dark:text-accent-yellow"
                       onClick={() => {
                         setInput("звонки за неделю");
                         window.setTimeout(() => send("звонки за неделю"), 60);
@@ -369,6 +470,13 @@ export function AiAssistantScreen() {
                       Открыть в чате
                     </button>
                   </div>
+                  <button
+                    type="button"
+                    className="shrink-0 rounded-full p-1 text-[#C7CBD6] hover:bg-slate-100 dark:hover:bg-slate-700"
+                    onClick={() => setShowWeeklyCard(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </CardContent>
               </Card>
             ) : null}
@@ -644,6 +752,32 @@ export function AiAssistantScreen() {
         </div>
       ) : null}
 
+      {aiReplyPending ? (
+        <div
+          className="fixed bottom-[max(72px,env(safe-area-inset-bottom))] left-0 right-0 z-[60] mx-auto w-full max-w-[430px]"
+          data-testid="assistant-reply-pending"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="safe-px">
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-[#E8EAED] bg-white px-3 py-2.5 shadow-md dark:border-slate-600 dark:bg-slate-800">
+              <div className="flex min-w-0 items-center gap-2 text-sm font-medium text-[#343A4A] dark:text-slate-100">
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-accent-dark" aria-hidden />
+                <span>Готовим ответ…</span>
+              </div>
+              <button
+                type="button"
+                className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 transition hover:bg-slate-100 active:scale-[0.99] dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600"
+                data-testid="assistant-cancel-reply"
+                onClick={cancelPendingReply}
+              >
+                Отмена
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <BottomInputBar
         placement="fixedBottom"
         variant="assistant"
@@ -651,6 +785,8 @@ export function AiAssistantScreen() {
         onChange={setInput}
         onSend={(t) => send(t)}
         onOpenHistory={() => setOpenHistory(true)}
+        inputDataTestId="assistant-chat-input"
+        sendButtonDataTestId="assistant-send-button"
       />
 
       {toast ? (

@@ -11,10 +11,19 @@ export function PwaInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = React.useState<BeforeInstallPromptEvent | null>(null);
   const [showInstall, setShowInstall] = React.useState(false);
   const [iosHint, setIosHint] = React.useState(false);
+  const [passiveDismissed, setPassiveDismissed] = React.useState(false);
 
   React.useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
     void navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+  }, []);
+
+  React.useEffect(() => {
+    try {
+      if (window.localStorage.getItem("pwa-install-dismissed") === "1") setPassiveDismissed(true);
+    } catch {
+      // ignore
+    }
   }, []);
 
   React.useEffect(() => {
@@ -64,6 +73,7 @@ export function PwaInstallPrompt() {
   }, []);
 
   if (!deferredPrompt && !iosHint) {
+    if (passiveDismissed) return null;
     return (
       <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 mx-auto w-full max-w-[430px] px-4">
         <div className="pointer-events-auto rounded-2xl border border-[#E8EAED] bg-white/95 p-3 shadow-soft backdrop-blur">
@@ -81,6 +91,7 @@ export function PwaInstallPrompt() {
                 } catch {
                   // ignore
                 }
+                setPassiveDismissed(true);
                 setShowInstall(false);
               }}
             >

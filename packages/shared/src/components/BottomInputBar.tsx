@@ -22,7 +22,9 @@ export function BottomInputBar({
   onSend,
   onOpenHistory,
   placement = "inline",
-  variant = "default"
+  variant = "default",
+  inputDataTestId,
+  sendButtonDataTestId
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -32,6 +34,8 @@ export function BottomInputBar({
   placement?: "fixedBottom" | "inline";
   /** Макет нижней панели ассистента (1722.png): «лист» с закруглением сверху. */
   variant?: "default" | "assistant";
+  inputDataTestId?: string;
+  sendButtonDataTestId?: string;
 }) {
   const inputRef = React.useRef<HTMLInputElement | null>(null);
   const fileRef = React.useRef<HTMLInputElement | null>(null);
@@ -114,6 +118,7 @@ export function BottomInputBar({
               if (e.key === "Enter") onSend();
             }}
             aria-label="Поле ввода"
+            data-testid={inputDataTestId}
           />
 
           <button
@@ -209,6 +214,7 @@ export function BottomInputBar({
 
           <button
             aria-label="Отправить"
+            data-testid={sendButtonDataTestId}
             className={cn(
               "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition active:translate-y-[1px]",
               value.trim()

@@ -106,8 +106,14 @@ export function resolveSpecialMockResponse(prompt: string): AssistantPayload | n
 }
 
 export function resolveDeterministicResponse(prompt: string, runtimeInvoices: InvoiceItem[]): AssistantPayload | null {
+  const rawLower = prompt.toLowerCase();
   const { clean, compact } = normalizePrompt(prompt);
   const monthDetected = parseMonth(clean, compact);
+
+  // Analytics should win over generic domain branches, otherwise mixed prompts
+  // like "разница между счетами в феврале и марте" are downgraded to month view.
+  const analytics = resolveAnalyticsResponse(prompt, runtimeInvoices, standaloneCalls);
+  if (analytics) return analytics;
 
   const asksUnpaid = hasAny(clean, compact, ["покажи неоплаченные", "неоплаченные счета", "счета в статусе неоплачен", "долги по счетам"]);
   if (asksUnpaid) {
@@ -164,9 +170,6 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
     };
   }
 
-  const analytics = resolveAnalyticsResponse(prompt, runtimeInvoices, standaloneCalls);
-  if (analytics) return analytics;
-
   const asksTime = hasAny(clean, compact, ["сколько времени", "который час", "время сейчас", "текущее время"]);
   const asksDate = hasAny(clean, compact, ["какое сегодня число", "какая дата", "сегодняшняя дата", "какой сегодня день"]);
   if (asksTime || asksDate) {
@@ -181,9 +184,11 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
     return { text: asksTime && asksDate ? `Сейчас ${timeLabel}, ${dateLabel}.` : asksTime ? `Сейчас ${timeLabel}.` : `Сегодня ${dateLabel}.` };
   }
 
-  const asksCalculator = hasAny(clean, compact, ["сколько будет", "посчитай", "вычисли", "калькулятор", "плюс", "минус", "умножить", "разделить"]);
+  const mathExpr = rawLower.match(/([0-9]+(?:[.,][0-9]+)?)\s*([+\-*/xх×])\s*([0-9]+(?:[.,][0-9]+)?)/);
+  const asksCalculator =
+    hasAny(clean, compact, ["сколько будет", "посчитай", "вычисли", "калькулятор", "плюс", "минус", "умножить", "разделить"]) ||
+    Boolean(mathExpr);
   if (asksCalculator) {
-    const mathExpr = clean.match(/([0-9]+(?:[.,][0-9]+)?)\s*([+\-*/xх×])\s*([0-9]+(?:[.,][0-9]+)?)/);
     if (!mathExpr) {
       return { text: "Могу посчитать простой пример. Напишите в формате: `1250 + 340`, `18 * 7`, `144 / 12`." };
     }

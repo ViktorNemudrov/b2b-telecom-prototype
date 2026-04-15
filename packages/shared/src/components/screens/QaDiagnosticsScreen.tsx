@@ -12,6 +12,80 @@ type Check = {
   details: string;
 };
 
+function buildPwaInstallabilityCheck(): Check {
+  if (typeof window === "undefined") {
+    return {
+      key: "pwa-installability",
+      label: "PWA installability",
+      ok: false,
+      details: "Недоступно вне браузера"
+    };
+  }
+
+  const nav = window.navigator;
+  const secureContext = window.isSecureContext || window.location.hostname === "localhost";
+  const hasServiceWorker = "serviceWorker" in nav;
+  const hasBeforeInstallPrompt = "onbeforeinstallprompt" in window;
+  const standalone =
+    (window.matchMedia?.("(display-mode: standalone)")?.matches ?? false) ||
+    (nav as Navigator & { standalone?: boolean }).standalone === true;
+  const ua = nav.userAgent.toLowerCase();
+  const isIos = /iphone|ipad|ipod/.test(ua);
+  const isSafari = /safari/.test(ua) && !/crios|fxios|edgios/.test(ua);
+
+  if (standalone) {
+    return {
+      key: "pwa-installability",
+      label: "PWA installability",
+      ok: true,
+      details: "Уже установлено: приложение запущено в standalone-режиме"
+    };
+  }
+
+  if (!secureContext) {
+    return {
+      key: "pwa-installability",
+      label: "PWA installability",
+      ok: false,
+      details: "Недоступно: требуется HTTPS (или localhost)"
+    };
+  }
+
+  if (!hasServiceWorker) {
+    return {
+      key: "pwa-installability",
+      label: "PWA installability",
+      ok: false,
+      details: "Недоступно: браузер не поддерживает Service Worker"
+    };
+  }
+
+  if (isIos && isSafari) {
+    return {
+      key: "pwa-installability",
+      label: "PWA installability",
+      ok: true,
+      details: "iOS Safari: установка через «Поделиться» → «На экран Домой»"
+    };
+  }
+
+  if (hasBeforeInstallPrompt) {
+    return {
+      key: "pwa-installability",
+      label: "PWA installability",
+      ok: true,
+      details: "Готово к установке: ожидается событие beforeinstallprompt"
+    };
+  }
+
+  return {
+    key: "pwa-installability",
+    label: "PWA installability",
+    ok: false,
+    details: "Пока недоступно: браузер не предоставляет install prompt в текущем контексте"
+  };
+}
+
 function buildChecks(): Check[] {
   if (typeof window === "undefined") {
     return [
@@ -44,7 +118,8 @@ function buildChecks(): Check[] {
     { key: "speech", label: "Озвучка (speech synthesis)", ok: speechOk, details: speechOk ? "Speech API доступен" : "Speech API не поддерживается" },
     { key: "service-worker", label: "Service Worker", ok: swOk, details: swOk ? "Поддерживается" : "Не поддерживается" },
     { key: "pwa-prompt", label: "PWA install prompt", ok: pwaPromptOk, details: pwaPromptOk ? "beforeinstallprompt поддерживается" : "Обычно недоступно в Safari (используется iOS hint)" },
-    { key: "standalone", label: "Режим standalone", ok: standalone, details: standalone ? "Приложение запущено как PWA" : "Запущено в браузере" }
+    { key: "standalone", label: "Режим standalone", ok: standalone, details: standalone ? "Приложение запущено как PWA" : "Запущено в браузере" },
+    buildPwaInstallabilityCheck()
   ];
 }
 

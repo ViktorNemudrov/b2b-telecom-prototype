@@ -43,7 +43,7 @@ export function resolveAnalyticsResponse(
   invoices: InvoiceItem[],
   calls: CallItem[]
 ): Pick<ChatMessage, "text" | "widget" | "invoiceMonth" | "suggested"> | null {
-  const q = prompt.toLowerCase().trim();
+  const q = prompt.toLowerCase().trim().replace(/\s+/g, " ");
 
   const twoMonths = detectTwoMonths(q);
   const asksDifference =
@@ -153,7 +153,8 @@ export function resolveAnalyticsResponse(
     };
   }
 
-  if ((q.includes("неоплачен") || q.includes("на оплату") || q.includes("долг")) && q.includes("счет")) {
+  const asksUnpaidTotals = q.includes("сколько") || q.includes("сумм") || q.includes("итог") || q.includes("всего");
+  if ((q.includes("неоплачен") || q.includes("на оплату") || q.includes("долг")) && q.includes("счет") && asksUnpaidTotals) {
     const unpaid = invoices.filter((inv) => inv.status === "pay");
     const amount = unpaid.reduce((sum, inv) => sum + inv.amountRub, 0);
     return {
@@ -162,7 +163,7 @@ export function resolveAnalyticsResponse(
     };
   }
 
-  if (((q.includes("пропущ") || q.includes("пропуст")) && q.includes("звон")) || q.includes("звонки за неделю")) {
+  if ((q.includes("пропущ") || q.includes("пропуст")) && q.includes("звон")) {
     const missed = calls.filter((c) => c.missed).length;
     const total = calls.length;
     return {
