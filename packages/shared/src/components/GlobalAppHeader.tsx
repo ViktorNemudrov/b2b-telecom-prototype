@@ -66,15 +66,14 @@ export function GlobalAppHeader({
               <Search className="h-5 w-5" />
             </button>
           ) : null}
-          <button
-            type="button"
-            onClick={() => openDevelopmentStub("Центр уведомлений (мок).")}
+          <Link
+            href="/notifications/"
             className="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white transition hover:bg-slate-50 active:translate-y-[1px] dark:border-slate-600 dark:bg-[rgb(var(--card))] dark:hover:bg-slate-800"
             aria-label="Уведомления"
           >
             <Bell className="h-5 w-5 text-slate-700 dark:text-slate-200" />
             <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-accent-yellow" />
-          </button>
+          </Link>
         </div>
       </div>
     </div>

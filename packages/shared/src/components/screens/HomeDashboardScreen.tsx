@@ -41,7 +41,6 @@ export function HomeDashboardScreen() {
           <span className="text-accent-yellow">✓</span> Подписка
         </span>
       </div>
-
       {tariff ? <TariffSubscriptionCard stats={tariff} /> : null}
 
       <Card>
@@ -119,16 +118,16 @@ export function HomeDashboardScreen() {
               </div>
               <div className="mt-2 flex flex-wrap gap-3 text-xs">
                 <span>
-                  <span className="font-semibold text-slate-800">245</span>{" "}
-                  <span className="text-slate-500">принято</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-100">245</span>{" "}
+                  <span className="text-slate-500 dark:text-slate-400">принято</span>
                 </span>
                 <span>
                   <span className="font-semibold text-amber-600">12</span>{" "}
-                  <span className="text-slate-500">ждут ответа</span>
+                  <span className="text-slate-500 dark:text-slate-400">ждут ответа</span>
                 </span>
                 <span>
                   <span className="font-semibold text-rose-600">16</span>{" "}
-                  <span className="text-slate-500">секретарь</span>
+                  <span className="text-slate-500 dark:text-slate-400">секретарь</span>
                 </span>
               </div>
             </div>
@@ -158,7 +157,7 @@ export function HomeDashboardScreen() {
             <button
               type="button"
               onClick={() => openDevelopmentStub("Каталог AI-агентов (демо).")}
-              className="text-slate-300 transition hover:text-slate-500"
+              className="text-slate-300 transition hover:text-slate-500 dark:text-slate-500 dark:hover:text-slate-300"
               aria-label="Подробнее"
             >
               <ChevronRight className="h-5 w-5" />
@@ -184,12 +183,12 @@ export function HomeDashboardScreen() {
         onClick={() => openDevelopmentStub("Этикетка контрагента: редактирование (демо).")}
         className="block w-full text-left"
       >
-        <Card className="border-accent-yellow/40 bg-gradient-to-r from-amber-50/80 to-white transition hover:brightness-[1.02]">
+        <Card className="border-accent-yellow/40 bg-gradient-to-r from-amber-50/80 to-white transition hover:brightness-[1.02] dark:from-slate-800 dark:to-slate-900">
           <CardContent className="flex items-center gap-3 py-3">
             <span className="text-lg">🏷️</span>
             <div>
-              <div className="text-sm font-semibold text-slate-900">Ваша этикетка</div>
-              <div className="text-xs text-slate-600">ИП Балашов Владислав</div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Ваша этикетка</div>
+              <div className="text-xs text-slate-600 dark:text-slate-400">ИП Балашов Владислав</div>
             </div>
             <span className="ml-auto text-accent-yellow">✓</span>
           </CardContent>
@@ -198,11 +197,11 @@ export function HomeDashboardScreen() {
 
       <div>
         <div className="mb-2 flex items-center justify-between px-0.5">
-          <h2 className="text-sm font-semibold text-slate-900">Поможет развивать ваш бизнес</h2>
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Поможет развивать ваш бизнес</h2>
           <button
             type="button"
             onClick={() => openDevelopmentStub("Каталог предложений для бизнеса (демо).")}
-            className="text-slate-400 transition hover:text-slate-600"
+            className="text-slate-400 transition hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
             aria-label="Ещё"
           >
             <ChevronRight className="h-4 w-4" />
@@ -212,11 +211,11 @@ export function HomeDashboardScreen() {
           <button
             type="button"
             onClick={() => setMailingOpen(true)}
-            className="w-[220px] shrink-0 rounded-[22px] border border-slate-100 bg-gradient-to-br from-sky-50 to-indigo-50 p-4 text-left shadow-softSm transition hover:brightness-[1.02] active:translate-y-[1px]"
+            className="w-[220px] shrink-0 rounded-[22px] border border-slate-100 bg-gradient-to-br from-sky-50 to-indigo-50 p-4 text-left shadow-softSm transition hover:brightness-[1.02] active:translate-y-[1px] dark:border-slate-600 dark:from-slate-700 dark:to-slate-800"
           >
             <div className="text-3xl">📣</div>
-            <div className="mt-3 text-sm font-bold text-slate-900">Таргет рассылка</div>
-            <div className="mt-1 text-xs text-slate-600">Расскажем всем о вашем бизнесе</div>
+            <div className="mt-3 text-sm font-bold text-slate-900 dark:text-slate-100">Таргет рассылка</div>
+            <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">Расскажем всем о вашем бизнесе</div>
           </button>
           <button
             type="button"
@@ -231,11 +230,11 @@ export function HomeDashboardScreen() {
 
       <div>
         <div className="mb-2 flex items-center justify-between px-0.5">
-          <h2 className="text-sm font-semibold text-slate-900">Советы для бизнеса</h2>
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Советы для бизнеса</h2>
           <button
             type="button"
             onClick={() => openDevelopmentStub("Лента статей (демо).")}
-            className="text-slate-400 transition hover:text-slate-600"
+            className="text-slate-400 transition hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
             aria-label="Ещё"
           >
             <ChevronRight className="h-4 w-4" />
@@ -245,17 +244,17 @@ export function HomeDashboardScreen() {
           <button
             type="button"
             onClick={() => router.push("/assistant/?q=Дай советы для бизнеса")}
-            className="w-[260px] shrink-0 overflow-hidden rounded-[22px] border border-slate-200 bg-white text-left shadow-softSm transition hover:bg-slate-50/80"
+            className="w-[260px] shrink-0 overflow-hidden rounded-[22px] border border-slate-200 bg-white text-left shadow-softSm transition hover:bg-slate-50/80 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
           >
             <div className="h-28 bg-gradient-to-br from-emerald-100 via-amber-50 to-rose-100" />
-            <div className="p-3 text-xs font-semibold leading-snug text-slate-900">
+            <div className="p-3 text-xs font-semibold leading-snug text-slate-900 dark:text-slate-100">
               Небольшие точки продаж: как настроить процессы с помощью AI-агентов в малом бизнесе
             </div>
           </button>
           <button
             type="button"
             onClick={() => router.push("/assistant/")}
-            className="w-[200px] shrink-0 rounded-[22px] border border-slate-200 bg-slate-50 p-3 text-left text-xs text-slate-600 transition hover:bg-slate-100"
+            className="w-[200px] shrink-0 rounded-[22px] border border-slate-200 bg-slate-50 p-3 text-left text-xs text-slate-600 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
           >
             Ещё статьи в ленте (демо)
           </button>

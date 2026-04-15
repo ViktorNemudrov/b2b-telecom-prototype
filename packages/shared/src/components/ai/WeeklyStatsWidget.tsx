@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import * as React from "react";
 import { ChevronRight, Volume2 } from "lucide-react";
 import { Card, CardContent } from "@shared/components/ui/card";
@@ -24,10 +23,12 @@ function DotChart() {
 
 export function WeeklyStatsWidget({
   variant,
-  onExpandChange
+  onExpandChange,
+  onAskInChat
 }: {
   variant: "weekly-stats" | "weekly-stats-expanded";
   onExpandChange?: (expanded: boolean) => void;
+  onAskInChat?: (question: string) => void;
 }) {
   const [expanded, setExpanded] = React.useState(variant === "weekly-stats-expanded");
   const s = weeklyCallStatsMock;
@@ -86,12 +87,13 @@ export function WeeklyStatsWidget({
             <p className="text-sm text-slate-700 dark:text-slate-200">
               У вас 6 пропущенных звонков, которые требуется обработать.
             </p>
-            <Link
-              href="/missed-calls/"
+            <button
+              type="button"
               className="inline-flex text-sm font-semibold text-accent-dark underline dark:text-accent-yellow"
+              onClick={() => onAskInChat?.("покажи пропущенные звонки в чате")}
             >
-              Открыть список
-            </Link>
+              Показать в чате
+            </button>
           </div>
         )}
 
@@ -101,13 +103,14 @@ export function WeeklyStatsWidget({
             {followUpQuestionsWeekly.map((q) => (
               <li key={q}>
                 {q === "Пропущенные звонки" ? (
-                  <Link
-                    href="/missed-calls/"
+                  <button
+                    type="button"
                     className="flex w-full items-center justify-between py-2.5 text-left text-sm font-semibold text-accent-dark dark:text-accent-yellow"
+                    onClick={() => onAskInChat?.("покажи пропущенные звонки в чате")}
                   >
                     {q}
                     <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
-                  </Link>
+                  </button>
                 ) : (
                   <button
                     type="button"

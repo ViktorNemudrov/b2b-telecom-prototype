@@ -63,6 +63,12 @@ export function AppealsScreen() {
   const searched = filterAppealsBySearch(baseList, search);
   const list = searched;
   const visible = filter === "all" && !expandedAll ? list.slice(0, 3) : list;
+  const activeAppeals = React.useMemo(() => [...createdAppeals, ...getAppealsFiltered("all")].filter((a) => a.status === "active"), [createdAppeals]);
+  const inWorkCount = React.useMemo(() => activeAppeals.filter((a) => a.badgeLabel.includes("работе")).length, [activeAppeals]);
+  const signPendingCount = React.useMemo(
+    () => activeAppeals.filter((a) => a.badgeLabel.includes("подпис")).length,
+    [activeAppeals]
+  );
 
   const onSubmitAppeal = () => {
     if (!body.trim()) {
@@ -89,9 +95,9 @@ export function AppealsScreen() {
   return (
     <div className="space-y-4 pb-6">
       <p className="text-sm text-slate-700 dark:text-slate-300">
-        Сейчас у вас: <span className="font-semibold">3 активных обращения</span>
+        Сейчас у вас: <span className="font-semibold">{activeAppeals.length} активных обращения</span>
         <br />
-        В работе: 2 · Ожидает подписания: 1
+        В работе: {inWorkCount} · Ожидает подписания: {signPendingCount}
       </p>
 
       <Button
@@ -170,7 +176,12 @@ export function AppealsScreen() {
         </Card>
       ) : null}
 
-      <Card className="max-h-[min(420px,55vh)] overflow-y-auto border-slate-200 dark:border-slate-700 dark:bg-slate-800/50">
+      <Card
+        className={cn(
+          "border-slate-200 dark:border-slate-700 dark:bg-slate-800/50",
+          !(filter === "all" && expandedAll) && "max-h-[min(420px,55vh)] overflow-y-auto"
+        )}
+      >
         <CardContent className="pb-2 pt-2">
           {visible.map((a) => (
             <AppealRow key={a.id} a={a} onOpen={() => setDetail(a)} />

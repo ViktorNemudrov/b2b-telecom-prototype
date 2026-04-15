@@ -44,8 +44,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = () => setSystemDark(mq.matches);
     onChange();
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    }
+    // Safari iOS/macOS fallback.
+    const legacyMq = mq as MediaQueryList & {
+      addListener?: (callback: (event: MediaQueryListEvent) => void) => void;
+      removeListener?: (callback: (event: MediaQueryListEvent) => void) => void;
+    };
+    legacyMq.addListener?.(onChange);
+    return () => legacyMq.removeListener?.(onChange);
   }, []);
 
   const resolved: "light" | "dark" = mode === "system" ? (systemDark ? "dark" : "light") : mode;

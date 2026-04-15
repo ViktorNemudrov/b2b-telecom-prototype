@@ -10,17 +10,30 @@ type BeforeInstallPromptEvent = Event & {
 export function PwaInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = React.useState<BeforeInstallPromptEvent | null>(null);
   const [showInstall, setShowInstall] = React.useState(false);
+  const [iosHint, setIosHint] = React.useState(false);
 
   React.useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
-    void navigator.serviceWorker.register("/sw.js");
+    void navigator.serviceWorker.register("/sw.js").catch(() => undefined);
   }, []);
 
   React.useEffect(() => {
     const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches || (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+      (window.matchMedia?.("(display-mode: standalone)")?.matches ?? false) ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
     if (isStandalone) return;
-    if (window.localStorage.getItem("pwa-install-dismissed") === "1") return;
+    try {
+      if (window.localStorage.getItem("pwa-install-dismissed") === "1") return;
+    } catch {
+      // Safari private mode/local storage restrictions.
+    }
+    const ua = window.navigator.userAgent.toLowerCase();
+    const isIos = /iphone|ipad|ipod/.test(ua);
+    const isSafari = /safari/.test(ua) && !/crios|fxios|edgios/.test(ua);
+    if (isIos && isSafari) {
+      setIosHint(true);
+      setShowInstall(true);
+    }
 
     const onBeforeInstallPrompt = (event: Event) => {
       const e = event as BeforeInstallPromptEvent;
@@ -31,7 +44,11 @@ export function PwaInstallPrompt() {
     const onAppInstalled = () => {
       setDeferredPrompt(null);
       setShowInstall(false);
-      window.localStorage.setItem("pwa-install-dismissed", "1");
+      try {
+        window.localStorage.setItem("pwa-install-dismissed", "1");
+      } catch {
+        // ignore
+      }
     };
 
     window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
@@ -42,39 +59,54 @@ export function PwaInstallPrompt() {
     };
   }, []);
 
-  if (!showInstall || !deferredPrompt) return null;
+  if (!deferredPrompt && !iosHint) return null;
+  if (!showInstall) return null;
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 mx-auto w-full max-w-[430px] px-4">
       <div className="pointer-events-auto rounded-2xl border border-[#E8EAED] bg-white/95 p-3 shadow-soft backdrop-blur">
         <div className="text-sm font-semibold text-[#212529]">Установить Билайн.One</div>
-        <div className="mt-1 text-xs text-[#6B7280]">Добавьте приложение на экран телефона для быстрого доступа.</div>
+        <div className="mt-1 text-xs text-[#6B7280]">
+          {deferredPrompt
+            ? "Добавьте приложение на экран телефона для быстрого доступа."
+            : "На iPhone: нажмите «Поделиться» в Safari и выберите «На экран Домой»."}
+        </div>
         <div className="mt-3 flex items-center justify-end gap-2">
           <button
             type="button"
             className="rounded-full px-3 py-1.5 text-xs font-semibold text-[#8E8E93]"
             onClick={() => {
-              window.localStorage.setItem("pwa-install-dismissed", "1");
+              try {
+                window.localStorage.setItem("pwa-install-dismissed", "1");
+              } catch {
+                // ignore
+              }
               setShowInstall(false);
             }}
           >
             Позже
           </button>
-          <button
-            type="button"
-            className="rounded-full bg-[#F9D400] px-3 py-1.5 text-xs font-semibold text-[#212529]"
-            onClick={async () => {
-              await deferredPrompt.prompt();
-              const result = await deferredPrompt.userChoice;
-              if (result.outcome === "accepted") {
-                window.localStorage.setItem("pwa-install-dismissed", "1");
-                setShowInstall(false);
-              }
-              setDeferredPrompt(null);
-            }}
-          >
-            Установить
-          </button>
+          {deferredPrompt ? (
+            <button
+              type="button"
+              className="rounded-full bg-[#F9D400] px-3 py-1.5 text-xs font-semibold text-[#212529]"
+              onClick={async () => {
+                await deferredPrompt.prompt();
+                const result = await deferredPrompt.userChoice;
+                if (result.outcome === "accepted") {
+                  try {
+                    window.localStorage.setItem("pwa-install-dismissed", "1");
+                  } catch {
+                    // ignore
+                  }
+                  setShowInstall(false);
+                }
+                setDeferredPrompt(null);
+              }}
+            >
+              Установить
+            </button>
+          ) : null}
         </div>
       </div>
     </div>

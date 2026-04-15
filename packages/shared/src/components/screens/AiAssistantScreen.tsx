@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
+import { Pause, Play, Sparkles, X } from "lucide-react";
 import { InvoicesMarchWidget } from "@shared/components/ai/InvoicesMarchWidget";
 import { WeeklyStatsWidget } from "@shared/components/ai/WeeklyStatsWidget";
 import { MissedCallSummaryCard } from "@shared/components/MissedCallSummaryCard";
@@ -21,9 +21,14 @@ import {
   getDemoNavigationIntent,
   recentQueryChips,
   userProfile,
-  type ChatMessage
+  standaloneCalls,
+  type ChatMessage,
+  type InvoiceItem
 } from "@shared/lib/mockData";
 import { getLiveAiText, type LiveAiMessage } from "@shared/lib/liveAi";
+import { resolveAnalyticsResponse } from "@shared/lib/chatAnalytics";
+import { detectIntent, type ChatIntentId } from "@shared/lib/chatIntentRegistry";
+import { containsProfanity } from "@shared/lib/profanity";
 import { useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
 import { isMissedCallsSeen, markMissedCallsSeen } from "@shared/lib/runtimeFlags";
 
@@ -44,7 +49,7 @@ function hashPick(prompt: string, modulo: number) {
   return Math.abs(h) % modulo;
 }
 
-function mockAiResponse(prompt: string): ChatMessage {
+function mockAiResponse(prompt: string, runtimeInvoices: InvoiceItem[]): ChatMessage {
   const p = prompt.toLowerCase();
   const clean = p
     .replace(/[^a-zа-яё0-9\s]/gi, " ")
@@ -94,20 +99,19 @@ function mockAiResponse(prompt: string): ChatMessage {
     "час в"
   ]);
   const asksReminder = hasAny(["напомни", "напоминание", "поставь напоминание", "не забудь"]);
-  const hasProfanity = hasAny([
-    "бля",
-    "бляд",
-    "блять",
-    "сука",
-    "хер",
-    "нахер",
-    "пизд",
-    "еба",
-    "ёба",
-    "ебл",
-    "мудак",
-    "урод"
+  const asksSecretary = hasAny(["секретарь", "помощник", "ассистент по звонкам"]);
+  const asksCallsDomain = hasAny([
+    "звонки",
+    "звонок",
+    "пропущенные",
+    "пропущенный",
+    "перезвон",
+    "журнал звонков",
+    "телефон"
   ]);
+  const asksInvoicesDomain = hasAny(["счета", "счет", "счёт", "оплата", "неоплаченные", "долг"]);
+  const asksAppealsDomain = hasAny(["обращения", "обращение", "тикет", "заявка"]);
+  const hasProfanity = containsProfanity(clean);
 
   if (hasProfanity) {
     return {
@@ -115,6 +119,16 @@ function mockAiResponse(prompt: string): ChatMessage {
       role: "ai",
       text: "Вроде бы взрослый человек, предприниматель, а такой некультурный",
       createdAt: nowIso()
+    };
+  }
+
+  const analytics = resolveAnalyticsResponse(prompt, runtimeInvoices, standaloneCalls);
+  if (analytics) {
+    return {
+      id: id(),
+      role: "ai",
+      createdAt: nowIso(),
+      ...analytics
     };
   }
 
@@ -131,10 +145,122 @@ function mockAiResponse(prompt: string): ChatMessage {
     return {
       id: id(),
       role: "ai",
-      text: "что именно я умею, можете спросить у моего создателя Виктора Немудрова",
-      createdAt: nowIso()
+      text:
+        "Сейчас в приложении я умею:\n" +
+        "- Показывать счета по месяцам, статусы и суммы\n" +
+        "- Сравнивать месяцы, считать разницу, доли и динамику\n" +
+        "- Подсказывать по неоплаченным счетам и оплате\n" +
+        "- Показывать пропущенные звонки и открывать карточки звонков\n" +
+        "- Запускать недельные сводки и рекомендации\n" +
+        "- Работать с обращениями и быстрыми действиями\n" +
+        "- Отвечать на базовые вопросы: время, дата, погода, курсы, новости\n" +
+        "- Делать простые расчеты и конвертацию единиц\n" +
+        "- Выгружать журнал диалога\n\n" +
+        "Но помните, что я всего лишь демо образец, собранный без разработчиков на Витиной коленке.",
+      createdAt: nowIso(),
+      suggested: ["Счета за февраль", "Звонки за неделю", "Мои обращения"]
     };
   }
+
+  if (asksSecretary && !asksCallsDomain && !asksInvoicesDomain && !asksAppealsDomain) {
+    return {
+      id: id(),
+      role: "ai",
+      text:
+        "Секретарь готов. Что открыть: звонки, счета или обращения?\n\n" +
+        "Могу сразу показать пропущенные в чате, открыть список счетов или перейти к обращениям.",
+      createdAt: nowIso(),
+      suggested: ["Звонки", "Счета", "Обращения"]
+    };
+  }
+
+  if (asksInvoicesDomain && monthDetected) {
+    return {
+      id: id(),
+      role: "ai",
+      text: `Показываю счета за ${monthDetected} в чате.`,
+      createdAt: nowIso(),
+      widget: "invoices-month",
+      invoiceMonth: monthDetected,
+      suggested: ["Сравни с мартом", "Покажи неоплаченные", "Открыть список счетов"]
+    };
+  }
+
+  if (asksInvoicesDomain) {
+    const unpaid = runtimeInvoices.filter((inv) => inv.status === "pay").length;
+    return {
+      id: id(),
+      role: "ai",
+      text: `По счетам: всего ${runtimeInvoices.length}, неоплаченных ${unpaid}. Могу показать их в чате или открыть список счетов.`,
+      createdAt: nowIso(),
+      suggested: ["Покажи неоплаченные", "Счета за февраль", "Открыть список счетов"]
+    };
+  }
+
+  if (asksCallsDomain) {
+    if (hasAny(["звонки за неделю", "сводка звонков", "недельный отчет"])) {
+      return {
+        id: id(),
+        role: "ai",
+        text:
+          "За неделю: 126 звонков, 6 пропущенных, средняя длительность 2:40. Показываю расширенную сводку и могу дать следующий шаг.",
+        createdAt: nowIso(),
+        widget: "weekly-stats-expanded",
+        suggested: ["Пропущенные звонки", "Статистика по времени суток", "Кого перезвонить в первую очередь"]
+      };
+    }
+    const missed = standaloneCalls.filter((c) => c.missed).length;
+    return {
+      id: id(),
+      role: "ai",
+      text: `По звонкам: всего ${standaloneCalls.length}, пропущенных ${missed}. Показываю детали прямо в чате.`,
+      createdAt: nowIso(),
+      widget: "missed-calls-inline",
+      suggested: ["Звонки за неделю", "Открыть журнал звонков", "Кто чаще звонит"]
+    };
+  }
+
+  if (asksAppealsDomain) {
+    return {
+      id: id(),
+      role: "ai",
+      text: "По обращениям могу показать активные, выполненные и отклоненные. При необходимости открою раздел обращений.",
+      createdAt: nowIso(),
+      suggested: ["Активные обращения", "Открыть обращения", "Создать обращение"]
+    };
+  }
+  if (hasAny(["разница между суммой счетов", "разница между счетами", "разница феврал", "феврал и март"])) {
+    return {
+      id: id(),
+      role: "ai",
+      text: "Считаю разницу между суммами счетов за февраль и март...",
+      createdAt: nowIso(),
+      widget: "invoices-month",
+      invoiceMonth: "февраль"
+    };
+  }
+
+  if (hasAny(["сколько звонков я пропустил", "пропустил в прошлом месяце", "пропущенные за прошлый месяц"])) {
+    const missed = standaloneCalls.filter((c) => c.missed).length;
+    return {
+      id: id(),
+      role: "ai",
+      text: `По текущим данным за прошлый месяц пропущено ${missed} звонков. Могу показать их в чате.`,
+      createdAt: nowIso(),
+      widget: "missed-calls-inline"
+    };
+  }
+
+  if (hasAny(["пропущенные звонки в чате", "покажи пропущенные в чате", "пропущенные в чате"])) {
+    return {
+      id: id(),
+      role: "ai",
+      text: "Показываю пропущенные звонки прямо здесь, в чате.",
+      createdAt: nowIso(),
+      widget: "missed-calls-inline"
+    };
+  }
+
 
   if (asksTime || asksDate) {
     const now = new Date();
@@ -321,9 +447,10 @@ function mockAiResponse(prompt: string): ChatMessage {
     return {
       id: id(),
       role: "ai",
-      text: `Показываю счета за ${monthDetected} в общем списке счетов. Открою раздел и помогу сверить оплаты.`,
+      text: `Показываю счета за ${monthDetected} прямо в чате. Можно продолжить диалог без выхода из ассистента.`,
       createdAt: nowIso(),
-      navigateTo: "/invoices/",
+      widget: "invoices-month",
+      invoiceMonth: monthDetected,
       suggested: [`Счета за ${monthDetected}`, "Что просрочено?", "Покажи неоплаченные"]
     };
   }
@@ -432,6 +559,47 @@ function mockAiResponse(prompt: string): ChatMessage {
 const pillBase =
   "inline-flex items-center gap-2 rounded-full bg-white px-[14px] py-[10px] text-[13px] font-medium text-[#3C4858] shadow-[0_2px_10px_rgba(0,0,0,0.07)] transition hover:brightness-[1.02] active:scale-[0.99] dark:border dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100";
 
+function appendChatLog(userText: string, aiText: string, intent: ChatIntentId | "fallback" | "live") {
+  if (typeof window === "undefined") return;
+  const key = "b2b_chat_logs_v1";
+  const current = JSON.parse(window.localStorage.getItem(key) ?? "[]") as Array<{
+    at: string;
+    user: string;
+    ai: string;
+    intent: string;
+  }>;
+  current.push({ at: new Date().toISOString(), user: userText, ai: aiText, intent });
+  window.localStorage.setItem(key, JSON.stringify(current.slice(-300)));
+}
+
+function exportChatLogsToFile() {
+  if (typeof window === "undefined") return false;
+  const key = "b2b_chat_logs_v1";
+  const raw = window.localStorage.getItem(key);
+  if (!raw) return false;
+  const blob = new Blob([raw], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `chat-logs-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  return true;
+}
+
+function buildDataContextSummary(invoices: InvoiceItem[]) {
+  const perMonth = ["январь", "февраль", "март", "апрель"]
+    .map((m) => {
+      const monthInvoices = invoices.filter((inv) => inv.periodLabel.includes(m));
+      const sum = monthInvoices.reduce((s, inv) => s + inv.amountRub, 0);
+      const unpaid = monthInvoices.filter((inv) => inv.status === "pay").length;
+      return `${m}: счетов ${monthInvoices.length}, сумма ${sum.toLocaleString("ru-RU")} ₽, неоплаченных ${unpaid}`;
+    })
+    .join("; ");
+  const missed = standaloneCalls.filter((c) => c.missed).length;
+  return `Счета по месяцам: ${perMonth}. Звонки: всего ${standaloneCalls.length}, пропущенных ${missed}.`;
+}
+
 export function AiAssistantScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -441,9 +609,15 @@ export function AiAssistantScreen() {
   const [toast, setToast] = React.useState<string | null>(null);
   const [chipTags, setChipTags] = React.useState<string[]>(() => [...recentQueryChips]);
   const [showMissedCard, setShowMissedCard] = React.useState(true);
+  const [showWeeklyCard, setShowWeeklyCard] = React.useState(true);
+  const [heroCard, setHeroCard] = React.useState(0);
+  const [weeklySpeaking, setWeeklySpeaking] = React.useState(false);
+  const heroSwipeStartX = React.useRef<number | null>(null);
+  const heroWheelLastAt = React.useRef(0);
   const chatEndRef = React.useRef<HTMLDivElement | null>(null);
+  const handledQueryRef = React.useRef<string>("");
   const runtimeInvoices = useRuntimeInvoices();
-  const unpaidInvoicesCount = runtimeInvoices.filter((inv) => inv.status !== "paid").length;
+  const unpaidInvoicesCount = runtimeInvoices.filter((inv) => inv.status === "pay").length;
   const liveApiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
   const liveModel = process.env.NEXT_PUBLIC_OPENROUTER_MODEL;
   const isLiveEnabled = Boolean(liveApiKey);
@@ -479,7 +653,8 @@ export function AiAssistantScreen() {
 
   React.useEffect(() => {
     const q = searchParams.get("q");
-    if (!q) return;
+    if (!q || handledQueryRef.current === q) return;
+    handledQueryRef.current = q;
     setInput(q);
     window.setTimeout(() => send(q), 60);
     router.replace("/assistant/");
@@ -488,14 +663,34 @@ export function AiAssistantScreen() {
   const send = (text?: string) => {
     const v = (text ?? input).trim();
     if (!v) return;
+    if (containsProfanity(v)) {
+      const moderationReply: ChatMessage = {
+        id: id(),
+        role: "ai",
+        text: "Вижу нецензурную лексику. Давайте продолжим по-деловому: счета, звонки, обращения или аналитика.",
+        createdAt: nowIso(),
+        suggested: ["Счета", "Звонки", "Обращения"]
+      };
+      setMessages((m) => [...m, { id: id(), role: "user", text: v, createdAt: nowIso() }, moderationReply]);
+      appendChatLog(v, moderationReply.text, "profanity");
+      setInput("");
+      return;
+    }
+    if (/экспорт.*(лог|журнал)|скач.*(лог|журнал)/i.test(v)) {
+      const ok = exportChatLogsToFile();
+      setToast(ok ? "Журнал чата выгружен в JSON." : "Журнал пуст: пока нет сохраненных диалогов.");
+      return;
+    }
 
     const userMsg: ChatMessage = { id: id(), role: "user", text: v, createdAt: nowIso() };
     setMessages((m) => [...m, userMsg]);
     setInput("");
 
     window.setTimeout(async () => {
-      const fallback = mockAiResponse(v);
+      const fallback = mockAiResponse(v, runtimeInvoices);
       let resolved: ChatMessage = fallback;
+      const intentDetected = detectIntent(v);
+      let intentUsed: ChatIntentId | "fallback" | "live" = intentDetected ?? "fallback";
 
       try {
         if (isLiveEnabled && liveApiKey) {
@@ -510,6 +705,7 @@ export function AiAssistantScreen() {
               history,
               apiKey: liveApiKey,
               model: liveModel,
+              contextSummary: buildDataContextSummary(runtimeInvoices),
               signal: controller.signal
             });
             if (liveText) {
@@ -519,6 +715,7 @@ export function AiAssistantScreen() {
                 text: liveText,
                 createdAt: nowIso()
               };
+              intentUsed = "live";
             }
           } finally {
             window.clearTimeout(timeout);
@@ -529,6 +726,7 @@ export function AiAssistantScreen() {
       }
 
       setMessages((m) => [...m, resolved]);
+      appendChatLog(v, resolved.text, intentUsed);
       if (resolved.navigateTo) {
         window.setTimeout(() => router.push(resolved.navigateTo!), 320);
       }
@@ -536,19 +734,117 @@ export function AiAssistantScreen() {
   };
 
   const hasChat = messages.length > 0;
+  const onHeroPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    heroSwipeStartX.current = e.clientX;
+  };
+  const onHeroPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const start = heroSwipeStartX.current;
+    heroSwipeStartX.current = null;
+    if (start === null) return;
+    const delta = e.clientX - start;
+    if (Math.abs(delta) < 40) return;
+    if (delta < 0 && showWeeklyCard) setHeroCard(1);
+    if (delta > 0 && showMissedCard) setHeroCard(0);
+  };
+  const onHeroWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    const now = Date.now();
+    if (now - heroWheelLastAt.current < 220) return;
+    const horizontal = Math.abs(e.deltaX) >= Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (Math.abs(horizontal) < 28) return;
+    heroWheelLastAt.current = now;
+    if (horizontal > 0 && showWeeklyCard) setHeroCard(1);
+    if (horizontal < 0 && showMissedCard) setHeroCard(0);
+  };
 
   return (
     <div className="space-y-5 pb-[140px]">
       {!hasChat ? (
         <>
-          {showMissedCard ? (
-            <MissedCallSummaryCard
-              onDismiss={() => {
-                markMissedCallsSeen();
-                setShowMissedCard(false);
-              }}
-            />
-          ) : null}
+          <div
+            className="-mx-1 cursor-grab px-1 active:cursor-grabbing"
+            onPointerDown={onHeroPointerDown}
+            onPointerUp={onHeroPointerUp}
+            onPointerCancel={() => {
+              heroSwipeStartX.current = null;
+            }}
+            onWheel={onHeroWheel}
+            style={{ touchAction: "pan-y" }}
+          >
+            {heroCard === 0 && showMissedCard ? (
+              <MissedCallSummaryCard
+                onDismiss={() => {
+                  setHeroCard(showWeeklyCard ? 1 : 0);
+                }}
+              />
+            ) : null}
+            {(heroCard === 1 || !showMissedCard) && showWeeklyCard ? (
+              <Card className="border-[#E8EAED] dark:border-slate-700">
+                <CardContent className="space-y-3 pb-4 pt-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        <Sparkles className="h-4 w-4 text-violet-500" />
+                        Еженедельный отчет
+                      </div>
+                      <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+                        126 звонков, 6 пропущенных, средняя длительность 2:40. Есть 4 клиента в риске по оплате.
+                      </p>
+                    </div>
+                    <button type="button" className="rounded-full p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700" onClick={() => setShowWeeklyCard(false)}>
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ECEAFD]"
+                      onClick={() => {
+                        if (
+                          typeof window === "undefined" ||
+                          !("speechSynthesis" in window) ||
+                          !("SpeechSynthesisUtterance" in window)
+                        ) {
+                          return;
+                        }
+                        if (weeklySpeaking) {
+                          window.speechSynthesis.cancel();
+                          setWeeklySpeaking(false);
+                          return;
+                        }
+                        const u = new SpeechSynthesisUtterance(
+                          "Еженедельный отчет: 126 звонков, 6 пропущенных, средняя длительность две минуты сорок секунд. Есть 4 клиента в риске по оплате."
+                        );
+                        u.lang = "ru-RU";
+                        u.onend = () => setWeeklySpeaking(false);
+                        u.onerror = () => setWeeklySpeaking(false);
+                        setWeeklySpeaking(true);
+                        window.speechSynthesis.cancel();
+                        window.speechSynthesis.speak(u);
+                      }}
+                    >
+                      {weeklySpeaking ? <Pause className="h-4 w-4 text-[#4B5563]" /> : <Play className="h-4 w-4 text-[#4B5563]" />}
+                    </button>
+                    <button
+                      type="button"
+                      className="text-xs font-semibold text-accent-dark underline dark:text-accent-yellow"
+                      onClick={() => {
+                        setInput("звонки за неделю");
+                        window.setTimeout(() => send("звонки за неделю"), 60);
+                      }}
+                    >
+                      Открыть в чате
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null}
+            {showMissedCard && showWeeklyCard ? (
+              <div className="mt-2 flex justify-center gap-1.5">
+                <button type="button" className={cn("h-1.5 w-5 rounded-full", heroCard === 0 ? "bg-slate-900 dark:bg-slate-100" : "bg-slate-300 dark:bg-slate-600")} onClick={() => setHeroCard(0)} />
+                <button type="button" className={cn("h-1.5 w-5 rounded-full", heroCard === 1 ? "bg-slate-900 dark:bg-slate-100" : "bg-slate-300 dark:bg-slate-600")} onClick={() => setHeroCard(1)} />
+              </div>
+            ) : null}
+          </div>
 
           <div className="flex flex-col items-center px-1 pt-1 text-center">
             <div className="flex items-center justify-center gap-1.5">
@@ -572,14 +868,22 @@ export function AiAssistantScreen() {
 
           <div className="flex flex-col items-center gap-2.5">
             <div className="flex w-full max-w-[360px] justify-center gap-2.5">
-              <Link href="/missed-calls/" className={pillBase}>
+              <button
+                type="button"
+                className={pillBase}
+                onClick={() => {
+                  markMissedCallsSeen();
+                  setShowMissedCard(false);
+                  router.push("/missed-calls/");
+                }}
+              >
                 <span>Пропущенные звонки</span>
                 {!isMissedCallsSeen() ? (
                   <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#FF3B4E] px-1.5 text-[11px] font-bold text-white">
                     6
                   </span>
                 ) : null}
-              </Link>
+              </button>
               <Link href="/appeals/" className={pillBase}>
                 <span>Обращения</span>
               </Link>
@@ -594,14 +898,14 @@ export function AiAssistantScreen() {
               >
                 <span>Мои счета</span>
               </button>
-              <Link href="/invoices/" className={pillBase}>
+              <button type="button" className={pillBase} onClick={() => router.push("/invoices/")}>
                 <span>Счета на оплату</span>
                 {unpaidInvoicesCount > 0 ? (
                   <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#2D2D2D] px-1.5 text-[11px] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
                     {unpaidInvoicesCount}
                   </span>
                 ) : null}
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -644,12 +948,84 @@ export function AiAssistantScreen() {
                   />
 
                   {m.role === "ai" && m.widget === "weekly-stats" ? (
-                    <WeeklyStatsWidget variant="weekly-stats" />
+                    <WeeklyStatsWidget
+                      variant="weekly-stats"
+                      onAskInChat={(question) => {
+                        setInput(question);
+                        window.setTimeout(() => send(question), 80);
+                      }}
+                    />
                   ) : null}
                   {m.role === "ai" && m.widget === "weekly-stats-expanded" ? (
-                    <WeeklyStatsWidget variant="weekly-stats-expanded" />
+                    <WeeklyStatsWidget
+                      variant="weekly-stats-expanded"
+                      onAskInChat={(question) => {
+                        setInput(question);
+                        window.setTimeout(() => send(question), 80);
+                      }}
+                    />
                   ) : null}
                   {m.role === "ai" && m.widget === "invoices-march" ? <InvoicesMarchWidget /> : null}
+                  {m.role === "ai" && m.widget === "invoices-month" ? (
+                    <Card className="border-slate-200 dark:border-slate-700">
+                      <CardContent className="space-y-2 pb-3 pt-3">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                          Счета за {m.invoiceMonth}
+                        </div>
+                        {runtimeInvoices
+                          .filter((inv) => inv.periodLabel.includes(m.invoiceMonth ?? ""))
+                          .map((inv) => (
+                            <div
+                              key={inv.id}
+                              className="flex w-full items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2 text-left dark:border-slate-600 dark:bg-slate-800"
+                            >
+                              <span className="text-sm text-slate-800 dark:text-slate-200">
+                                {inv.amountRub.toLocaleString("ru-RU")} ₽
+                              </span>
+                              <span className="text-xs text-slate-500 dark:text-slate-400">
+                                {inv.status === "paid" ? "Оплачен" : inv.status === "pay" ? "Не оплачен" : "В оплате"}
+                              </span>
+                            </div>
+                          ))}
+                        {(m.invoiceMonth === "февраль" || m.invoiceMonth === "март") ? (
+                          <p className="pt-1 text-xs text-slate-600 dark:text-slate-300">
+                            Разница (февраль vs март):{" "}
+                            {(
+                              runtimeInvoices
+                                .filter((inv) => inv.periodLabel.includes("март"))
+                                .reduce((sum, inv) => sum + inv.amountRub, 0) -
+                              runtimeInvoices
+                                .filter((inv) => inv.periodLabel.includes("февраль"))
+                                .reduce((sum, inv) => sum + inv.amountRub, 0)
+                            ).toLocaleString("ru-RU")}{" "}
+                            ₽
+                          </p>
+                        ) : null}
+                      </CardContent>
+                    </Card>
+                  ) : null}
+                  {m.role === "ai" && m.widget === "missed-calls-inline" ? (
+                    <Card className="border-slate-200 dark:border-slate-700">
+                      <CardContent className="space-y-2 pb-3 pt-3">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                          Пропущенные в чате
+                        </div>
+                        {standaloneCalls
+                          .filter((c) => c.missed)
+                          .map((c) => (
+                            <button
+                              key={c.id}
+                              type="button"
+                              className="flex w-full items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2 text-left dark:border-slate-600 dark:bg-slate-800"
+                              onClick={() => router.push(`/call/${c.id}/`)}
+                            >
+                              <span className="text-sm text-slate-800 dark:text-slate-200">{c.title ?? c.phone}</span>
+                              <span className="text-xs text-slate-500 dark:text-slate-400">{c.time}</span>
+                            </button>
+                          ))}
+                      </CardContent>
+                    </Card>
+                  ) : null}
 
                   {m.role === "ai" && m.actions?.length
                     ? m.actions.map((a, idx) => (

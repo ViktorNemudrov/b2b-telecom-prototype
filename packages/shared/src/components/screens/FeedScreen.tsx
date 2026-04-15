@@ -226,8 +226,8 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
                   setExpandedTranscriptById((p) => ({ ...p, [id]: !p[id] }))
                 }
                 onAction={(a) => {
-                  if (a.type === "pay") openDevelopmentStub("Пополнение баланса и оплата из ленты.");
-                  if (a.type === "report") openDevelopmentStub("Формирование отчёта из карточки ленты.");
+                  if (a.type === "pay") router.push("/assistant/?q=Покажи неоплаченные счета и варианты оплаты");
+                  if (a.type === "report") router.push("/assistant/?q=Дай советы от ассистента");
                 }}
               />
             ))}

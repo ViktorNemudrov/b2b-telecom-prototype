@@ -36,11 +36,18 @@ export async function getLiveAiText(args: {
   history: LiveAiMessage[];
   apiKey: string;
   model?: string;
+  contextSummary?: string;
   signal?: AbortSignal;
 }): Promise<string | null> {
-  const { prompt, history, apiKey, signal } = args;
+  const { prompt, history, apiKey, signal, contextSummary } = args;
   const model = args.model || "mistralai/mistral-small-3.2-24b-instruct:free";
   const messages = buildLiveAiMessages(prompt, history);
+  if (contextSummary?.trim()) {
+    messages.splice(1, 0, {
+      role: "system",
+      content: `Контекст данных приложения:\n${contextSummary}`
+    });
+  }
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {

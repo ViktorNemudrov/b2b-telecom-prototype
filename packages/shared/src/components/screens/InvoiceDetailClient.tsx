@@ -26,6 +26,8 @@ export function InvoiceDetailClient({
   const [qrActive, setQrActive] = React.useState(false);
   const [cardOpen, setCardOpen] = React.useState(false);
   const [toast, setToast] = React.useState<string | null>(null);
+  const qrVideoRef = React.useRef<HTMLVideoElement | null>(null);
+  const qrStreamRef = React.useRef<MediaStream | null>(null);
 
   if (!inv) {
     return (
@@ -51,6 +53,23 @@ export function InvoiceDetailClient({
     setCardOpen(false);
     setToast("Оплата прошла, но это не точно");
   };
+
+  const stopQrStream = React.useCallback(() => {
+    qrStreamRef.current?.getTracks().forEach((t) => t.stop());
+    qrStreamRef.current = null;
+    if (qrVideoRef.current) qrVideoRef.current.srcObject = null;
+  }, []);
+
+  React.useEffect(() => {
+    return () => stopQrStream();
+  }, [stopQrStream]);
+
+  React.useEffect(() => {
+    if (!payOpen) {
+      setQrActive(false);
+      stopQrStream();
+    }
+  }, [payOpen, stopQrStream]);
 
   return (
     <div className="space-y-4 pb-8">
@@ -107,16 +126,26 @@ export function InvoiceDetailClient({
             className="w-full rounded-2xl"
             onClick={() => {
               setQrActive(true);
-              void navigator.mediaDevices
-                ?.getUserMedia?.({ video: { facingMode: "environment" } })
+              const mediaDevices = typeof navigator !== "undefined" ? navigator.mediaDevices : undefined;
+              if (!mediaDevices?.getUserMedia) {
+                window.setTimeout(() => completePayment(), 5000);
+                return;
+              }
+              void mediaDevices
+                .getUserMedia({ video: { facingMode: "environment" } })
                 .then((stream) => {
+                  qrStreamRef.current = stream;
+                  if (qrVideoRef.current) {
+                    qrVideoRef.current.srcObject = stream;
+                    void qrVideoRef.current.play().catch(() => undefined);
+                  }
                   window.setTimeout(() => {
-                    stream.getTracks().forEach((t) => t.stop());
+                    stopQrStream();
                     completePayment();
-                  }, 3000);
+                  }, 5000);
                 })
                 .catch(() => {
-                  window.setTimeout(() => completePayment(), 3000);
+                  window.setTimeout(() => completePayment(), 5000);
                 });
             }}
           >
@@ -124,8 +153,10 @@ export function InvoiceDetailClient({
           </Button>
           {qrActive ? (
             <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-xs text-slate-500 dark:border-slate-600 dark:text-slate-300">
-              <div className="mx-auto mb-3 h-28 w-28 rounded-xl border-2 border-accent-yellow" />
-              Камера активна 3 сек. Наведите видоискатель на QR-код.
+              <div className="mx-auto mb-3 h-32 w-32 overflow-hidden rounded-xl border-2 border-accent-yellow bg-black">
+                <video ref={qrVideoRef} className="h-full w-full object-cover" muted playsInline autoPlay />
+              </div>
+              Камера активна 5 сек. Наведите видоискатель на QR-код.
             </div>
           ) : null}
           <Button
@@ -155,6 +186,15 @@ export function InvoiceDetailClient({
           <Button
             className="w-full rounded-2xl bg-accent-yellow text-accent-dark hover:brightness-95"
             onClick={() => setCardOpen(true)}
+          >
+            Оплата банковской картой
+          </Button>
+          <Button
+            className="w-full rounded-2xl bg-accent-yellow text-accent-dark hover:brightness-95"
+            onClick={() => {
+              setPayOpen(false);
+              setToast("Оплата по реквизитам (мок): реквизиты отправлены на e-mail.");
+            }}
           >
             Оплата по реквизитам
           </Button>

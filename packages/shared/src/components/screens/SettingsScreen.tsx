@@ -14,10 +14,14 @@ import { goSmartBack } from "@shared/lib/smartBack";
 
 export function SettingsScreen({
   appealsHref = "/appeals/",
-  backHref = "/assistant/"
+  backHref = "/assistant/",
+  faqHref = "/settings/faq/",
+  qaHref = "/qa/"
 }: {
   appealsHref?: string;
   backHref?: string;
+  faqHref?: string;
+  qaHref?: string;
 }) {
   const router = useRouter();
   const { mode, setMode } = useAppTheme();
@@ -130,8 +134,23 @@ export function SettingsScreen({
               />
             </button>
           </div>
+          <Link href={faqHref} className="flex items-center gap-3 px-4 py-3 opacity-80">
+            <span className="flex-1 text-sm text-slate-700 dark:text-slate-300">FAQ и история версий</span>
+            <ChevronLeft className="h-4 w-4 rotate-180 text-slate-400" />
+          </Link>
+          <Link href={qaHref} className="flex items-center gap-3 px-4 py-3">
+            <span className="flex-1 text-sm text-slate-700 dark:text-slate-300">Проверка устройства (QA)</span>
+            <ChevronLeft className="h-4 w-4 rotate-180 text-slate-400" />
+          </Link>
         </CardContent>
       </Card>
+
+      <div className="space-y-1 px-1 text-[11px] text-slate-500 dark:text-slate-400">
+        <p>Версия продукта: v.0.2.1</p>
+        <p>Дизайнер: Балашов Влад</p>
+        <p>Создатель: Немудров Виктор</p>
+        <p>Владелец продукта: Пальчиков Леонид</p>
+      </div>
 
       <button
         type="button"

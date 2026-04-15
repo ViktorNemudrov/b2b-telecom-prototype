@@ -13,7 +13,9 @@ export type ChatWidget =
   | "weekly-stats"
   | "weekly-stats-expanded"
   | "invoices-march"
-  | "appeals-summary";
+  | "appeals-summary"
+  | "invoices-month"
+  | "missed-calls-inline";
 
 /** После ответа ассистента — клиентский переход (демо-навигация по ТЗ). */
 export type ChatNavigateTo = "/missed-calls/" | "/appeals/" | "/invoices/";
@@ -26,6 +28,7 @@ export type ChatMessage = {
   actions?: ChatAction[];
   suggested?: string[];
   widget?: ChatWidget;
+  invoiceMonth?: "январь" | "февраль" | "март" | "апрель";
   navigateTo?: ChatNavigateTo;
 };
 

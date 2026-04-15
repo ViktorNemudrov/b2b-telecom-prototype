@@ -2,10 +2,12 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Pause, PhoneCall, PhoneOff, Play, Sparkles, X } from "lucide-react";
 import { RecordingPlayer } from "@shared/components/RecordingPlayer";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { getCallById } from "@shared/lib/mockData";
+import { isMissedCallsSeen, markMissedCallsSeen } from "@shared/lib/runtimeFlags";
 
 const dailyReportText =
   "Вчера пропущено 2 звонка, выручка по кассам +10%, баланс на 112 дней. Хорошего дня!";
@@ -34,7 +36,7 @@ function FeedCallCard({
   const [expanded, setExpanded] = React.useState(false);
 
   return (
-    <Card className="rounded-[22px] border-[#E5E7EE] bg-white shadow-none">
+    <Card className="rounded-[22px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
       <CardContent className="space-y-3 pb-3 pt-3">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">
@@ -46,17 +48,17 @@ function FeedCallCard({
               )}
             </span>
             <div>
-              <div className="text-xl font-semibold text-[#1F2430]">{title}</div>
-              <div className="text-sm text-[#9CA3B5]">{subtitle}</div>
+              <div className="text-xl font-semibold text-[#1F2430] dark:text-slate-100">{title}</div>
+              <div className="text-sm text-[#9CA3B5] dark:text-slate-400">{subtitle}</div>
             </div>
           </div>
-          <span className="text-xs text-[#C0C6D2]">{time}</span>
+          <span className="text-xs text-[#C0C6D2] dark:text-slate-500">{time}</span>
         </div>
 
-        <div className="flex flex-wrap gap-1.5 text-[12px] text-[#2B6CE0]">
+        <div className="flex flex-wrap gap-1.5 text-[12px] text-[#2B6CE0] dark:text-accent-yellow">
           {tags.map((tag) => (
-            <span key={tag} className="rounded-full bg-[#F5F8FF] px-2.5 py-1">
-              /{tag}
+            <span key={tag} className="rounded-full bg-[#F5F8FF] px-2.5 py-1 dark:bg-slate-700">
+              {tag}
             </span>
           ))}
         </div>
@@ -70,10 +72,10 @@ function FeedCallCard({
             className="border-[#ECEEF3] bg-[#FAFBFD] p-2"
           />
         ) : null}
-        <div className="rounded-xl border border-[#ECEEF3] bg-[#FBFCFF] px-3 py-2">
-          <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9AA0AF]">Расшифровка</div>
+        <div className="rounded-xl border border-[#ECEEF3] bg-[#FBFCFF] px-3 py-2 dark:border-slate-600 dark:bg-slate-700">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9AA0AF] dark:text-slate-400">Расшифровка</div>
           <p
-            className={`mt-1 whitespace-pre-line text-sm leading-relaxed text-[#4B5563] ${
+            className={`mt-1 whitespace-pre-line text-sm leading-relaxed text-[#4B5563] dark:text-slate-200 ${
               expanded ? "" : "line-clamp-2"
             }`}
           >
@@ -93,14 +95,10 @@ function FeedCallCard({
 }
 
 export function EventsFeedScreen() {
+  const router = useRouter();
   const [dismissDaily, setDismissDaily] = React.useState(false);
   const [speaking, setSpeaking] = React.useState(false);
-  const chipsRef = React.useRef<HTMLDivElement | null>(null);
-  const dragRef = React.useRef<{ active: boolean; startX: number; startLeft: number }>({
-    active: false,
-    startX: 0,
-    startLeft: 0
-  });
+  const [missedSeen, setMissedSeen] = React.useState(() => isMissedCallsSeen());
   const c1 = getCallById("c1");
   const c2 = getCallById("c2");
 
@@ -164,50 +162,35 @@ export function EventsFeedScreen() {
       ) : null}
 
       <div>
-        <div
-          ref={chipsRef}
-          className={chipScroll}
-          onPointerDown={(e) => {
-            const el = chipsRef.current;
-            if (!el) return;
-            dragRef.current = { active: true, startX: e.clientX, startLeft: el.scrollLeft };
-            el.setPointerCapture(e.pointerId);
-          }}
-          onPointerMove={(e) => {
-            const el = chipsRef.current;
-            const drag = dragRef.current;
-            if (!el || !drag.active) return;
-            const dx = e.clientX - drag.startX;
-            el.scrollLeft = drag.startLeft - dx;
-          }}
-          onPointerUp={() => {
-            dragRef.current.active = false;
-          }}
-          onPointerCancel={() => {
-            dragRef.current.active = false;
-          }}
-        >
+        <div className={chipScroll}>
           <div className={chipTrack}>
-          <Link
-            href="/missed-calls/"
-            className="snap-start shrink-0 whitespace-nowrap rounded-full border border-[#E5E7EE] bg-white px-3 py-1.5 text-sm font-medium text-[#343A4A]"
-          >
-            Пропущенные <span className="ml-1 rounded-full bg-[#EB4A4A] px-1.5 text-[10px] text-white">6</span>
-          </Link>
-          <Link
-            href="/assistant/"
-            className="snap-start shrink-0 whitespace-nowrap rounded-full border border-[#E5E7EE] bg-gradient-to-r from-[#EFE9FF] to-[#F4F0FF] px-3 py-1.5 text-sm font-medium text-[#343A4A]"
-          >
-            ✨ Советы от Ассистента
-          </Link>
-          <Link
-            href="/assistant/?q=%D0%BC%D0%BE%D0%B8%20%D1%81%D1%87%D0%B5%D1%82%D0%B0"
-            className="snap-start shrink-0 whitespace-nowrap rounded-full border border-[#E5E7EE] bg-white px-3 py-1.5 text-sm font-medium text-[#343A4A]"
-          >
-            Счет на оплату
-          </Link>
+            <Link
+              href="/missed-calls/"
+              onClick={() => {
+                markMissedCallsSeen();
+                setMissedSeen(true);
+              }}
+              className="snap-start shrink-0 whitespace-nowrap rounded-full border border-[#E5E7EE] bg-white px-3 py-1.5 text-sm font-medium text-[#343A4A] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            >
+              Пропущенные{" "}
+              {!missedSeen ? (
+                <span className="ml-1 rounded-full bg-[#EB4A4A] px-1.5 text-[10px] text-white">6</span>
+              ) : null}
+            </Link>
+            <Link
+              href="/assistant/?q=%D0%94%D0%B0%D0%B9%20%D1%81%D0%BE%D0%B2%D0%B5%D1%82%D1%8B%20%D0%BE%D1%82%20%D0%B0%D1%81%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BD%D1%82%D0%B0"
+              className="snap-start shrink-0 whitespace-nowrap rounded-full border border-[#E5E7EE] bg-gradient-to-r from-[#EFE9FF] to-[#F4F0FF] px-3 py-1.5 text-sm font-medium text-[#343A4A] dark:border-slate-600 dark:from-violet-900/40 dark:to-slate-800 dark:text-slate-100"
+            >
+              ✨ Советы от Ассистента
+            </Link>
+            <Link
+              href="/invoices/"
+              className="snap-start shrink-0 whitespace-nowrap rounded-full border border-[#E5E7EE] bg-white px-3 py-1.5 text-sm font-medium text-[#343A4A] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            >
+              Счет на оплату
+            </Link>
+          </div>
         </div>
-      </div>
       </div>
 
       <div className="mx-auto w-fit rounded-full bg-[#EEF0F4] px-3 py-1 text-xs text-[#A2A8B8]">сегодня</div>
@@ -240,6 +223,18 @@ export function EventsFeedScreen() {
         />
       ) : null}
 
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => router.push("/assistant/?q=Дай советы от ассистента по пакету минут")}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            router.push("/assistant/?q=Дай советы от ассистента по пакету минут");
+          }
+        }}
+        className="block w-full cursor-pointer text-left"
+      >
       <Card className="rounded-[22px] border-[#E5E7EE] bg-gradient-to-r from-[#FFECD9] via-[#EFE6FF] to-[#E8EDFF] shadow-none">
         <CardContent className="space-y-3 pb-4 pt-4">
           <div className="flex items-center gap-2 text-2xl font-semibold text-[#343A4A]">
@@ -248,33 +243,47 @@ export function EventsFeedScreen() {
             </span>
             Совет от Ассистента
           </div>
-          <div className="flex items-center justify-between rounded-2xl bg-white px-4 py-3">
+          <div className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 dark:bg-slate-800">
             <div>
-              <div className="text-xl font-semibold text-[#303646]">Пополните пакет минут</div>
-              <div className="text-sm text-[#9AA0AF]">Осталось 25 минут</div>
+              <div className="text-xl font-semibold text-[#303646] dark:text-slate-100">Пополните пакет минут</div>
+              <div className="text-sm text-[#9AA0AF] dark:text-slate-400">Осталось 25 минут</div>
             </div>
-            <button className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F1F3F7] text-xl text-[#2D3342]">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push("/assistant/?q=Как пополнить пакет минут");
+              }}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F1F3F7] text-xl text-[#2D3342] dark:bg-slate-700 dark:text-slate-100"
+            >
               +
             </button>
           </div>
         </CardContent>
       </Card>
+      </div>
 
-      <Card className="rounded-[22px] border-[#E5E7EE] bg-white shadow-none">
+      <Card className="rounded-[22px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
         <CardContent className="space-y-2 pb-4 pt-4">
-          <div className="text-2xl font-semibold text-[#343A4A]">Остаток по тарифу</div>
-          <div className="text-sm text-[#9AA0AF]">на 24 апреля</div>
+          <div className="text-2xl font-semibold text-[#343A4A] dark:text-slate-100">Остаток по тарифу</div>
+          <div className="text-sm text-[#9AA0AF] dark:text-slate-400">на 24 апреля</div>
           <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-2 rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3">
-              <div className="text-xl font-semibold text-[#303646]">3 435 гб</div>
+            <div className="col-span-2 rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3 dark:border-slate-600 dark:bg-slate-700">
+              <div className="text-xl font-semibold text-[#303646] dark:text-slate-100">298 гб</div>
             </div>
-            <div className="rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3">
-              <div className="text-xl font-semibold text-[#303646]">1 545 мин</div>
+            <div className="rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3 dark:border-slate-600 dark:bg-slate-700">
+              <div className="text-xl font-semibold text-[#303646] dark:text-slate-100">1 545 мин</div>
             </div>
-            <div className="col-span-2 rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3">
-              <div className="text-xl font-semibold text-[#303646]">800 sms</div>
+            <div className="col-span-2 rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3 dark:border-slate-600 dark:bg-slate-700">
+              <div className="text-xl font-semibold text-[#303646] dark:text-slate-100">100 sms</div>
             </div>
-            <button className="rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] text-[#8E76F5]">💬</button>
+            <button
+              type="button"
+              onClick={() => router.push("/assistant/?q=%D0%9A%D0%B0%D0%BA%20%D0%BE%D0%BF%D1%82%D0%B8%D0%BC%D0%B8%D0%B7%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D1%82%D1%8C%20%D0%BE%D1%81%D1%82%D0%B0%D1%82%D0%BE%D0%BA%20%D0%BF%D0%B0%D0%BA%D0%B5%D1%82%D0%B0")}
+              className="rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] text-[#8E76F5] dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
+            >
+              💬
+            </button>
           </div>
         </CardContent>
       </Card>

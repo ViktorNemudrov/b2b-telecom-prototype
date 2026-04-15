@@ -29,10 +29,27 @@ async function createTextImagePng(lines: string[]) {
   ctx.font = "600 52px Inter, Arial, sans-serif";
   ctx.textBaseline = "top";
 
+  const maxWidth = canvas.width - 48;
+  const lineHeight = 72;
   let y = 24;
   for (const line of lines) {
-    ctx.fillText(line, 24, y);
-    y += 92;
+    const words = line.split(" ");
+    let current = "";
+    for (const word of words) {
+      const candidate = current ? `${current} ${word}` : word;
+      if (ctx.measureText(candidate).width > maxWidth && current) {
+        ctx.fillText(current, 24, y);
+        y += lineHeight;
+        current = word;
+      } else {
+        current = candidate;
+      }
+    }
+    if (current) {
+      ctx.fillText(current, 24, y);
+      y += lineHeight;
+    }
+    y += 16;
   }
   return canvas.toDataURL("image/png");
 }

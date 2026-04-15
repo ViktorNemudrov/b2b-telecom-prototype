@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, LayoutGrid, Search } from "lucide-react";
 import { cn } from "@shared/components/ui/cn";
-import { openDevelopmentStub } from "@shared/lib/developmentStub";
 
 const sphereSrc = "/mockups/%D0%A8%D0%B0%D1%80.png";
 
@@ -32,19 +31,21 @@ export function BeelineAssistantHeader() {
             <Link
               href="/assistant/?reset=1"
               className={cn(
-                "relative flex h-9 min-w-[100px] items-center justify-center gap-1 rounded-full px-3 text-slate-600 transition dark:text-slate-300",
+                "relative flex h-9 min-w-[100px] items-center justify-center rounded-full px-3 text-slate-600 transition dark:text-slate-300",
                 isAssistantTab && "bg-white shadow-sm dark:bg-slate-800"
               )}
               aria-current={isAssistantTab ? "page" : undefined}
             >
-              <Search className="h-[18px] w-[18px] shrink-0 opacity-80" strokeWidth={2.25} />
-              <Image
-                src={sphereSrc}
-                alt=""
-                width={22}
-                height={22}
-                className="h-[22px] w-[22px] shrink-0 rounded-full object-cover ring-1 ring-black/5"
-              />
+              <span className="relative inline-flex h-6 w-6 items-center justify-center">
+                <Search className="h-[20px] w-[20px] opacity-85" strokeWidth={2.25} />
+                <Image
+                  src={sphereSrc}
+                  alt=""
+                  width={10}
+                  height={10}
+                  className="absolute top-[6px] h-[10px] w-[10px] rounded-full object-cover ring-1 ring-black/10"
+                />
+              </span>
             </Link>
             <Link
               href="/events/"
@@ -59,14 +60,13 @@ export function BeelineAssistantHeader() {
           </div>
         </div>
 
-        <button
-          type="button"
+        <Link
+          href="/notifications/"
           className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#E5E5EA] bg-white shadow-sm dark:border-slate-600 dark:bg-slate-800"
           aria-label="Уведомления"
-          onClick={() => openDevelopmentStub("Центр уведомлений (мок).")}
         >
           <Bell className="h-[22px] w-[22px] text-[#3C3C43] dark:text-slate-200" />
-        </button>
+        </Link>
       </div>
     </header>
   );
