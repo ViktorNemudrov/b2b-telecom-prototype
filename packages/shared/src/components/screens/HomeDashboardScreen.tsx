@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronRight, Sparkles } from "lucide-react";
 import { TariffSubscriptionCard } from "@shared/components/TariffSubscriptionCard";
 import { TargetMailingModal } from "@shared/components/TargetMailingModal";
@@ -29,6 +30,7 @@ function CallHeatmap() {
 }
 
 export function HomeDashboardScreen() {
+  const router = useRouter();
   const [mailingOpen, setMailingOpen] = React.useState(false);
   const tariff = getTariffFromFeed();
 
@@ -45,17 +47,17 @@ export function HomeDashboardScreen() {
       <Card>
         <CardContent className="pb-3 pt-4">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-base font-semibold text-slate-900">Мои номера</h2>
+            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Мои номера</h2>
             <button
               type="button"
               onClick={() => openDevelopmentStub("Управление номерами (демо).")}
-              className="text-slate-400 transition hover:text-slate-600"
+              className="text-slate-400 transition hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
               aria-label="Ещё"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
-          <div className="mt-2 divide-y divide-slate-100">
+          <div className="mt-2 divide-y divide-slate-100 dark:divide-slate-700">
             {dashboardLines.map((line) => {
               const gbPct = line.gbMax ? line.gb / line.gbMax : 0;
               const minPct = line.minMax ? line.min / line.minMax : 0;
@@ -75,22 +77,22 @@ export function HomeDashboardScreen() {
                   className="flex cursor-pointer items-center gap-3 py-3 first:pt-1"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-semibold text-slate-900">{line.phone}</div>
-                    <div className="text-xs text-slate-500">{line.name}</div>
+                    <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{line.phone}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">{line.name}</div>
                     <div className="mt-2 flex gap-2">
-                      <div className="min-w-0 flex-1 rounded-xl bg-slate-50 px-2 py-1.5">
+                      <div className="min-w-0 flex-1 rounded-xl bg-slate-50 px-2 py-1.5 dark:bg-slate-700/50">
                         <div className="text-[10px] font-semibold text-slate-500">{line.gb} гб</div>
                         <div className="mt-1 h-0.5 overflow-hidden rounded-full bg-slate-200">
                           <div className="h-full bg-emerald-500" style={{ width: `${gbPct * 100}%` }} />
                         </div>
                       </div>
-                      <div className="min-w-0 flex-1 rounded-xl bg-slate-50 px-2 py-1.5">
+                      <div className="min-w-0 flex-1 rounded-xl bg-slate-50 px-2 py-1.5 dark:bg-slate-700/50">
                         <div className="text-[10px] font-semibold text-slate-500">{line.min} мин</div>
                         <div className="mt-1 h-0.5 overflow-hidden rounded-full bg-slate-200">
                           <div className="h-full bg-amber-500" style={{ width: `${minPct * 100}%` }} />
                         </div>
                       </div>
-                      <div className="min-w-0 flex-1 rounded-xl bg-slate-50 px-2 py-1.5">
+                      <div className="min-w-0 flex-1 rounded-xl bg-slate-50 px-2 py-1.5 dark:bg-slate-700/50">
                         <div className="text-[10px] font-semibold text-slate-500">{line.sms} смс</div>
                         <div className="mt-1 h-0.5 overflow-hidden rounded-full bg-slate-200">
                           <div className="h-full bg-rose-400" style={{ width: `${smsPct * 100}%` }} />
@@ -98,7 +100,7 @@ export function HomeDashboardScreen() {
                       </div>
                     </div>
                   </div>
-                  <ChevronRight className="h-5 w-5 shrink-0 text-slate-300" />
+                  <ChevronRight className="h-5 w-5 shrink-0 text-slate-300 dark:text-slate-500" />
                 </div>
               );
             })}
@@ -111,8 +113,8 @@ export function HomeDashboardScreen() {
           <div className="flex items-start justify-between gap-2">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold text-slate-900">Записи разговоров</h2>
-                <span className="text-xs font-medium text-slate-400">24.05</span>
+                <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Записи разговоров</h2>
+                <span className="text-xs font-medium text-slate-400 dark:text-slate-500">24.05</span>
                 <span className="h-2 w-2 rounded-full bg-rose-500" />
               </div>
               <div className="mt-2 flex flex-wrap gap-3 text-xs">
@@ -132,13 +134,13 @@ export function HomeDashboardScreen() {
             </div>
             <Link
               href="/communication"
-              className="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
             >
               Все
             </Link>
           </div>
           <CallHeatmap />
-          <div className="mt-2 flex justify-between text-[10px] font-medium text-slate-400 px-0.5">
+          <div className="mt-2 flex justify-between px-0.5 text-[10px] font-medium text-slate-400 dark:text-slate-500">
             {["8", "10", "12", "14", "16", "18"].map((t) => (
               <span key={t}>{t}</span>
             ))}
@@ -150,8 +152,8 @@ export function HomeDashboardScreen() {
         <CardContent className="pb-4 pt-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-semibold text-slate-900">AI — команда</h2>
-              <p className="text-xs text-slate-500">Ваши помощники 24/7</p>
+              <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">AI — команда</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Ваши помощники 24/7</p>
             </div>
             <button
               type="button"
@@ -168,7 +170,7 @@ export function HomeDashboardScreen() {
                 key={label}
                 type="button"
                 onClick={() => openDevelopmentStub(`Агент «${label}»: открыть чат (демо).`)}
-                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-gradient-to-br from-white to-slate-50 text-xs font-bold text-slate-700 shadow-softSm transition hover:brightness-[1.02] active:translate-y-[1px]"
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-gradient-to-br from-white to-slate-50 text-xs font-bold text-slate-700 shadow-softSm transition hover:brightness-[1.02] active:translate-y-[1px] dark:border-slate-600 dark:from-slate-700 dark:to-slate-800 dark:text-slate-100"
               >
                 {label.slice(0, 2)}
               </button>
@@ -242,7 +244,7 @@ export function HomeDashboardScreen() {
         <div className="flex gap-3 overflow-x-auto pb-1">
           <button
             type="button"
-            onClick={() => openDevelopmentStub("Статья: AI-агенты в малом бизнесе (демо).")}
+            onClick={() => router.push("/assistant/?q=Дай советы для бизнеса")}
             className="w-[260px] shrink-0 overflow-hidden rounded-[22px] border border-slate-200 bg-white text-left shadow-softSm transition hover:bg-slate-50/80"
           >
             <div className="h-28 bg-gradient-to-br from-emerald-100 via-amber-50 to-rose-100" />
@@ -252,7 +254,7 @@ export function HomeDashboardScreen() {
           </button>
           <button
             type="button"
-            onClick={() => openDevelopmentStub("Ещё материалы в ленте (демо).")}
+            onClick={() => router.push("/assistant/")}
             className="w-[200px] shrink-0 rounded-[22px] border border-slate-200 bg-slate-50 p-3 text-left text-xs text-slate-600 transition hover:bg-slate-100"
           >
             Ещё статьи в ленте (демо)

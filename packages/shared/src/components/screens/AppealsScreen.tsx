@@ -6,7 +6,6 @@ import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { Modal } from "@shared/components/ui/modal";
 import { cn } from "@shared/components/ui/cn";
-import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import {
   appealTopicOptions,
   filterAppealsBySearch,
@@ -51,19 +50,37 @@ export function AppealsScreen() {
   const [search, setSearch] = React.useState("");
   const [attachedName, setAttachedName] = React.useState<string | null>(null);
   const [detail, setDetail] = React.useState<AppealItem | null>(null);
+  const [createdAppeals, setCreatedAppeals] = React.useState<AppealItem[]>([]);
+  const [submitNotice, setSubmitNotice] = React.useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const fileRef = React.useRef<HTMLInputElement>(null);
 
-  const baseList = getAppealsFiltered(filter);
+  const createdByFilter = React.useMemo(() => {
+    if (filter === "done") return createdAppeals.filter((a) => a.status === "done");
+    if (filter === "rejected") return createdAppeals.filter((a) => a.status === "rejected");
+    return createdAppeals;
+  }, [createdAppeals, filter]);
+  const baseList = [...createdByFilter, ...getAppealsFiltered(filter)];
   const searched = filterAppealsBySearch(baseList, search);
   const list = searched;
   const visible = filter === "all" && !expandedAll ? list.slice(0, 3) : list;
 
   const onSubmitAppeal = () => {
     if (!body.trim()) {
-      openDevelopmentStub("Введите текст обращения перед отправкой.");
+      setSubmitNotice({ kind: "error", text: "Введите текст обращения перед отправкой." });
       return;
     }
-    openDevelopmentStub(`Обращение отправлено (демо). Тема: «${topic}».`);
+    const newAppeal: AppealItem = {
+      id: `new-${Date.now()}`,
+      title: topic,
+      status: "active",
+      badgeLabel: "В работе",
+      category: "Техподдержка",
+      dateLabel: new Date().toLocaleDateString("ru-RU"),
+      description: body.trim(),
+      history: [{ at: new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }), text: "Обращение отправлено." }]
+    };
+    setCreatedAppeals((prev) => [newAppeal, ...prev]);
+    setSubmitNotice({ kind: "ok", text: `Обращение отправлено. Тема: «${topic}».` });
     setBody("");
     setAttachedName(null);
     setCreateOpen(false);
@@ -83,6 +100,20 @@ export function AppealsScreen() {
       >
         Создать обращение
       </Button>
+
+      {submitNotice ? (
+        <div
+          className={cn(
+            "rounded-2xl border px-4 py-3 text-sm",
+            submitNotice.kind === "ok" &&
+              "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800/60 dark:bg-emerald-900/30 dark:text-emerald-200",
+            submitNotice.kind === "error" &&
+              "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-800/60 dark:bg-rose-900/30 dark:text-rose-200"
+          )}
+        >
+          {submitNotice.text}
+        </div>
+      ) : null}
 
       {createOpen ? (
         <Card className="border-slate-200 dark:border-slate-600 dark:bg-slate-800/80">

@@ -16,7 +16,7 @@ export default function InvoicesListPage() {
       <AppShell>
         <div className="safe-px space-y-4 pb-6 pt-2">
           <PageBackLink />
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Счета за март 2026</h1>
+          <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Счета 2026</h1>
           <div className="space-y-2">
             {invoices.map((inv) => (
               <Link
@@ -28,7 +28,7 @@ export default function InvoicesListPage() {
                   <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {inv.amountRub.toLocaleString("ru-RU")} ₽ — {inv.dueLabel}
                   </div>
-                  <div className="text-xs text-slate-500">{inv.meta}</div>
+                  <div className="text-xs text-slate-500">{inv.periodLabel} · {inv.meta}</div>
                 </div>
                 <span
                   className={cn(

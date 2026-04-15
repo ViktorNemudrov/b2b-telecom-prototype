@@ -57,12 +57,12 @@ export function FeedItem({
       <Card>
         <CardContent className="pb-4 pt-4">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-900/30">
               <AlertTriangle className="h-5 w-5 text-amber-700" />
             </div>
             <div className="flex-1">
-              <div className="text-sm font-semibold text-slate-900">{item.title}</div>
-              <div className="mt-1 text-sm text-slate-700">{item.description}</div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{item.title}</div>
+              <div className="mt-1 text-sm text-slate-700 dark:text-slate-300">{item.description}</div>
             </div>
           </div>
           <div className="mt-4">
@@ -80,12 +80,12 @@ export function FeedItem({
       <Card>
         <CardContent className="pb-4 pt-4">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 dark:bg-slate-700">
               <Calendar className="h-5 w-5 text-slate-700" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-slate-900">{item.title}</div>
-              <div className="mt-1 text-sm text-slate-700">{item.description}</div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{item.title}</div>
+              <div className="mt-1 text-sm text-slate-700 dark:text-slate-300">{item.description}</div>
             </div>
           </div>
           <Button
@@ -109,8 +109,8 @@ export function FeedItem({
             <Sparkles className="h-5 w-5 text-accent-violet" />
           </div>
           <div className="flex-1">
-            <div className="text-sm font-semibold text-slate-900">{item.title}</div>
-            <div className="mt-1 text-sm text-slate-700">{item.description}</div>
+            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{item.title}</div>
+            <div className="mt-1 text-sm text-slate-700 dark:text-slate-300">{item.description}</div>
           </div>
         </div>
         <div className="mt-4">

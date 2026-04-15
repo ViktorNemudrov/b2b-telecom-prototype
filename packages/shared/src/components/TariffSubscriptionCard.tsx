@@ -3,7 +3,7 @@
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import type { TariffStats } from "@shared/lib/mockData";
 import { Card, CardContent } from "@shared/components/ui/card";
-import { BarChart3, Infinity, Settings } from "lucide-react";
+import { BarChart3, Cloud, Infinity, Settings } from "lucide-react";
 
 export function TariffSubscriptionCard({ stats: s }: { stats: TariffStats }) {
   const gbPct = s.gbTotal > 0 ? Math.min(1, s.gbUsed / s.gbTotal) : 0;
@@ -73,6 +73,14 @@ export function TariffSubscriptionCard({ stats: s }: { stats: TariffStats }) {
           <span>
             Пакет: минуты {s.minutesUsed}/{s.minutesTotal}, данные {s.gbUsed}/{s.gbTotal} ГБ, SMS {s.smsUsed}/{s.smsTotal}
           </span>
+          <button
+            type="button"
+            className="ml-auto inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
+            aria-label="Что можно сделать с остатком"
+            onClick={() => openDevelopmentStub("Ассистент: подскажи, как оптимизировать остаток по пакету.")}
+          >
+            <Cloud className="h-4 w-4" />
+          </button>
         </div>
       </CardContent>
     </Card>

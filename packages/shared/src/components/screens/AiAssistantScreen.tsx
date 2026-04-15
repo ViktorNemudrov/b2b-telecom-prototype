@@ -23,6 +23,7 @@ import {
   userProfile,
   type ChatMessage
 } from "@shared/lib/mockData";
+import { getLiveAiText, type LiveAiMessage } from "@shared/lib/liveAi";
 import { useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
 import { isMissedCallsSeen, markMissedCallsSeen } from "@shared/lib/runtimeFlags";
 
@@ -64,6 +65,35 @@ function mockAiResponse(prompt: string): ChatMessage {
   ]);
   const asksHowAreYou = hasAny(["как дела", "как ты", "как поживаешь", "как жизнь"]);
   const asksCapabilities = hasAny(["что ты умеешь", "что умеешь", "что ты можешь", "твои возможности", "что можешь"]);
+  const asksTime = hasAny(["сколько времени", "который час", "время сейчас", "текущее время"]);
+  const asksDate = hasAny(["какое сегодня число", "какая дата", "сегодняшняя дата", "какой сегодня день"]);
+  const asksWeather = hasAny(["погода", "дождь", "снег", "температура", "градус", "ветер"]);
+  const asksRates = hasAny(["курс доллара", "курс евро", "курс валют", "доллар", "евро", "usd", "eur"]);
+  const asksNews = hasAny(["новости", "что нового", "последние новости", "что в мире"]);
+  const asksInvoices = hasAny(["счет", "счета", "счёт", "счёта"]);
+  const monthDetected =
+    hasAny(["январ"]) ? "январь" : hasAny(["феврал"]) ? "февраль" : hasAny(["март"]) ? "март" : hasAny(["апрел"]) ? "апрель" : null;
+  const asksCalculator = hasAny([
+    "сколько будет",
+    "посчитай",
+    "вычисли",
+    "калькулятор",
+    "плюс",
+    "минус",
+    "умножить",
+    "разделить"
+  ]);
+  const asksUnits = hasAny([
+    "переведи",
+    "конвертируй",
+    "км в",
+    "метр в",
+    "кг в",
+    "литр в",
+    "минута в",
+    "час в"
+  ]);
+  const asksReminder = hasAny(["напомни", "напоминание", "поставь напоминание", "не забудь"]);
   const hasProfanity = hasAny([
     "бля",
     "бляд",
@@ -106,6 +136,156 @@ function mockAiResponse(prompt: string): ChatMessage {
     };
   }
 
+  if (asksTime || asksDate) {
+    const now = new Date();
+    const timeLabel = now.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+    const dateLabel = now.toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      weekday: "long"
+    });
+    return {
+      id: id(),
+      role: "ai",
+      text: asksTime && asksDate ? `Сейчас ${timeLabel}, ${dateLabel}.` : asksTime ? `Сейчас ${timeLabel}.` : `Сегодня ${dateLabel}.`,
+      createdAt: nowIso()
+    };
+  }
+
+  if (asksWeather) {
+    return {
+      id: id(),
+      role: "ai",
+      text:
+        "В этой версии у меня нет прямого доступа к погодным сервисам в реальном времени. Могу подсказать, где посмотреть прогноз по Москве, или сразу помочь по задачам в кабинете (счета, звонки, обращения).",
+      createdAt: nowIso(),
+      suggested: ["Открыть Яндекс.Погоду", "Счета за март", "Пропущенные звонки"]
+    };
+  }
+
+  if (asksRates) {
+    return {
+      id: id(),
+      role: "ai",
+      text:
+        "Онлайн-курс валют я здесь не получаю в реальном времени. Если нужно, помогу с финансовыми данными внутри кабинета: счета, оплаты и отчёты.",
+      createdAt: nowIso(),
+      suggested: ["Счета за март", "Финансовый отчет", "Архив платежей"]
+    };
+  }
+
+  if (asksNews) {
+    return {
+      id: id(),
+      role: "ai",
+      text:
+        "Ленту новостей в реальном времени в этой демо-версии я не получаю. Зато могу сразу помочь с рабочими задачами в кабинете.",
+      createdAt: nowIso(),
+      suggested: ["Пропущенные звонки", "Обращения", "Мои счета"]
+    };
+  }
+
+  if (asksCalculator) {
+    const mathExpr = clean.match(/([0-9]+(?:[.,][0-9]+)?)\s*([+\-*/xх×])\s*([0-9]+(?:[.,][0-9]+)?)/);
+    if (mathExpr) {
+      const left = Number(mathExpr[1].replace(",", "."));
+      const op = mathExpr[2];
+      const right = Number(mathExpr[3].replace(",", "."));
+      let result: number | null = null;
+      if (op === "+" ) result = left + right;
+      if (op === "-") result = left - right;
+      if (op === "*" || op === "x" || op === "х" || op === "×") result = left * right;
+      if (op === "/") result = right === 0 ? null : left / right;
+      if (result !== null) {
+        return {
+          id: id(),
+          role: "ai",
+          text: `Результат: ${Number.isInteger(result) ? result : result.toLocaleString("ru-RU", { maximumFractionDigits: 6 })}.`,
+          createdAt: nowIso()
+        };
+      }
+    }
+    return {
+      id: id(),
+      role: "ai",
+      text:
+        "Могу посчитать простой пример. Напишите в формате: `1250 + 340`, `18 * 7`, `144 / 12`.",
+      createdAt: nowIso(),
+      suggested: ["1250 + 340", "18 * 7", "144 / 12"]
+    };
+  }
+
+  if (asksUnits) {
+    const unitMatch = clean.match(
+      /([0-9]+(?:[.,][0-9]+)?)\s*(км|м|см|мм|кг|г|мг|л|мл|час|часы|часа|мин|минута|минуты|сек|секунда|секунды)\s*(?:в|во)\s*(км|м|см|мм|кг|г|мг|л|мл|час|часы|часа|мин|минута|минуты|сек|секунда|секунды)/
+    );
+    if (unitMatch) {
+      const value = Number(unitMatch[1].replace(",", "."));
+      const fromRaw = unitMatch[2];
+      const toRaw = unitMatch[3];
+      const normalize = (u: string) => {
+        if (u === "часы" || u === "часа") return "час";
+        if (u === "минута" || u === "минуты") return "мин";
+        if (u === "секунда" || u === "секунды") return "сек";
+        return u;
+      };
+      const from = normalize(fromRaw);
+      const to = normalize(toRaw);
+      const factors: Record<string, number> = {
+        км: 1000,
+        м: 1,
+        см: 0.01,
+        мм: 0.001,
+        кг: 1000,
+        г: 1,
+        мг: 0.001,
+        л: 1000,
+        мл: 1,
+        час: 3600,
+        мин: 60,
+        сек: 1
+      };
+      const group = (u: string) => {
+        if (["км", "м", "см", "мм"].includes(u)) return "length";
+        if (["кг", "г", "мг"].includes(u)) return "mass";
+        if (["л", "мл"].includes(u)) return "volume";
+        if (["час", "мин", "сек"].includes(u)) return "time";
+        return "other";
+      };
+      if (group(from) === group(to) && group(from) !== "other") {
+        const result = (value * factors[from]) / factors[to];
+        return {
+          id: id(),
+          role: "ai",
+          text: `${value.toLocaleString("ru-RU")} ${fromRaw} = ${result.toLocaleString("ru-RU", {
+            maximumFractionDigits: 6
+          })} ${toRaw}.`,
+          createdAt: nowIso()
+        };
+      }
+    }
+    return {
+      id: id(),
+      role: "ai",
+      text:
+        "Готов помочь с конвертацией. Введите запрос в формате: `15 км в м`, `2.5 кг в г`, `3 часа в минуты`.",
+      createdAt: nowIso(),
+      suggested: ["15 км в м", "2.5 кг в г", "3 часа в минуты"]
+    };
+  }
+
+  if (asksReminder) {
+    return {
+      id: id(),
+      role: "ai",
+      text:
+        "Напоминания в этой версии пока не ставятся автоматически. Могу сформулировать текст напоминания, чтобы вы сразу сохранили его в календарь.",
+      createdAt: nowIso(),
+      suggested: ["Напомни оплатить счет в 16:00", "Напомни перезвонить клиенту", "Сформулируй коротко"]
+    };
+  }
+
   if (hasGreeting) {
     return {
       id: id(),
@@ -126,7 +306,7 @@ function mockAiResponse(prompt: string): ChatMessage {
     };
   }
 
-  if ((p.includes("счет") || p.includes("счета")) && (p.includes("март") || p.includes("2026"))) {
+  if (asksInvoices && monthDetected === "март") {
     return {
       id: id(),
       role: "ai",
@@ -134,6 +314,17 @@ function mockAiResponse(prompt: string): ChatMessage {
       createdAt: nowIso(),
       widget: "invoices-march",
       suggested: ["Финансовый отчет", "Архив платежей"]
+    };
+  }
+
+  if (asksInvoices && monthDetected && monthDetected !== "март") {
+    return {
+      id: id(),
+      role: "ai",
+      text: `Показываю счета за ${monthDetected} в общем списке счетов. Открою раздел и помогу сверить оплаты.`,
+      createdAt: nowIso(),
+      navigateTo: "/invoices/",
+      suggested: [`Счета за ${monthDetected}`, "Что просрочено?", "Покажи неоплаченные"]
     };
   }
 
@@ -219,8 +410,8 @@ function mockAiResponse(prompt: string): ChatMessage {
     },
     {
       text:
-        "Есть. Уточни, пожалуйста: это про оплату, про связь с клиентом или про внутреннюю аналитику?",
-      suggested: ["Оплата", "Клиенты", "Аналитика"]
+        "Понял запрос. Могу ответить по задачам в кабинете: счета, звонки, обращения, рассылки и сводки. Что открыть в первую очередь?",
+      suggested: ["Счета", "Звонки", "Обращения"]
     },
     {
       text:
@@ -253,6 +444,9 @@ export function AiAssistantScreen() {
   const chatEndRef = React.useRef<HTMLDivElement | null>(null);
   const runtimeInvoices = useRuntimeInvoices();
   const unpaidInvoicesCount = runtimeInvoices.filter((inv) => inv.status !== "paid").length;
+  const liveApiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
+  const liveModel = process.env.NEXT_PUBLIC_OPENROUTER_MODEL;
+  const isLiveEnabled = Boolean(liveApiKey);
 
   React.useEffect(() => {
     setShowMissedCard(!isMissedCallsSeen());
@@ -299,11 +493,44 @@ export function AiAssistantScreen() {
     setMessages((m) => [...m, userMsg]);
     setInput("");
 
-    window.setTimeout(() => {
-      const ai = mockAiResponse(v);
-      setMessages((m) => [...m, ai]);
-      if (ai.navigateTo) {
-        window.setTimeout(() => router.push(ai.navigateTo!), 320);
+    window.setTimeout(async () => {
+      const fallback = mockAiResponse(v);
+      let resolved: ChatMessage = fallback;
+
+      try {
+        if (isLiveEnabled && liveApiKey) {
+          const controller = new AbortController();
+          const timeout = window.setTimeout(() => controller.abort(), 2500);
+          try {
+            const history: LiveAiMessage[] = [...messages, userMsg]
+              .slice(-6)
+              .map((m) => ({ role: m.role === "ai" ? "assistant" : "user", content: m.text }));
+            const liveText = await getLiveAiText({
+              prompt: v,
+              history,
+              apiKey: liveApiKey,
+              model: liveModel,
+              signal: controller.signal
+            });
+            if (liveText) {
+              resolved = {
+                id: id(),
+                role: "ai",
+                text: liveText,
+                createdAt: nowIso()
+              };
+            }
+          } finally {
+            window.clearTimeout(timeout);
+          }
+        }
+      } catch {
+        resolved = fallback;
+      }
+
+      setMessages((m) => [...m, resolved]);
+      if (resolved.navigateTo) {
+        window.setTimeout(() => router.push(resolved.navigateTo!), 320);
       }
     }, 350);
   };
@@ -355,9 +582,6 @@ export function AiAssistantScreen() {
               </Link>
               <Link href="/appeals/" className={pillBase}>
                 <span>Обращения</span>
-                <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#2D2D2D] px-1.5 text-[11px] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
-                  3
-                </span>
               </Link>
             </div>
             <div className="flex w-full max-w-[360px] flex-wrap justify-center gap-2.5">
@@ -365,8 +589,7 @@ export function AiAssistantScreen() {
                 type="button"
                 className={pillBase}
                 onClick={() => {
-                  setInput("мои счета");
-                  window.setTimeout(() => send("мои счета"), 50);
+                  router.push("/invoices/");
                 }}
               >
                 <span>Мои счета</span>

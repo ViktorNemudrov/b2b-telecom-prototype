@@ -24,6 +24,7 @@ export function InvoiceDetailClient({
   const inv = invoices.find((item) => item.id === id);
   const [payOpen, setPayOpen] = React.useState(false);
   const [qrActive, setQrActive] = React.useState(false);
+  const [cardOpen, setCardOpen] = React.useState(false);
   const [toast, setToast] = React.useState<string | null>(null);
 
   if (!inv) {
@@ -47,6 +48,7 @@ export function InvoiceDetailClient({
     markInvoicePaid(inv.id);
     setPayOpen(false);
     setQrActive(false);
+    setCardOpen(false);
     setToast("Оплата прошла, но это не точно");
   };
 
@@ -108,17 +110,22 @@ export function InvoiceDetailClient({
               void navigator.mediaDevices
                 ?.getUserMedia?.({ video: { facingMode: "environment" } })
                 .then((stream) => {
-                  stream.getTracks().forEach((t) => t.stop());
-                  completePayment();
+                  window.setTimeout(() => {
+                    stream.getTracks().forEach((t) => t.stop());
+                    completePayment();
+                  }, 3000);
                 })
-                .catch(() => completePayment());
+                .catch(() => {
+                  window.setTimeout(() => completePayment(), 3000);
+                });
             }}
           >
             Оплатить по QR-коду
           </Button>
           {qrActive ? (
-            <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-xs text-slate-500">
-              Наведите камеру на QR (в демо камера могла закрыться сразу после проверки).
+            <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-xs text-slate-500 dark:border-slate-600 dark:text-slate-300">
+              <div className="mx-auto mb-3 h-28 w-28 rounded-xl border-2 border-accent-yellow" />
+              Камера активна 3 сек. Наведите видоискатель на QR-код.
             </div>
           ) : null}
           <Button
@@ -147,33 +154,32 @@ export function InvoiceDetailClient({
           </Button>
           <Button
             className="w-full rounded-2xl bg-accent-yellow text-accent-dark hover:brightness-95"
-            onClick={completePayment}
+            onClick={() => setCardOpen(true)}
           >
             Оплата по реквизитам
           </Button>
-          <div className="space-y-1 rounded-xl border border-slate-200 p-3 dark:border-slate-600">
-            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Карта</div>
+        </div>
+      </Modal>
+      <Modal open={cardOpen} onClose={() => setCardOpen(false)} title="Оплата картой">
+        <div className="space-y-2 rounded-xl border border-slate-200 p-3 dark:border-slate-600 dark:bg-slate-800/40">
+          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Реквизиты карты</div>
+          <input
+            className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            placeholder="Номер карты"
+          />
+          <div className="flex gap-2">
             <input
-              className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-              placeholder="Номер карты"
+              className="w-1/2 rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              placeholder="ММ/ГГ"
             />
-            <div className="flex gap-2">
-              <input
-                className="w-1/2 rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-                placeholder="ММ/ГГ"
-              />
-              <input
-                className="w-1/2 rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-                placeholder="CVC"
-              />
-            </div>
-            <Button
-              className="w-full rounded-xl bg-accent-yellow text-accent-dark hover:brightness-95"
-              onClick={completePayment}
-            >
-              Оплатить картой
-            </Button>
+            <input
+              className="w-1/2 rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              placeholder="CVC"
+            />
           </div>
+          <Button className="w-full rounded-xl bg-accent-yellow text-accent-dark hover:brightness-95" onClick={completePayment}>
+            Оплатить картой
+          </Button>
         </div>
       </Modal>
       {toast ? (

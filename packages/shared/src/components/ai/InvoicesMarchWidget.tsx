@@ -14,7 +14,8 @@ const statusLabel: Record<string, string> = {
 };
 
 export function InvoicesMarchWidget() {
-  const invoices = useRuntimeInvoices();
+  const allInvoices = useRuntimeInvoices();
+  const invoices = allInvoices.filter((i) => i.periodLabel.includes("март"));
   const total = invoices.reduce((a, i) => a + i.amountRub, 0);
   const paidCount = invoices.filter((i) => i.status === "paid").length;
 
@@ -36,7 +37,15 @@ export function InvoicesMarchWidget() {
             type="button"
             className="shrink-0 rounded-full border border-slate-200 p-2 dark:border-slate-600"
             aria-label="Озвучить"
-            onClick={() => openDevelopmentStub("Озвучивание (демо).")}
+            onClick={() => {
+              if (!("speechSynthesis" in window)) return;
+              const u = new SpeechSynthesisUtterance(
+                `За март 2026 года у вас: ${paidCount} оплаченных счетов на общую сумму ${total.toLocaleString("ru-RU")} рублей.`
+              );
+              u.lang = "ru-RU";
+              window.speechSynthesis.cancel();
+              window.speechSynthesis.speak(u);
+            }}
           >
             <Volume2 className="h-4 w-4 text-slate-500" />
           </button>

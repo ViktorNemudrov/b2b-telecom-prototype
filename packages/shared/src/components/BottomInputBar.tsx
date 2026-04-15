@@ -88,7 +88,7 @@ export function BottomInputBar({
           <button
             aria-label="Прикрепить"
             type="button"
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 active:translate-y-[1px]"
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 active:translate-y-[1px] dark:text-slate-300 dark:hover:bg-slate-700"
             onClick={() => fileRef.current?.click()}
           >
             <Paperclip className="h-5 w-5" />
@@ -96,7 +96,7 @@ export function BottomInputBar({
 
           <button
             aria-label="История"
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 active:translate-y-[1px]"
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 active:translate-y-[1px] dark:text-slate-300 dark:hover:bg-slate-700"
             onClick={onOpenHistory}
           >
             <Clock3 className="h-5 w-5" />
@@ -120,7 +120,9 @@ export function BottomInputBar({
             aria-label={listening ? "Остановить диктовку" : "Диктовать вопрос"}
             className={cn(
               "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition active:translate-y-[1px]",
-              listening ? "bg-rose-50 text-rose-700 animate-pulse" : "text-slate-500 hover:bg-slate-100",
+              listening
+                ? "bg-rose-50 text-rose-700 animate-pulse dark:bg-rose-900/30 dark:text-rose-200"
+                : "text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700",
               !supported && "opacity-80"
             )}
             title={

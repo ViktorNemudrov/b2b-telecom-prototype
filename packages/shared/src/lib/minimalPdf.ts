@@ -37,6 +37,28 @@ async function createTextImagePng(lines: string[]) {
   return canvas.toDataURL("image/png");
 }
 
+const businessQuotes = [
+  "«Есть только одно корректное определение цели бизнеса: создавать клиента». — Питер Друкер",
+  "«Дружба, основанная на бизнесе, лучше, чем бизнес, основанный на дружбе». — Джон Рокфеллер",
+  "«Если Вашего бизнеса нет в Интернете, то Вас нет в бизнесе!». — Билл Гейтс",
+  "«Инновация отличает лидера от последователя». — Стив Джобс",
+  "«Неудача — это просто возможность начать снова, на этот раз более разумно». — Генри Форд",
+  "«Самые лучшие инвестиции — в знания». — Бенджамин Франклин",
+  "«Зарплату платит не работодатель — он только распоряжается деньгами. Зарплату платит клиент». — Генри Форд",
+  "«Первая и главная предпосылка успеха в бизнесе — это терпение». — Джон Рокфеллер",
+  "«Всякий раз, когда вы видите успешный бизнес, кто-то однажды принял смелое решение». — Питер Друкер",
+  "«Никогда не инвестируй в бизнес, в котором ничего не понимаешь». — Уоррен Баффетт"
+];
+
+let quoteQueue: string[] = [];
+
+function pickQuoteNoRepeatInSession() {
+  if (quoteQueue.length === 0) {
+    quoteQueue = [...businessQuotes].sort(() => Math.random() - 0.5);
+  }
+  return quoteQueue.shift() ?? businessQuotes[0];
+}
+
 /**
  * Скачивает PDF со счётом-демо (кириллица при успешной загрузке шрифта).
  */
@@ -44,12 +66,8 @@ export async function downloadInvoicePdf(filename: string) {
   try {
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595.28, 841.89]);
-    const lines = [
-      "Счёт (демо)",
-      "Сквозь тернии к звёздам",
-      "Билайн One — бизнес",
-      "Оплата: по реквизитам или карте (макет)."
-    ];
+    const quote = pickQuoteNoRepeatInSession();
+    const lines = [quote];
 
     const textPngDataUrl = await createTextImagePng(lines);
     if (textPngDataUrl) {

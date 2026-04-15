@@ -33,6 +33,15 @@ export function MissedCallsListScreen() {
           type="button"
           className="shrink-0 rounded-full border border-slate-200 p-2 dark:border-slate-600"
           aria-label="Озвучить"
+          onClick={() => {
+            if (!("speechSynthesis" in window)) return;
+            const u = new SpeechSynthesisUtterance(
+              "У вас 6 пропущенных звонков, которые требуется обработать."
+            );
+            u.lang = "ru-RU";
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(u);
+          }}
         >
           <Volume2 className="h-4 w-4 text-slate-500" />
         </button>

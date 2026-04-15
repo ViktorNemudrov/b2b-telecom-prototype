@@ -29,9 +29,11 @@ export function Button({
         size === "icon" && "h-11 w-11 px-0",
         variant === "primary" &&
           "bg-accent-yellow text-accent-dark shadow-softSm hover:brightness-95",
-        variant === "secondary" && "bg-white text-accent-dark shadow-softSm hover:bg-slate-50",
-        variant === "outline" && "border border-slate-200 bg-white text-accent-dark hover:bg-slate-50",
-        variant === "ghost" && "bg-transparent text-slate-700 hover:bg-slate-100",
+        variant === "secondary" &&
+          "bg-white text-accent-dark shadow-softSm hover:bg-slate-50 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600",
+        variant === "outline" &&
+          "border border-slate-200 bg-white text-accent-dark hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700",
+        variant === "ghost" && "bg-transparent text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700",
         className
       )}
       {...props}

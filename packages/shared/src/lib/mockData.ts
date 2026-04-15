@@ -205,7 +205,7 @@ export const standaloneCalls: CallItem[] = [
     title: "Доставка офисной техники",
     summary: "Доставка офисной техники. Подтверждение времени и получателя.",
     transcript: transcriptDelivery,
-    recordingUrl: "/greeting.wav",
+    recordingUrl: "/call-delivery.wav",
     talkBullets: [
       "Доставка офисной техники, план на 14:00",
       "Ориентировочно прибытие через 30 минут",
@@ -219,7 +219,7 @@ export const standaloneCalls: CallItem[] = [
     missed: true,
     summary: "Короткий контакт, секретарь принял сообщение.",
     transcript: "Секретарь: Клиент оставил номер для перезвона по счёту.",
-    recordingUrl: "/greeting.wav",
+    recordingUrl: "/call-invoice.wav",
     talkBullets: ["Секретарь зафиксировал запрос", "Требуется перезвон менеджеру"]
   },
   {
@@ -230,7 +230,7 @@ export const standaloneCalls: CallItem[] = [
     title: "Поставщик канцелярии",
     summary: "Уточнение по заказу канцтоваров.",
     transcript: "Клиент: Нужен счёт на дополнительную партию.\n\nСекретарь: Передал менеджеру.",
-    recordingUrl: "/greeting.wav",
+    recordingUrl: "/call-stationery.wav",
     talkBullets: ["Запрос счёта на дополнительную партию", "Передано менеджеру"]
   },
   {
@@ -240,7 +240,7 @@ export const standaloneCalls: CallItem[] = [
     missed: true,
     summary: "Входящий: уточнение по графику.",
     transcript: "Секретарь: Клиент спросил про график поставок.",
-    recordingUrl: "/greeting.wav",
+    recordingUrl: "/call-schedule.wav",
     talkBullets: ["Вопрос по графику поставок"]
   },
   {
@@ -251,7 +251,7 @@ export const standaloneCalls: CallItem[] = [
     title: "Вода офис",
     summary: "Заказ воды, уточнение адреса.",
     transcript: "Секретарь: Уточнили адрес и подъезд.",
-    recordingUrl: "/greeting.wav",
+    recordingUrl: "/call-water.wav",
     talkBullets: ["Уточнение адреса доставки воды"]
   },
   {
@@ -262,7 +262,7 @@ export const standaloneCalls: CallItem[] = [
     title: "Канцелярия",
     summary: "Мелкий заказ расходников.",
     transcript: "Секретарь: Оставили заявку на расходники.",
-    recordingUrl: "/greeting.wav",
+    recordingUrl: "/call-supplies.wav",
     talkBullets: ["Заявка на расходники"]
   }
 ];
@@ -325,6 +325,15 @@ export const invoicesMarch2026: InvoiceItem[] = [
     status: "paid",
     periodLabel: "март 2026"
   }
+];
+
+export const invoicesJanFebApr2026: InvoiceItem[] = [
+  { id: "inv-jan-1", amountRub: 38940, dueLabel: "до 29.01.26", meta: "Счёт 01/26 от 11.01.26", status: "paid", periodLabel: "январь 2026" },
+  { id: "inv-jan-2", amountRub: 17200, dueLabel: "до 30.01.26", meta: "УПД 18 от 14.01.26", status: "pending", periodLabel: "январь 2026" },
+  { id: "inv-feb-1", amountRub: 52110, dueLabel: "до 15.02.26", meta: "Счёт 02/08 от 05.02.26", status: "pay", periodLabel: "февраль 2026" },
+  { id: "inv-feb-2", amountRub: 8400, dueLabel: "до 28.02.26", meta: "УПД 37 от 19.02.26", status: "paid", periodLabel: "февраль 2026" },
+  { id: "inv-apr-1", amountRub: 44890, dueLabel: "до 18.04.26", meta: "Счёт 04/12 от 03.04.26", status: "pending", periodLabel: "апрель 2026" },
+  { id: "inv-apr-2", amountRub: 12990, dueLabel: "до 28.04.26", meta: "УПД 64 от 16.04.26", status: "pay", periodLabel: "апрель 2026" }
 ];
 
 export const appealsMock: AppealItem[] = [
@@ -408,12 +417,12 @@ export const feedItems: FeedItem[] = [
     id: "f2",
     kind: "tariff",
     stats: {
-      gbUsed: 25,
-      gbTotal: 100,
+      gbUsed: 298,
+      gbTotal: 350,
       minutesUsed: 15,
       minutesTotal: 500,
-      smsUsed: 500,
-      smsTotal: 1000
+      smsUsed: 100,
+      smsTotal: 300
     }
   },
   {
@@ -421,7 +430,7 @@ export const feedItems: FeedItem[] = [
     kind: "alert",
     title: "Баланс низкий",
     description: "Осталось ~ 1 240 ₽. Рекомендуем пополнить, чтобы не было ограничений.",
-    cta: "Пополнить"
+    cta: "Пополнить пакет"
   },
   {
     id: "f4",
@@ -447,10 +456,10 @@ export function getCallById(callId: string): CallItem | undefined {
   return undefined;
 }
 
-export const allInvoiceIds = invoicesMarch2026.map((i) => i.id);
+export const allInvoiceIds = [...invoicesMarch2026, ...invoicesJanFebApr2026].map((i) => i.id);
 
 export function getInvoiceById(id: string): InvoiceItem | undefined {
-  return invoicesMarch2026.find((i) => i.id === id);
+  return [...invoicesMarch2026, ...invoicesJanFebApr2026].find((i) => i.id === id);
 }
 
 export function getAppealById(id: string): AppealItem | undefined {

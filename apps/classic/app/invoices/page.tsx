@@ -4,27 +4,28 @@ import Link from "next/link";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
 import { cn } from "@shared/components/ui/cn";
-import { invoicesMarch2026 } from "@shared/lib/mockData";
+import { useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
 
 export default function InvoicesListPage() {
+  const invoices = useRuntimeInvoices();
   return (
     <>
       <AppHeader />
       <AppShell>
         <div className="safe-px space-y-4 pb-6 pt-2">
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Счета</h1>
+          <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Счета 2026</h1>
           <div className="space-y-2">
-            {invoicesMarch2026.map((inv) => (
+            {invoices.map((inv) => (
               <Link
                 key={inv.id}
-                href={`/invoices/${inv.id}`}
+                href={`/invoices/${inv.id}/`}
                 className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white p-4 shadow-softSm dark:border-slate-700 dark:bg-slate-800"
               >
                 <div>
                   <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {inv.amountRub.toLocaleString("ru-RU")} ₽ — {inv.dueLabel}
                   </div>
-                  <div className="text-xs text-slate-500">{inv.meta}</div>
+                  <div className="text-xs text-slate-500">{inv.periodLabel} · {inv.meta}</div>
                 </div>
                 <span
                   className={cn(

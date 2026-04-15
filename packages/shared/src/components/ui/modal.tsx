@@ -47,6 +47,7 @@ export function Modal({
             aria-modal="true"
             className={cn(
               "absolute bottom-0 left-0 right-0 mx-auto w-full max-w-[430px] rounded-t-3xl border border-slate-200 bg-white shadow-soft",
+              "dark:border-slate-700 dark:bg-slate-900",
               className
             )}
             initial={{ y: 24, opacity: 0 }}
@@ -55,10 +56,10 @@ export function Modal({
             transition={{ duration: 0.18, ease: "easeOut" }}
           >
             {title ? (
-              <div className="safe-px flex items-center justify-between gap-3 border-b border-slate-100 py-4">
-                <div className="text-base font-semibold">{title}</div>
+              <div className="safe-px flex items-center justify-between gap-3 border-b border-slate-100 py-4 dark:border-slate-700">
+                <div className="text-base font-semibold dark:text-slate-100">{title}</div>
                 <button
-                  className="rounded-xl px-3 py-2 text-sm text-slate-500 hover:bg-slate-100"
+                  className="rounded-xl px-3 py-2 text-sm text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
                   onClick={onClose}
                 >
                   Закрыть

@@ -12,6 +12,7 @@ import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { communicationLogMock } from "@shared/lib/dashboardMock";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
+import { isFeedMissedSeen, markFeedMissedSeen } from "@shared/lib/runtimeFlags";
 import { feedDateLabel, feedItems } from "@shared/lib/mockData";
 import { goSmartBack } from "@shared/lib/smartBack";
 
@@ -23,6 +24,7 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
   const [commTab, setCommTab] = React.useState<CommTab>("records");
   const [filter, setFilter] = React.useState<FilterKey>("all");
   const [date, setDate] = React.useState(() => new Date("2026-04-14T10:00:00.000Z"));
+  const [missedSeen, setMissedSeen] = React.useState(() => isFeedMissedSeen());
   const [openDatePicker, setOpenDatePicker] = React.useState(false);
   const [expandedTranscriptById, setExpandedTranscriptById] = React.useState<Record<string, boolean>>({});
 
@@ -81,17 +83,17 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-lg font-semibold text-slate-900">Коммуникация</h1>
+            <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Коммуникация</h1>
             <button
               type="button"
               onClick={() => openDevelopmentStub("Настройки ленты коммуникаций.")}
-              className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50"
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
               aria-label="Настройки"
             >
               <Settings className="h-4 w-4" />
             </button>
           </div>
-          <p className="mt-0.5 text-xs text-slate-500">{feedDateLabel}</p>
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{feedDateLabel}</p>
         </div>
       </div>
 
@@ -103,7 +105,7 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
             <button
               type="button"
               onClick={() => openDevelopmentStub("Поиск по коммуникациям.")}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 active:translate-y-[1px]"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 active:translate-y-[1px] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
               aria-label="Поиск"
             >
               <Search className="h-4 w-4" />
@@ -111,7 +113,7 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
             <button
               type="button"
               onClick={() => setOpenDatePicker(true)}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 active:translate-y-[1px]"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 active:translate-y-[1px] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
               aria-label="Календарь"
             >
               <Calendar className="h-4 w-4" />
@@ -126,7 +128,7 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
                 "rounded-full border px-3 py-2 text-xs font-semibold transition active:translate-y-[1px]",
                 filter === "team"
                   ? "border-transparent bg-accent-dark text-white shadow-softSm"
-                  : "border-slate-200 bg-white text-slate-800 shadow-softSm hover:bg-slate-50"
+                  : "border-slate-200 bg-white text-slate-800 shadow-softSm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               ].join(" ")}
             >
               Команда
@@ -138,27 +140,33 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
                 "rounded-full border px-3 py-2 text-xs font-semibold transition active:translate-y-[1px]",
                 filter === "all"
                   ? "border-transparent bg-accent-dark text-white shadow-softSm"
-                  : "border-slate-200 bg-white text-slate-800 shadow-softSm hover:bg-slate-50"
+                  : "border-slate-200 bg-white text-slate-800 shadow-softSm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               ].join(" ")}
             >
               Все звонки
             </button>
             <button
               type="button"
-              onClick={() => setFilter("missed")}
+              onClick={() => {
+                markFeedMissedSeen();
+                setMissedSeen(true);
+                router.push("/missed-calls/");
+              }}
               className={[
                 "inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition active:translate-y-[1px]",
                 filter === "missed"
                   ? "border-transparent bg-accent-dark text-white shadow-softSm"
-                  : "border-slate-200 bg-white text-slate-800 shadow-softSm hover:bg-slate-50"
+                  : "border-slate-200 bg-white text-slate-800 shadow-softSm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               ].join(" ")}
             >
               Пропущенные
-              <span className="rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">16</span>
+              {!missedSeen ? (
+                <span className="rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">16</span>
+              ) : null}
             </button>
           </div>
 
-          <p className="text-[11px] leading-relaxed text-slate-500">
+          <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
             Доступное хранилище <span className="font-semibold text-slate-700">0.15%</span> · 1.5 МБ из 1 ГБ
           </p>
 
@@ -170,7 +178,7 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
                 "rounded-full border px-3 py-1.5 text-[11px] font-semibold transition active:translate-y-[1px]",
                 filter === "incoming"
                   ? "border-transparent bg-slate-800 text-white"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               ].join(" ")}
             >
               Входящие
@@ -182,7 +190,7 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
                 "rounded-full border px-3 py-1.5 text-[11px] font-semibold transition active:translate-y-[1px]",
                 filter === "reports"
                   ? "border-transparent bg-slate-800 text-white"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               ].join(" ")}
             >
               Отчёты
@@ -194,7 +202,7 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
               <CardContent className="px-2 pb-2 pt-1">
                 {commGroups.map(([date, rows]) => (
                   <div key={date}>
-                    <div className="px-2 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                    <div className="px-2 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                       {date}
                     </div>
                     <div className="divide-y divide-slate-100 px-2">

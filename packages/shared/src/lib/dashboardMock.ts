@@ -63,7 +63,7 @@ export type CommLogRow = {
 export const communicationLogMock: CommLogRow[] = [
   {
     id: "r1",
-    dateGroup: "18 мая, вт",
+    dateGroup: "18 марта, вт",
     title: "+7 (946) 525 00-24",
     subtitle: "Принял секретарь",
     duration: "2:42 сек",
@@ -74,7 +74,7 @@ export const communicationLogMock: CommLogRow[] = [
   },
   {
     id: "r2",
-    dateGroup: "18 мая, вт",
+    dateGroup: "18 марта, вт",
     title: "Доставка офисной техники",
     subtitle: "Принял секретарь",
     duration: "54 сек",
@@ -85,7 +85,7 @@ export const communicationLogMock: CommLogRow[] = [
   },
   {
     id: "r3",
-    dateGroup: "18 мая, вт",
+    dateGroup: "18 марта, вт",
     title: "+7 (906) 062 60-26",
     subtitle: "Принял секретарь",
     duration: "25 сек",
@@ -96,7 +96,7 @@ export const communicationLogMock: CommLogRow[] = [
   },
   {
     id: "r4",
-    dateGroup: "19 мая, ср",
+    dateGroup: "19 марта, ср",
     title: "+7 (904) 023 53-21",
     subtitle: "Принял секретарь",
     duration: "48 сек",
@@ -107,7 +107,7 @@ export const communicationLogMock: CommLogRow[] = [
   },
   {
     id: "r5",
-    dateGroup: "19 мая, ср",
+    dateGroup: "19 марта, ср",
     title: "Вода офис",
     subtitle: "Принял секретарь",
     duration: "32 сек",
@@ -118,7 +118,7 @@ export const communicationLogMock: CommLogRow[] = [
   },
   {
     id: "r6",
-    dateGroup: "19 мая, ср",
+    dateGroup: "19 марта, ср",
     title: "Канцелярия",
     subtitle: "Принял секретарь",
     duration: "12 сек",
