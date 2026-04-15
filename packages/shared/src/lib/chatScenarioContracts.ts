@@ -11,7 +11,7 @@ export type DeterministicScenarioCase = {
 };
 
 export const specialScenarioCases: SpecialScenarioCase[] = [
-  { prompt: "ты чмо", contains: "нецензурную лексику" },
+  { prompt: "ты чмо", contains: "Вроде бы взрослый человек" },
   { prompt: "что ты умеешь", contains: "умею" },
   { prompt: "привет", contains: "здравствуйте" },
   { prompt: "добрый вечер", contains: "здравствуйте" },
@@ -20,11 +20,23 @@ export const specialScenarioCases: SpecialScenarioCase[] = [
 
 export const deterministicScenarioCases: DeterministicScenarioCase[] = [
   { prompt: "покажи неоплаченные счета", expectWidget: "invoices-unpaid-inline", contains: "Показываю неоплаченные счета" },
+  { prompt: "Мои сервисы", contains: "По сервисам могу показать" },
   { prompt: "счета за март", expectWidget: "invoices-month", contains: "Показываю счета за март" },
   { prompt: "счета за февраль", expectWidget: "invoices-month", contains: "Показываю счета за февраль" },
+  { prompt: "Мои счета", contains: "По счетам: всего" },
   { prompt: "какие у меня счета", contains: "По счетам: всего" },
+  { prompt: "Счета за март 2026", expectWidget: "invoices-month", contains: "Показываю счета за март" },
   { prompt: "сколько пропущенных звонков", expectWidget: "missed-calls-inline", contains: "пропущенных" },
+  { prompt: "Список звонков", expectWidget: "weekly-stats-expanded", contains: "расширенную сводку звонков за неделю" },
+  { prompt: "Причины пропусков звонков", expectWidget: "weekly-stats-expanded", contains: "расширенную сводку звонков за неделю" },
+  { prompt: "Статистика по времени суток", expectWidget: "weekly-stats-expanded", contains: "расширенную сводку звонков за неделю" },
+  { prompt: "Сравнение звонков с предыдущей неделей", expectWidget: "weekly-stats-expanded", contains: "расширенную сводку звонков за неделю" },
+  { prompt: "Средняя конвертация в лид", expectWidget: "weekly-stats-expanded", contains: "расширенную сводку звонков за неделю" },
   { prompt: "звонки за неделю", expectWidget: "weekly-stats-expanded", contains: "За неделю:" },
+  { prompt: "Секретарь", contains: "сценарий «Секретарь»" },
+  { prompt: "Увеличить срок хранения звонков", contains: "увеличение срока хранения" },
+  { prompt: "Сводка дня", contains: "Сводка дня:" },
+  { prompt: "Запусти рассылку", contains: "Подготовил сценарий рассылки" },
   { prompt: "обращения", contains: "По обращениям" },
   { prompt: "активные обращения", expectNavigateTo: "/appeals/", contains: "Открываю раздел" },
   { prompt: "какая разница между суммой счетов в феврале и марте", contains: "Сравнение счетов" },

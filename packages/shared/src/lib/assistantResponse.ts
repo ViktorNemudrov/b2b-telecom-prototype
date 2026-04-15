@@ -69,7 +69,7 @@ export function resolveSpecialMockResponse(prompt: string): AssistantPayload | n
   const { clean, compact } = normalizePrompt(prompt);
   if (containsProfanity(clean)) {
     return {
-      text: "Вижу нецензурную лексику. Давайте продолжим по-деловому: счета, звонки, обращения или аналитика.",
+      text: "Вроде бы взрослый человек, предприниматель, а такой некультурный!",
       suggested: ["Счета", "Звонки", "Обращения"]
     };
   }
@@ -124,6 +124,55 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
     };
   }
 
+  const asksServices = hasAny(clean, compact, ["мои сервисы", "сервисы", "услуги", "подключенные сервисы"]);
+  if (asksServices) {
+    return {
+      text: "По сервисам могу показать активные пакеты, остатки и рекомендации по оптимизации расходов.",
+      suggested: ["Остаток по тарифу", "Как оптимизировать остаток пакета", "Пополнить пакет минут"]
+    };
+  }
+
+  const asksDailySummary = hasAny(clean, compact, ["сводка дня", "дневная сводка", "итоги дня"]);
+  if (asksDailySummary) {
+    return {
+      text:
+        "Сводка дня: 15 пропущенных, 3 обработано, 4 клиента в риске по оплате. Могу открыть пропущенные, показать счета и подготовить отчет.",
+      suggested: ["Пропущенные звонки", "Покажи неоплаченные", "Сформировать отчет"]
+    };
+  }
+
+  const asksCampaign = hasAny(clean, compact, ["запусти рассылку", "запуск рассылки", "сделай рассылку"]);
+  if (asksCampaign) {
+    return {
+      text: "Подготовил сценарий рассылки по клиентам с риском неоплаты. Могу открыть сегмент и запустить черновик.",
+      actions: [
+        {
+          type: "cta",
+          title: "Запустить рассылку",
+          subtitle: "Сегмент: клиенты с риском неоплаты",
+          ctaLabel: "Запустить",
+          intent: "start-campaign"
+        }
+      ],
+      suggested: ["Посмотри сегмент", "Согласовать текст", "Отложить на 13:00"]
+    };
+  }
+
+  const asksWeeklyCallsFollowUp = hasAny(clean, compact, [
+    "список звонков",
+    "причины пропусков звонков",
+    "статистика по времени суток",
+    "сравнение звонков с предыдущей неделей",
+    "средняя конвертация в лид"
+  ]);
+  if (asksWeeklyCallsFollowUp) {
+    return {
+      text: "Показываю расширенную сводку звонков за неделю с детализацией по вашему вопросу.",
+      widget: "weekly-stats-expanded",
+      suggested: ["Пропущенные звонки", "Причины пропусков звонков", "Увеличить срок хранения звонков"]
+    };
+  }
+
   const asksInvoicesDomain = hasAny(clean, compact, ["счета", "счет", "счёт", "оплата", "неоплаченные", "долг"]);
   if (asksInvoicesDomain && monthDetected) {
     return {
@@ -141,8 +190,15 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
     };
   }
 
-  const asksCallsDomain = hasAny(clean, compact, ["звонки", "звонок", "пропущенные", "пропущенный", "перезвон", "журнал звонков", "телефон"]);
+  const asksCallsDomain = hasAny(clean, compact, ["звонки", "звонок", "звонков", "пропущенные", "пропущенный", "перезвон", "журнал звонков", "телефон"]);
   if (asksCallsDomain) {
+    if (hasAny(clean, compact, ["увеличить срок хранения звонков", "срок хранения звонков", "продлить хранение звонков", "хранение записей звонков"])) {
+      return {
+        text:
+          "Готово: могу оформить запрос на увеличение срока хранения записей звонков с 60 до 180 дней. Подтвердить создание обращения?",
+        suggested: ["Да, создать обращение", "Открыть обращения", "Какие условия хранения сейчас"]
+      };
+    }
     if (hasAny(clean, compact, ["звонки за неделю", "сводка звонков", "недельный отчет"])) {
       return {
         text: "За неделю: 126 звонков, 6 пропущенных, средняя длительность 2:40. Показываю расширенную сводку и могу дать следующий шаг.",
@@ -159,6 +215,13 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
   }
 
   const asksAppealsDomain = hasAny(clean, compact, ["обращения", "обращение", "тикет", "заявка"]);
+  const asksSecretary = hasAny(clean, compact, ["секретарь", "помощник секретарь", "виртуальный секретарь"]);
+  if (asksSecretary) {
+    return {
+      text: "Открываю сценарий «Секретарь»: могу показать пропущенные, записи разговоров и подготовить черновик ответа клиенту.",
+      suggested: ["Пропущенные звонки", "Показать записи звонков", "Сформировать ответ клиенту"]
+    };
+  }
   const asksActiveAppeals = hasAny(clean, compact, ["активные обращения", "активные заявки", "открой активные обращения"]);
   if (asksActiveAppeals) {
     return { text: "Открываю раздел с обращениями. Покажу активные и можно сразу продолжить диалог.", navigateTo: "/appeals/" };

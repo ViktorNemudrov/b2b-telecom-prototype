@@ -45,7 +45,7 @@ describe("assistantResponse routing", () => {
   it("routes profanity to special mock", () => {
     const res = resolveSpecialMockResponse("ты чмо");
     expect(res).not.toBeNull();
-    expect(res?.text).toContain("нецензурную лексику");
+    expect(res?.text).toContain("Вроде бы взрослый человек");
   });
 
   it("routes capabilities to special mock", () => {
@@ -80,6 +80,18 @@ describe("assistantResponse routing", () => {
   it("returns deterministic calls widget", () => {
     const res = resolveDeterministicResponse("сколько пропущенных звонков", invoicesMarch2026);
     expect(res?.widget).toBe("missed-calls-inline");
+  });
+
+  it("routes secretary prompt to deterministic path", () => {
+    const res = resolveDeterministicResponse("Секретарь", invoicesMarch2026);
+    expect(res).not.toBeNull();
+    expect(res?.text).toContain("сценарий «Секретарь»");
+  });
+
+  it("routes call storage prompt to deterministic path", () => {
+    const res = resolveDeterministicResponse("Увеличить срок хранения звонков", invoicesMarch2026);
+    expect(res).not.toBeNull();
+    expect(res?.text).toContain("увеличение срока хранения");
   });
 
   it("returns null for query that should go to live AI", () => {
