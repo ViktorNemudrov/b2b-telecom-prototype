@@ -391,33 +391,41 @@ export function AiAssistantScreen() {
             style={{ touchAction: "pan-y" }}
           >
             {heroCard === 0 && showMissedCard ? (
-              <Card className="min-h-[160px] rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
-                <CardContent className="flex min-h-[160px] items-start gap-3 pb-3 pt-3">
-                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FFE7E7] dark:bg-rose-900/40">
-                    <PhoneOff className="h-4 w-4 text-[#EB4A4A]" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1 text-sm font-semibold text-[#343A4A] dark:text-slate-100">
-                      Пропущенные звонки
+              <button
+                type="button"
+                className="block w-full text-left"
+                onClick={() => {
+                  markMissedCallsSeen();
+                  setShowMissedCard(false);
+                  router.push("/missed-calls/");
+                }}
+              >
+                <Card className="min-h-[120px] rounded-[24px] border-[#E8EAED] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
+                  <CardContent className="flex min-h-[120px] items-center gap-3 pb-3 pt-3">
+                    <span className="relative shrink-0">
+                      <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#F2F2F7] dark:bg-slate-700">
+                        <PhoneOff className="h-6 w-6 text-[#E53935]" />
+                      </span>
+                      <span className="absolute -right-1 -top-1 flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#E53935] px-1 text-[11px] font-bold text-white">
+                        x2
+                      </span>
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <div className="mt-0.5 truncate text-[18px] font-semibold leading-tight text-[#1F2430] dark:text-slate-100">
+                          Доставка офисной техники
+                        </div>
+                        <span className="shrink-0 text-[12px] font-medium tabular-nums text-[#C3C7D4] dark:text-slate-400">
+                          12:42
+                        </span>
+                      </div>
+                      <div className="mt-1 text-[14px] leading-tight text-[#7C8597] dark:text-slate-300">
+                        Пропущенный
+                      </div>
                     </div>
-                    <div className="text-xs text-[#A2A8B8]">за последнюю неделю</div>
-                    <p className="mt-1 text-xs leading-relaxed text-[#6B7280] dark:text-slate-300">
-                      У вас 6 пропущенных звонков. Откройте список, чтобы быстро перезвонить клиентам.
-                    </p>
-                    <button
-                      type="button"
-                      className="mt-2 text-xs font-semibold text-accent-dark underline dark:text-accent-yellow"
-                      onClick={() => {
-                        markMissedCallsSeen();
-                        setShowMissedCard(false);
-                        router.push("/missed-calls/");
-                      }}
-                    >
-                      Открыть пропущенные
-                    </button>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </button>
             ) : null}
             {(heroCard === 1 || !showMissedCard) && showWeeklyCard ? (
               <Card className="min-h-[160px] rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
