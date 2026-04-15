@@ -39,7 +39,7 @@ export default function InvoicesListPage() {
       <AppShell>
         <div className="safe-px space-y-4 pb-6 pt-2">
           <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Счета 2026</h1>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2">
             <label htmlFor="invoice-sort-classic" className="text-sm text-slate-600 dark:text-slate-300">
               Сортировка:
             </label>
@@ -47,13 +47,13 @@ export default function InvoicesListPage() {
               id="invoice-sort-classic"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              className="w-full max-w-[260px] rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
             >
-              <option value="date_desc">По дате (сначала новые)</option>
-              <option value="date_asc">По дате (сначала старые)</option>
-              <option value="amount_desc">По сумме (сначала дорогие)</option>
-              <option value="amount_asc">По сумме (сначала дешевые)</option>
-              <option value="status">По статусу (к оплате → в оплате → оплаченные)</option>
+              <option value="date_desc">Дата: новые</option>
+              <option value="date_asc">Дата: старые</option>
+              <option value="amount_desc">Сумма: больше</option>
+              <option value="amount_asc">Сумма: меньше</option>
+              <option value="status">Статус</option>
             </select>
           </div>
           <div className="space-y-2">

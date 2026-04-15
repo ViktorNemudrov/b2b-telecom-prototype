@@ -3,7 +3,6 @@
 import * as React from "react";
 import { ChevronRight, Volume2 } from "lucide-react";
 import { Card, CardContent } from "@shared/components/ui/card";
-import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { followUpQuestionsWeekly, weeklyCallStatsMock } from "@shared/lib/mockData";
 
 function DotChart() {
@@ -59,7 +58,17 @@ export function WeeklyStatsWidget({
             type="button"
             className="shrink-0 self-start rounded-full border border-slate-200 p-2 dark:border-slate-600"
             aria-label="Озвучить"
-            onClick={() => openDevelopmentStub("Озвучивание сводки (демо).")}
+            onClick={() => {
+              if (typeof window === "undefined" || !("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+                return;
+              }
+              window.speechSynthesis.cancel();
+              const u = new SpeechSynthesisUtterance(
+                `За неделю звонков ${s.total}, входящих ${s.incoming}, исходящих ${s.outgoing}, пропущенных 6.`
+              );
+              u.lang = "ru-RU";
+              window.speechSynthesis.speak(u);
+            }}
           >
             <Volume2 className="h-4 w-4 text-slate-500" />
           </button>
@@ -115,7 +124,7 @@ export function WeeklyStatsWidget({
                   <button
                     type="button"
                     className="flex w-full items-center justify-between py-2.5 text-left text-sm text-slate-800 dark:text-slate-200"
-                    onClick={() => openDevelopmentStub(`Раздел: ${q}`)}
+                    onClick={() => onAskInChat?.(q)}
                   >
                     {q}
                     <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />

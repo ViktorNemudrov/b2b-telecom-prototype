@@ -30,9 +30,12 @@ export function PwaInstallPrompt() {
     const ua = window.navigator.userAgent.toLowerCase();
     const isIos = /iphone|ipad|ipod/.test(ua);
     const isSafari = /safari/.test(ua) && !/crios|fxios|edgios/.test(ua);
+    let openTimer: number | null = null;
     if (isIos && isSafari) {
       setIosHint(true);
       setShowInstall(true);
+    } else {
+      openTimer = window.setTimeout(() => setShowInstall(true), 1200);
     }
 
     const onBeforeInstallPrompt = (event: Event) => {
@@ -54,13 +57,41 @@ export function PwaInstallPrompt() {
     window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
     window.addEventListener("appinstalled", onAppInstalled);
     return () => {
+      if (openTimer) window.clearTimeout(openTimer);
       window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
       window.removeEventListener("appinstalled", onAppInstalled);
     };
   }, []);
 
-  if (!deferredPrompt && !iosHint) return null;
   if (!showInstall) return null;
+  if (!deferredPrompt && !iosHint) {
+    return (
+      <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 mx-auto w-full max-w-[430px] px-4">
+        <div className="pointer-events-auto rounded-2xl border border-[#E8EAED] bg-white/95 p-3 shadow-soft backdrop-blur">
+          <div className="text-sm font-semibold text-[#212529]">Установить Билайн.One</div>
+          <div className="mt-1 text-xs text-[#6B7280]">
+            В браузере установка может требовать меню «Установить приложение» или «Добавить на экран Домой».
+          </div>
+          <div className="mt-3 flex items-center justify-end gap-2">
+            <button
+              type="button"
+              className="rounded-full px-3 py-1.5 text-xs font-semibold text-[#8E8E93]"
+              onClick={() => {
+                try {
+                  window.localStorage.setItem("pwa-install-dismissed", "1");
+                } catch {
+                  // ignore
+                }
+                setShowInstall(false);
+              }}
+            >
+              Понятно
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 mx-auto w-full max-w-[430px] px-4">

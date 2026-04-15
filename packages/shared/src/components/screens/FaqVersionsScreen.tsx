@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { PageBackLink } from "@shared/components/PageBackLink";
 import { Card, CardContent } from "@shared/components/ui/card";
-import { goSmartBack } from "@shared/lib/smartBack";
 
 const versions = [
   {
@@ -68,19 +66,9 @@ const versions = [
 ];
 
 export function FaqVersionsScreen({ backHref = "/settings/" }: { backHref?: string }) {
-  const router = useRouter();
   return (
     <div className="safe-px mx-auto max-w-[760px] space-y-4 pb-8 pt-2">
-      <button
-        type="button"
-        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200"
-        onClick={() => goSmartBack(router, backHref)}
-      >
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700">
-          <ChevronLeft className="h-4 w-4" />
-        </span>
-        Назад
-      </button>
+      <PageBackLink href={backHref} />
 
       <Card>
         <CardContent className="space-y-2 pb-4 pt-4">

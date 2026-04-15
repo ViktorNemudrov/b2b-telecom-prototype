@@ -25,7 +25,7 @@ export function buildLiveAiMessages(prompt: string, history: LiveAiMessage[]): L
   const preface: LiveAiMessage = {
     role: "system",
     content:
-      "Ты помощник для B2B кабинета связи. Отвечай кратко, по делу, на русском языке. Если не уверен в данных, честно сообщи, что это предположение."
+      "Ты помощник для B2B кабинета связи. Отвечай кратко, по делу, на русском языке. Никакой воды, шуток и оффтопа. Если не уверен в данных, честно сообщи, что это предположение."
   };
   const safeHistory = history.slice(-6).filter((m) => m.content.trim());
   return [preface, ...safeHistory, { role: "user", content: prompt.trim() }];
@@ -57,7 +57,7 @@ export async function getLiveAiText(args: {
     body: JSON.stringify({
       model,
       messages,
-      temperature: 0.35
+      temperature: 0.2
     }),
     signal
   });

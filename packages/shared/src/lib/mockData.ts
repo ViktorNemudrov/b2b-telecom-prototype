@@ -15,7 +15,8 @@ export type ChatWidget =
   | "invoices-march"
   | "appeals-summary"
   | "invoices-month"
-  | "missed-calls-inline";
+  | "missed-calls-inline"
+  | "invoices-unpaid-inline";
 
 /** После ответа ассистента — клиентский переход (демо-навигация по ТЗ). */
 export type ChatNavigateTo = "/missed-calls/" | "/appeals/" | "/invoices/";

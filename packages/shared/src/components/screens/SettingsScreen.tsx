@@ -2,15 +2,14 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ChevronLeft, Headphones, Lock, Sliders, Sun } from "lucide-react";
 import { useAppTheme } from "@shared/components/ThemeProvider";
+import { PageBackLink } from "@shared/components/PageBackLink";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { cn } from "@shared/components/ui/cn";
 import { userProfile } from "@shared/lib/mockData";
-import { goSmartBack } from "@shared/lib/smartBack";
 
 export function SettingsScreen({
   appealsHref = "/appeals/",
@@ -23,7 +22,6 @@ export function SettingsScreen({
   faqHref?: string;
   qaHref?: string;
 }) {
-  const router = useRouter();
   const { mode, setMode } = useAppTheme();
   const [notificationsOn, setNotificationsOn] = React.useState(true);
 
@@ -33,16 +31,7 @@ export function SettingsScreen({
 
   return (
     <div className="safe-px mx-auto max-w-[430px] space-y-4 pb-10 pt-2">
-      <button
-        type="button"
-        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200"
-        onClick={() => goSmartBack(router, backHref)}
-      >
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700">
-          <ChevronLeft className="h-4 w-4" />
-        </span>
-        Назад
-      </button>
+      <PageBackLink href={backHref} />
 
       <div className="flex flex-col items-center gap-1 text-center">
         <div className="text-lg font-bold text-slate-900 dark:text-slate-100">

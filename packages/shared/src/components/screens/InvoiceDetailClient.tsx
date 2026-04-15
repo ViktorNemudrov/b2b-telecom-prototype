@@ -3,10 +3,10 @@
 import * as React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { Modal } from "@shared/components/ui/modal";
+import { PageBackLink } from "@shared/components/PageBackLink";
 import { cn } from "@shared/components/ui/cn";
 import { downloadInvoicePdf } from "@shared/lib/minimalPdf";
 import { markInvoicePaid, useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
@@ -73,14 +73,7 @@ export function InvoiceDetailClient({
 
   return (
     <div className="space-y-4 pb-8">
-      <button
-        type="button"
-        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200"
-        onClick={() => goSmartBack(router, backHref)}
-      >
-        <ChevronLeft className="h-4 w-4" />
-        Назад
-      </button>
+      <PageBackLink href={backHref} />
 
       <Card className="dark:border-slate-700">
         <CardContent className="space-y-2 pb-5 pt-5">
@@ -152,12 +145,19 @@ export function InvoiceDetailClient({
             Оплатить по QR-коду
           </Button>
           {qrActive ? (
-            <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-xs text-slate-500 dark:border-slate-600 dark:text-slate-300">
-              <div className="mx-auto mb-3 h-32 w-32 overflow-hidden rounded-xl border-2 border-accent-yellow bg-black">
-                <video ref={qrVideoRef} className="h-full w-full object-cover" muted playsInline autoPlay />
+            <>
+              <div className="rounded-xl border border-dashed border-slate-300 p-3 text-center text-xs text-slate-500 dark:border-slate-600 dark:text-slate-300">
+                Камера активна 5 сек. Открыт увеличенный видоискатель.
               </div>
-              Камера активна 5 сек. Наведите видоискатель на QR-код.
-            </div>
+              <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/70 p-4">
+                <div className="w-full max-w-[360px] rounded-2xl border-2 border-accent-yellow bg-black p-2 shadow-xl">
+                  <div className="aspect-square overflow-hidden rounded-xl border border-accent-yellow/60">
+                    <video ref={qrVideoRef} className="h-full w-full object-cover" muted playsInline autoPlay />
+                  </div>
+                  <p className="mt-2 text-center text-xs text-slate-200">Наведите камеру на QR-код</p>
+                </div>
+              </div>
+            </>
           ) : null}
           <Button
             variant="secondary"

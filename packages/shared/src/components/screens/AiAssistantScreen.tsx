@@ -8,7 +8,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Pause, Play, Sparkles, X } from "lucide-react";
 import { InvoicesMarchWidget } from "@shared/components/ai/InvoicesMarchWidget";
 import { WeeklyStatsWidget } from "@shared/components/ai/WeeklyStatsWidget";
-import { MissedCallSummaryCard } from "@shared/components/MissedCallSummaryCard";
 import { ActionCard } from "@shared/components/ActionCard";
 import { BottomInputBar } from "@shared/components/BottomInputBar";
 import { ChatBubble } from "@shared/components/ChatBubble";
@@ -18,7 +17,6 @@ import { cn } from "@shared/components/ui/cn";
 import {
   chatHistoryPresets,
   defaultChat,
-  getDemoNavigationIntent,
   recentQueryChips,
   userProfile,
   standaloneCalls,
@@ -26,9 +24,12 @@ import {
   type InvoiceItem
 } from "@shared/lib/mockData";
 import { getLiveAiText, type LiveAiMessage } from "@shared/lib/liveAi";
-import { resolveAnalyticsResponse } from "@shared/lib/chatAnalytics";
-import { detectIntent, type ChatIntentId } from "@shared/lib/chatIntentRegistry";
-import { containsProfanity } from "@shared/lib/profanity";
+import {
+  buildSafeLiveFallbackResponse,
+  isLiveResponseReliable,
+  resolveDeterministicResponse,
+  resolveSpecialMockResponse
+} from "@shared/lib/assistantResponse";
 import { useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
 import { isMissedCallsSeen, markMissedCallsSeen } from "@shared/lib/runtimeFlags";
 
@@ -42,524 +43,19 @@ function nowIso() {
   return new Date().toISOString();
 }
 
-/** Разнообразные ответы без повторения одной и той же фразы (демо). */
-function hashPick(prompt: string, modulo: number) {
-  let h = 0;
-  for (let i = 0; i < prompt.length; i++) h = (h * 31 + prompt.charCodeAt(i)) | 0;
-  return Math.abs(h) % modulo;
-}
-
-function mockAiResponse(prompt: string, runtimeInvoices: InvoiceItem[]): ChatMessage {
-  const p = prompt.toLowerCase();
-  const clean = p
-    .replace(/[^a-zа-яё0-9\s]/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  const compact = clean.replace(/\s+/g, "");
-  const hasAny = (samples: string[]) => samples.some((s) => clean.includes(s) || compact.includes(s.replace(/\s+/g, "")));
-
-  const hasGreeting = hasAny([
-    "привет",
-    "здравствуй",
-    "здравствуйте",
-    "добрый день",
-    "доброго дня",
-    "доброе утро",
-    "добрый вечер",
-    "хай"
-  ]);
-  const asksHowAreYou = hasAny(["как дела", "как ты", "как поживаешь", "как жизнь"]);
-  const asksCapabilities = hasAny(["что ты умеешь", "что умеешь", "что ты можешь", "твои возможности", "что можешь"]);
-  const asksTime = hasAny(["сколько времени", "который час", "время сейчас", "текущее время"]);
-  const asksDate = hasAny(["какое сегодня число", "какая дата", "сегодняшняя дата", "какой сегодня день"]);
-  const asksWeather = hasAny(["погода", "дождь", "снег", "температура", "градус", "ветер"]);
-  const asksRates = hasAny(["курс доллара", "курс евро", "курс валют", "доллар", "евро", "usd", "eur"]);
-  const asksNews = hasAny(["новости", "что нового", "последние новости", "что в мире"]);
-  const asksInvoices = hasAny(["счет", "счета", "счёт", "счёта"]);
-  const monthDetected =
-    hasAny(["январ"]) ? "январь" : hasAny(["феврал"]) ? "февраль" : hasAny(["март"]) ? "март" : hasAny(["апрел"]) ? "апрель" : null;
-  const asksCalculator = hasAny([
-    "сколько будет",
-    "посчитай",
-    "вычисли",
-    "калькулятор",
-    "плюс",
-    "минус",
-    "умножить",
-    "разделить"
-  ]);
-  const asksUnits = hasAny([
-    "переведи",
-    "конвертируй",
-    "км в",
-    "метр в",
-    "кг в",
-    "литр в",
-    "минута в",
-    "час в"
-  ]);
-  const asksReminder = hasAny(["напомни", "напоминание", "поставь напоминание", "не забудь"]);
-  const asksSecretary = hasAny(["секретарь", "помощник", "ассистент по звонкам"]);
-  const asksCallsDomain = hasAny([
-    "звонки",
-    "звонок",
-    "пропущенные",
-    "пропущенный",
-    "перезвон",
-    "журнал звонков",
-    "телефон"
-  ]);
-  const asksInvoicesDomain = hasAny(["счета", "счет", "счёт", "оплата", "неоплаченные", "долг"]);
-  const asksAppealsDomain = hasAny(["обращения", "обращение", "тикет", "заявка"]);
-  const hasProfanity = containsProfanity(clean);
-
-  if (hasProfanity) {
-    return {
-      id: id(),
-      role: "ai",
-      text: "Вроде бы взрослый человек, предприниматель, а такой некультурный",
-      createdAt: nowIso()
-    };
-  }
-
-  const analytics = resolveAnalyticsResponse(prompt, runtimeInvoices, standaloneCalls);
-  if (analytics) {
-    return {
-      id: id(),
-      role: "ai",
-      createdAt: nowIso(),
-      ...analytics
-    };
-  }
-
-  if (asksHowAreYou) {
-    return {
-      id: id(),
-      role: "ai",
-      text: "Дела у меня хорошо, вот работаю на благо В2В в Билайн",
-      createdAt: nowIso()
-    };
-  }
-
-  if (asksCapabilities) {
-    return {
-      id: id(),
-      role: "ai",
-      text:
-        "Сейчас в приложении я умею:\n" +
-        "- Показывать счета по месяцам, статусы и суммы\n" +
-        "- Сравнивать месяцы, считать разницу, доли и динамику\n" +
-        "- Подсказывать по неоплаченным счетам и оплате\n" +
-        "- Показывать пропущенные звонки и открывать карточки звонков\n" +
-        "- Запускать недельные сводки и рекомендации\n" +
-        "- Работать с обращениями и быстрыми действиями\n" +
-        "- Отвечать на базовые вопросы: время, дата, погода, курсы, новости\n" +
-        "- Делать простые расчеты и конвертацию единиц\n" +
-        "- Выгружать журнал диалога\n\n" +
-        "Но помните, что я всего лишь демо образец, собранный без разработчиков на Витиной коленке.",
-      createdAt: nowIso(),
-      suggested: ["Счета за февраль", "Звонки за неделю", "Мои обращения"]
-    };
-  }
-
-  if (asksSecretary && !asksCallsDomain && !asksInvoicesDomain && !asksAppealsDomain) {
-    return {
-      id: id(),
-      role: "ai",
-      text:
-        "Секретарь готов. Что открыть: звонки, счета или обращения?\n\n" +
-        "Могу сразу показать пропущенные в чате, открыть список счетов или перейти к обращениям.",
-      createdAt: nowIso(),
-      suggested: ["Звонки", "Счета", "Обращения"]
-    };
-  }
-
-  if (asksInvoicesDomain && monthDetected) {
-    return {
-      id: id(),
-      role: "ai",
-      text: `Показываю счета за ${monthDetected} в чате.`,
-      createdAt: nowIso(),
-      widget: "invoices-month",
-      invoiceMonth: monthDetected,
-      suggested: ["Сравни с мартом", "Покажи неоплаченные", "Открыть список счетов"]
-    };
-  }
-
-  if (asksInvoicesDomain) {
-    const unpaid = runtimeInvoices.filter((inv) => inv.status === "pay").length;
-    return {
-      id: id(),
-      role: "ai",
-      text: `По счетам: всего ${runtimeInvoices.length}, неоплаченных ${unpaid}. Могу показать их в чате или открыть список счетов.`,
-      createdAt: nowIso(),
-      suggested: ["Покажи неоплаченные", "Счета за февраль", "Открыть список счетов"]
-    };
-  }
-
-  if (asksCallsDomain) {
-    if (hasAny(["звонки за неделю", "сводка звонков", "недельный отчет"])) {
-      return {
-        id: id(),
-        role: "ai",
-        text:
-          "За неделю: 126 звонков, 6 пропущенных, средняя длительность 2:40. Показываю расширенную сводку и могу дать следующий шаг.",
-        createdAt: nowIso(),
-        widget: "weekly-stats-expanded",
-        suggested: ["Пропущенные звонки", "Статистика по времени суток", "Кого перезвонить в первую очередь"]
-      };
-    }
-    const missed = standaloneCalls.filter((c) => c.missed).length;
-    return {
-      id: id(),
-      role: "ai",
-      text: `По звонкам: всего ${standaloneCalls.length}, пропущенных ${missed}. Показываю детали прямо в чате.`,
-      createdAt: nowIso(),
-      widget: "missed-calls-inline",
-      suggested: ["Звонки за неделю", "Открыть журнал звонков", "Кто чаще звонит"]
-    };
-  }
-
-  if (asksAppealsDomain) {
-    return {
-      id: id(),
-      role: "ai",
-      text: "По обращениям могу показать активные, выполненные и отклоненные. При необходимости открою раздел обращений.",
-      createdAt: nowIso(),
-      suggested: ["Активные обращения", "Открыть обращения", "Создать обращение"]
-    };
-  }
-  if (hasAny(["разница между суммой счетов", "разница между счетами", "разница феврал", "феврал и март"])) {
-    return {
-      id: id(),
-      role: "ai",
-      text: "Считаю разницу между суммами счетов за февраль и март...",
-      createdAt: nowIso(),
-      widget: "invoices-month",
-      invoiceMonth: "февраль"
-    };
-  }
-
-  if (hasAny(["сколько звонков я пропустил", "пропустил в прошлом месяце", "пропущенные за прошлый месяц"])) {
-    const missed = standaloneCalls.filter((c) => c.missed).length;
-    return {
-      id: id(),
-      role: "ai",
-      text: `По текущим данным за прошлый месяц пропущено ${missed} звонков. Могу показать их в чате.`,
-      createdAt: nowIso(),
-      widget: "missed-calls-inline"
-    };
-  }
-
-  if (hasAny(["пропущенные звонки в чате", "покажи пропущенные в чате", "пропущенные в чате"])) {
-    return {
-      id: id(),
-      role: "ai",
-      text: "Показываю пропущенные звонки прямо здесь, в чате.",
-      createdAt: nowIso(),
-      widget: "missed-calls-inline"
-    };
-  }
-
-
-  if (asksTime || asksDate) {
-    const now = new Date();
-    const timeLabel = now.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
-    const dateLabel = now.toLocaleDateString("ru-RU", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-      weekday: "long"
-    });
-    return {
-      id: id(),
-      role: "ai",
-      text: asksTime && asksDate ? `Сейчас ${timeLabel}, ${dateLabel}.` : asksTime ? `Сейчас ${timeLabel}.` : `Сегодня ${dateLabel}.`,
-      createdAt: nowIso()
-    };
-  }
-
-  if (asksWeather) {
-    return {
-      id: id(),
-      role: "ai",
-      text:
-        "В этой версии у меня нет прямого доступа к погодным сервисам в реальном времени. Могу подсказать, где посмотреть прогноз по Москве, или сразу помочь по задачам в кабинете (счета, звонки, обращения).",
-      createdAt: nowIso(),
-      suggested: ["Открыть Яндекс.Погоду", "Счета за март", "Пропущенные звонки"]
-    };
-  }
-
-  if (asksRates) {
-    return {
-      id: id(),
-      role: "ai",
-      text:
-        "Онлайн-курс валют я здесь не получаю в реальном времени. Если нужно, помогу с финансовыми данными внутри кабинета: счета, оплаты и отчёты.",
-      createdAt: nowIso(),
-      suggested: ["Счета за март", "Финансовый отчет", "Архив платежей"]
-    };
-  }
-
-  if (asksNews) {
-    return {
-      id: id(),
-      role: "ai",
-      text:
-        "Ленту новостей в реальном времени в этой демо-версии я не получаю. Зато могу сразу помочь с рабочими задачами в кабинете.",
-      createdAt: nowIso(),
-      suggested: ["Пропущенные звонки", "Обращения", "Мои счета"]
-    };
-  }
-
-  if (asksCalculator) {
-    const mathExpr = clean.match(/([0-9]+(?:[.,][0-9]+)?)\s*([+\-*/xх×])\s*([0-9]+(?:[.,][0-9]+)?)/);
-    if (mathExpr) {
-      const left = Number(mathExpr[1].replace(",", "."));
-      const op = mathExpr[2];
-      const right = Number(mathExpr[3].replace(",", "."));
-      let result: number | null = null;
-      if (op === "+" ) result = left + right;
-      if (op === "-") result = left - right;
-      if (op === "*" || op === "x" || op === "х" || op === "×") result = left * right;
-      if (op === "/") result = right === 0 ? null : left / right;
-      if (result !== null) {
-        return {
-          id: id(),
-          role: "ai",
-          text: `Результат: ${Number.isInteger(result) ? result : result.toLocaleString("ru-RU", { maximumFractionDigits: 6 })}.`,
-          createdAt: nowIso()
-        };
-      }
-    }
-    return {
-      id: id(),
-      role: "ai",
-      text:
-        "Могу посчитать простой пример. Напишите в формате: `1250 + 340`, `18 * 7`, `144 / 12`.",
-      createdAt: nowIso(),
-      suggested: ["1250 + 340", "18 * 7", "144 / 12"]
-    };
-  }
-
-  if (asksUnits) {
-    const unitMatch = clean.match(
-      /([0-9]+(?:[.,][0-9]+)?)\s*(км|м|см|мм|кг|г|мг|л|мл|час|часы|часа|мин|минута|минуты|сек|секунда|секунды)\s*(?:в|во)\s*(км|м|см|мм|кг|г|мг|л|мл|час|часы|часа|мин|минута|минуты|сек|секунда|секунды)/
-    );
-    if (unitMatch) {
-      const value = Number(unitMatch[1].replace(",", "."));
-      const fromRaw = unitMatch[2];
-      const toRaw = unitMatch[3];
-      const normalize = (u: string) => {
-        if (u === "часы" || u === "часа") return "час";
-        if (u === "минута" || u === "минуты") return "мин";
-        if (u === "секунда" || u === "секунды") return "сек";
-        return u;
-      };
-      const from = normalize(fromRaw);
-      const to = normalize(toRaw);
-      const factors: Record<string, number> = {
-        км: 1000,
-        м: 1,
-        см: 0.01,
-        мм: 0.001,
-        кг: 1000,
-        г: 1,
-        мг: 0.001,
-        л: 1000,
-        мл: 1,
-        час: 3600,
-        мин: 60,
-        сек: 1
-      };
-      const group = (u: string) => {
-        if (["км", "м", "см", "мм"].includes(u)) return "length";
-        if (["кг", "г", "мг"].includes(u)) return "mass";
-        if (["л", "мл"].includes(u)) return "volume";
-        if (["час", "мин", "сек"].includes(u)) return "time";
-        return "other";
-      };
-      if (group(from) === group(to) && group(from) !== "other") {
-        const result = (value * factors[from]) / factors[to];
-        return {
-          id: id(),
-          role: "ai",
-          text: `${value.toLocaleString("ru-RU")} ${fromRaw} = ${result.toLocaleString("ru-RU", {
-            maximumFractionDigits: 6
-          })} ${toRaw}.`,
-          createdAt: nowIso()
-        };
-      }
-    }
-    return {
-      id: id(),
-      role: "ai",
-      text:
-        "Готов помочь с конвертацией. Введите запрос в формате: `15 км в м`, `2.5 кг в г`, `3 часа в минуты`.",
-      createdAt: nowIso(),
-      suggested: ["15 км в м", "2.5 кг в г", "3 часа в минуты"]
-    };
-  }
-
-  if (asksReminder) {
-    return {
-      id: id(),
-      role: "ai",
-      text:
-        "Напоминания в этой версии пока не ставятся автоматически. Могу сформулировать текст напоминания, чтобы вы сразу сохранили его в календарь.",
-      createdAt: nowIso(),
-      suggested: ["Напомни оплатить счет в 16:00", "Напомни перезвонить клиенту", "Сформулируй коротко"]
-    };
-  }
-
-  if (hasGreeting) {
-    return {
-      id: id(),
-      role: "ai",
-      text: "И вам здравствуйте, желаю вам хорошего дня",
-      createdAt: nowIso()
-    };
-  }
-
-  if (p.includes("звонки за неделю")) {
-    return {
-      id: id(),
-      role: "ai",
-      text: "Сводка по звонкам за неделю — ниже. Могу детализировать пропущенные или сравнить с прошлой неделей.",
-      createdAt: nowIso(),
-      widget: "weekly-stats",
-      suggested: ["Пропущенные звонки", "Статистика по времени суток"]
-    };
-  }
-
-  if (asksInvoices && monthDetected === "март") {
-    return {
-      id: id(),
-      role: "ai",
-      text: "По счетам за март 2026: ниже список и суммы. Могу подготовить финансовый отчёт или выгрузку.",
-      createdAt: nowIso(),
-      widget: "invoices-march",
-      suggested: ["Финансовый отчет", "Архив платежей"]
-    };
-  }
-
-  if (asksInvoices && monthDetected && monthDetected !== "март") {
-    return {
-      id: id(),
-      role: "ai",
-      text: `Показываю счета за ${monthDetected} прямо в чате. Можно продолжить диалог без выхода из ассистента.`,
-      createdAt: nowIso(),
-      widget: "invoices-month",
-      invoiceMonth: monthDetected,
-      suggested: [`Счета за ${monthDetected}`, "Что просрочено?", "Покажи неоплаченные"]
-    };
-  }
-
-  if (p.includes("мои счета") || p.includes("счета за")) {
-    return {
-      id: id(),
-      role: "ai",
-      text: "Показываю счета в чате. Можно сразу продолжить диалог — например, про оплату или сверку.",
-      createdAt: nowIso(),
-      widget: "invoices-march",
-      suggested: ["Что просрочено?", "Как оплатить?", "Сверка по платежам"]
-    };
-  }
-
-  const navIntent = getDemoNavigationIntent(prompt);
-  if (navIntent) {
-    return {
-      id: id(),
-      role: "ai",
-      text: navIntent.ack,
-      createdAt: nowIso(),
-      navigateTo: navIntent.to
-    };
-  }
-
-  if (p.includes("рассылк")) {
-    return {
-      id: id(),
-      role: "ai",
-      text:
-        "Рекомендация: запустить рассылку по сегменту «оплата/баланс».\n\nПочему: по утру количество звонков -30% vs вчера, и растет риск по оплате.\n\nГотов(а) собрать текст и поставить на отправку.",
-      createdAt: nowIso(),
-      actions: [
-        {
-          type: "cta",
-          title: "Запустить рассылку",
-          subtitle: "Почему: звонки -30% (утро vs вчера)",
-          ctaLabel: "Запустить",
-          intent: "start-campaign"
-        }
-      ],
-      suggested: ["Согласовать текст", "Покажи сегмент", "Отложить на 13:00"]
-    };
-  }
-
-  if (p.includes("счет") || p.includes("счета") || p.includes("март")) {
-    return {
-      id: id(),
-      role: "ai",
-      text:
-        "По счетам за март:\n\n- 2 счета в статусе «ожидает оплату»\n- 1 платеж отклонён (реквизиты)\n\nМогу: сформировать письмо клиенту, повторно отправить счет или подготовить акт сверки.",
-      createdAt: nowIso(),
-      suggested: ["Сформируй письмо", "Покажи детали", "Подготовь акт сверки"]
-    };
-  }
-
-  if (p.includes("сводка")) {
-    return {
-      id: id(),
-      role: "ai",
-      text:
-        "Сводка на сейчас:\n\n- Пропущенных: 15\n- Обработано: 3\n- Риск по оплате: 4 клиента\n\nХочешь, соберу отчет или покажу конкретные пропущенные звонки?",
-      createdAt: nowIso(),
-      suggested: ["Сформируй отчет", "Покажи пропущенные", "Сценарий перезвона"]
-    };
-  }
-
-  const fallbacks: Pick<ChatMessage, "text" | "suggested">[] = [
-    {
-      text:
-        "Понял запрос. Могу кратко сверить цифры по последним данным или собрать развёрнутую сводку — что удобнее сейчас?",
-      suggested: ["Кратко по цифрам", "Развёрнуто", "Сравни с прошлой неделей"]
-    },
-    {
-      text:
-        "Ок, работаю с этим. Если нужно, подтяну счета, звонки или обращения в один ответ — с чего начнём?",
-      suggested: ["Счета", "Звонки", "Обращения"]
-    },
-    {
-      text:
-        "Записал(а). Могу предложить следующий шаг: напоминание клиенту, черновик письма или отчёт для руководителя.",
-      suggested: ["Напоминание", "Черновик письма", "Отчёт"]
-    },
-    {
-      text:
-        "Понял запрос. Могу ответить по задачам в кабинете: счета, звонки, обращения, рассылки и сводки. Что открыть в первую очередь?",
-      suggested: ["Счета", "Звонки", "Обращения"]
-    },
-    {
-      text:
-        "Сейчас посмотрю контекст. Нужен ответ «в лоб» или с проверкой по договору и счетам?",
-      suggested: ["В лоб", "С проверкой", "Только факты"]
-    }
-  ];
-  const fb = fallbacks[hashPick(prompt, fallbacks.length)];
+function toAiMessage(payload: Pick<ChatMessage, "text" | "widget" | "invoiceMonth" | "suggested" | "navigateTo" | "actions">): ChatMessage {
   return {
     id: id(),
     role: "ai",
-    text: fb.text,
     createdAt: nowIso(),
-    suggested: fb.suggested
+    ...payload
   };
 }
 
 const pillBase =
   "inline-flex items-center gap-2 rounded-full bg-white px-[14px] py-[10px] text-[13px] font-medium text-[#3C4858] shadow-[0_2px_10px_rgba(0,0,0,0.07)] transition hover:brightness-[1.02] active:scale-[0.99] dark:border dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100";
 
-function appendChatLog(userText: string, aiText: string, intent: ChatIntentId | "fallback" | "live") {
+function appendChatLog(userText: string, aiText: string, intent: string) {
   if (typeof window === "undefined") return;
   const key = "b2b_chat_logs_v1";
   const current = JSON.parse(window.localStorage.getItem(key) ?? "[]") as Array<{
@@ -663,19 +159,6 @@ export function AiAssistantScreen() {
   const send = (text?: string) => {
     const v = (text ?? input).trim();
     if (!v) return;
-    if (containsProfanity(v)) {
-      const moderationReply: ChatMessage = {
-        id: id(),
-        role: "ai",
-        text: "Вижу нецензурную лексику. Давайте продолжим по-деловому: счета, звонки, обращения или аналитика.",
-        createdAt: nowIso(),
-        suggested: ["Счета", "Звонки", "Обращения"]
-      };
-      setMessages((m) => [...m, { id: id(), role: "user", text: v, createdAt: nowIso() }, moderationReply]);
-      appendChatLog(v, moderationReply.text, "profanity");
-      setInput("");
-      return;
-    }
     if (/экспорт.*(лог|журнал)|скач.*(лог|журнал)/i.test(v)) {
       const ok = exportChatLogsToFile();
       setToast(ok ? "Журнал чата выгружен в JSON." : "Журнал пуст: пока нет сохраненных диалогов.");
@@ -687,10 +170,31 @@ export function AiAssistantScreen() {
     setInput("");
 
     window.setTimeout(async () => {
-      const fallback = mockAiResponse(v, runtimeInvoices);
-      let resolved: ChatMessage = fallback;
-      const intentDetected = detectIntent(v);
-      let intentUsed: ChatIntentId | "fallback" | "live" = intentDetected ?? "fallback";
+      const specialMock = resolveSpecialMockResponse(v);
+      if (specialMock) {
+        const resolved = toAiMessage(specialMock);
+        setMessages((m) => [...m, resolved]);
+        appendChatLog(v, resolved.text, "special-mock");
+        return;
+      }
+
+      const deterministic = resolveDeterministicResponse(v, runtimeInvoices);
+      if (deterministic) {
+        const resolved = toAiMessage(deterministic);
+        setMessages((m) => [...m, resolved]);
+        appendChatLog(v, resolved.text, "deterministic");
+        if (resolved.navigateTo) {
+          window.setTimeout(() => router.push(resolved.navigateTo!), 320);
+        }
+        return;
+      }
+
+      let resolved: ChatMessage = toAiMessage({
+        text:
+          "Для этого запроса нужен live AI-ответ. Подключите `NEXT_PUBLIC_OPENROUTER_API_KEY`, и я передам вопрос в модель.",
+        suggested: ["Счета за март", "Звонки за неделю", "Активные обращения"]
+      });
+      let intentUsed = "fallback-no-live";
 
       try {
         if (isLiveEnabled && liveApiKey) {
@@ -708,7 +212,7 @@ export function AiAssistantScreen() {
               contextSummary: buildDataContextSummary(runtimeInvoices),
               signal: controller.signal
             });
-            if (liveText) {
+            if (liveText && isLiveResponseReliable(v, liveText)) {
               resolved = {
                 id: id(),
                 role: "ai",
@@ -716,13 +220,18 @@ export function AiAssistantScreen() {
                 createdAt: nowIso()
               };
               intentUsed = "live";
+            } else if (liveText) {
+              resolved = toAiMessage(buildSafeLiveFallbackResponse());
+              intentUsed = "live-rejected";
             }
           } finally {
             window.clearTimeout(timeout);
           }
         }
-      } catch {
-        resolved = fallback;
+      } catch {}
+
+      if (resolved.text.includes("нужен live AI-ответ")) {
+        intentUsed = "fallback-no-live";
       }
 
       setMessages((m) => [...m, resolved]);
@@ -771,14 +280,39 @@ export function AiAssistantScreen() {
             style={{ touchAction: "pan-y" }}
           >
             {heroCard === 0 && showMissedCard ? (
-              <MissedCallSummaryCard
-                onDismiss={() => {
-                  setHeroCard(showWeeklyCard ? 1 : 0);
-                }}
-              />
+              <Card className="min-h-[170px] rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
+                <CardContent className="space-y-3 pb-4 pt-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Пропущенные звонки</div>
+                      <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+                        За неделю пропущено 6 звонков. Рекомендуем обработать их в первую очередь.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="rounded-full p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700"
+                      onClick={() => setHeroCard(showWeeklyCard ? 1 : 0)}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    className="text-xs font-semibold text-accent-dark underline dark:text-accent-yellow"
+                    onClick={() => {
+                      markMissedCallsSeen();
+                      setShowMissedCard(false);
+                      router.push("/missed-calls/");
+                    }}
+                  >
+                    Открыть пропущенные
+                  </button>
+                </CardContent>
+              </Card>
             ) : null}
             {(heroCard === 1 || !showMissedCard) && showWeeklyCard ? (
-              <Card className="border-[#E8EAED] dark:border-slate-700">
+              <Card className="min-h-[170px] rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
                 <CardContent className="space-y-3 pb-4 pt-4">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
@@ -1001,6 +535,30 @@ export function AiAssistantScreen() {
                             ₽
                           </p>
                         ) : null}
+                      </CardContent>
+                    </Card>
+                  ) : null}
+                  {m.role === "ai" && m.widget === "invoices-unpaid-inline" ? (
+                    <Card className="border-slate-200 dark:border-slate-700">
+                      <CardContent className="space-y-2 pb-3 pt-3">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                          Неоплаченные счета
+                        </div>
+                        {runtimeInvoices
+                          .filter((inv) => inv.status === "pay")
+                          .map((inv) => (
+                            <button
+                              key={inv.id}
+                              type="button"
+                              className="flex w-full items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2 text-left dark:border-slate-600 dark:bg-slate-800"
+                              onClick={() => router.push(`/invoices/${inv.id}/`)}
+                            >
+                              <span className="text-sm text-slate-800 dark:text-slate-200">
+                                {inv.amountRub.toLocaleString("ru-RU")} ₽
+                              </span>
+                              <span className="text-xs text-rose-700 dark:text-rose-300">Не оплачен</span>
+                            </button>
+                          ))}
                       </CardContent>
                     </Card>
                   ) : null}

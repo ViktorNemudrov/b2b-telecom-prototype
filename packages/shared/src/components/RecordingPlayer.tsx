@@ -6,6 +6,7 @@ import { Button } from "@shared/components/ui/button";
 import { cn } from "@shared/components/ui/cn";
 
 const speeds = [0.5, 1, 1.5, 2] as const;
+const AUDIO_SINGLETON_EVENT = "b2b-audio-singleton-play";
 
 export function RecordingPlayer({
   src,
@@ -38,11 +39,19 @@ export function RecordingPlayer({
     a.addEventListener("loadedmetadata", onMeta);
     a.addEventListener("play", onPlay);
     a.addEventListener("pause", onPause);
+    const onOtherPlayerPlay = (evt: Event) => {
+      const custom = evt as CustomEvent<{ source: HTMLAudioElement | null }>;
+      if (custom.detail?.source && custom.detail.source !== a && !a.paused) {
+        a.pause();
+      }
+    };
+    window.addEventListener(AUDIO_SINGLETON_EVENT, onOtherPlayerPlay as EventListener);
     return () => {
       a.removeEventListener("timeupdate", onTime);
       a.removeEventListener("loadedmetadata", onMeta);
       a.removeEventListener("play", onPlay);
       a.removeEventListener("pause", onPause);
+      window.removeEventListener(AUDIO_SINGLETON_EVENT, onOtherPlayerPlay as EventListener);
     };
   }, []);
 
@@ -77,7 +86,10 @@ export function RecordingPlayer({
             onClick={() => {
               const a = audioRef.current;
               if (!a) return;
-              if (a.paused) void a.play();
+              if (a.paused) {
+                window.dispatchEvent(new CustomEvent(AUDIO_SINGLETON_EVENT, { detail: { source: a } }));
+                void a.play();
+              }
               else a.pause();
             }}
             aria-label={playing ? "Пауза" : "Воспроизвести"}
@@ -115,7 +127,10 @@ export function RecordingPlayer({
                 onClick={() => {
                   const a = audioRef.current;
                   if (!a) return;
-                  if (a.paused) void a.play();
+                  if (a.paused) {
+                    window.dispatchEvent(new CustomEvent(AUDIO_SINGLETON_EVENT, { detail: { source: a } }));
+                    void a.play();
+                  }
                   else a.pause();
                 }}
                 aria-label={playing ? "Пауза" : "Воспроизвести"}
