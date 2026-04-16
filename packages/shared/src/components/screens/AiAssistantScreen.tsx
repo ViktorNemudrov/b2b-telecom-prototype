@@ -181,6 +181,7 @@ export function AiAssistantScreen() {
   const [showWeeklyCard, setShowWeeklyCard] = React.useState(true);
   const [showAiAssistCard] = React.useState(true);
   const [heroCard, setHeroCard] = React.useState(0);
+  const [heroTransitionDirection, setHeroTransitionDirection] = React.useState(0);
   const [weeklySpeaking, setWeeklySpeaking] = React.useState(false);
   const heroSwipeStartX = React.useRef<number | null>(null);
   const heroWheelLastAt = React.useRef(0);
@@ -468,6 +469,8 @@ export function AiAssistantScreen() {
     return cards;
   }, [showAiAssistCard, showMissedCard, showWeeklyCard]);
   const activeHeroCard = visibleHeroCards[heroCard] ?? null;
+  const enterHeroOffset = heroTransitionDirection >= 0 ? 20 : -20;
+  const exitHeroOffset = heroTransitionDirection >= 0 ? -20 : 20;
 
   React.useEffect(() => {
     if (heroCard >= visibleHeroCards.length) {
@@ -477,6 +480,7 @@ export function AiAssistantScreen() {
 
   const moveHeroCard = (delta: number) => {
     if (visibleHeroCards.length < 2) return;
+    setHeroTransitionDirection(delta);
     setHeroCard((prev) => {
       const next = prev + delta;
       if (next < 0) return 0;
@@ -522,131 +526,144 @@ export function AiAssistantScreen() {
             onWheel={onHeroWheel}
             style={{ touchAction: "pan-y" }}
           >
-            <div className="h-[120px]" data-testid="assistant-hero-slot">
-              {activeHeroCard === "missed" ? (
-                <button
-                  type="button"
-                  className="block h-full w-full text-left"
-                  onClick={() => {
-                    markMissedCallsSeen();
-                    setShowMissedCard(false);
-                    router.push("/missed-calls/");
-                  }}
-                >
-                  <Card className="h-full rounded-[24px] border-[#E8EAED] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
-                    <CardContent className="flex h-full items-center gap-3 pb-3 pt-3">
-                      <span className="relative shrink-0">
-                        <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#F2F2F7] dark:bg-slate-700">
-                          <PhoneOff className="h-6 w-6 text-[#E53935]" />
-                        </span>
-                        <span className="absolute -right-1 -top-1 flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#E53935] px-1 text-[11px] font-bold text-white">
-                          x2
-                        </span>
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-baseline justify-between gap-2">
-                          <div className="mt-0.5 truncate text-[18px] font-semibold leading-tight text-[#1F2430] dark:text-slate-100">
-                            Доставка офисной техники
-                          </div>
-                          <span className="shrink-0 text-[12px] font-medium tabular-nums text-[#C3C7D4] dark:text-slate-400">
-                            12:42
-                          </span>
-                        </div>
-                        <div className="mt-1 text-[14px] leading-tight text-[#7C8597] dark:text-slate-300">
-                          Пропущенный
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </button>
-              ) : null}
-              {activeHeroCard === "weekly" ? (
-                <Card className="h-full rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
-                  <CardContent className="flex h-full items-center gap-3 overflow-hidden pb-2 pt-2">
-                  <button
-                    type="button"
-                    className="flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-full bg-[#ECEAFD]"
-                    onClick={() => {
-                      if (
-                        typeof window === "undefined" ||
-                        !("speechSynthesis" in window) ||
-                        !("SpeechSynthesisUtterance" in window)
-                      ) {
-                        return;
-                      }
-                      if (weeklySpeaking) {
-                        window.speechSynthesis.cancel();
-                        setWeeklySpeaking(false);
-                        return;
-                      }
-                      const u = new SpeechSynthesisUtterance(
-                        "Еженедельный отчет: 126 звонков, 6 пропущенных, средняя длительность две минуты сорок секунд. Есть 4 клиента в риске по оплате."
-                      );
-                      u.lang = "ru-RU";
-                      u.onend = () => setWeeklySpeaking(false);
-                      u.onerror = () => setWeeklySpeaking(false);
-                      setWeeklySpeaking(true);
-                      window.speechSynthesis.cancel();
-                      window.speechSynthesis.speak(u);
-                    }}
+            <div className="relative h-[120px] overflow-hidden" data-testid="assistant-hero-slot">
+              <AnimatePresence initial={false} custom={heroTransitionDirection} mode="wait">
+                {activeHeroCard ? (
+                  <motion.div
+                    key={activeHeroCard}
+                    initial={{ opacity: 0, x: enterHeroOffset }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: exitHeroOffset }}
+                    transition={{ duration: 0.24, ease: "easeOut" }}
+                    className="h-full"
                   >
-                    {weeklySpeaking ? <Pause className="h-4 w-4 text-[#4B5563]" /> : <Play className="h-4 w-4 text-[#4B5563]" />}
-                  </button>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1 text-sm font-semibold text-[#343A4A] dark:text-slate-100">
-                      <Sparkles className="h-4 w-4 text-[#9C8AF2]" />
-                      Еженедельный отчет
-                    </div>
-                    <div className="text-xs text-[#A2A8B8]">за 24 апреля</div>
-                    <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[#6B7280] dark:text-slate-300">
-                      126 звонков, 6 пропущенных, средняя длительность 2:40. Есть 4 клиента в риске по оплате.
-                    </p>
-                    <button
-                      type="button"
-                      className="mt-1 text-xs font-semibold text-accent-dark underline dark:text-accent-yellow"
-                      onClick={() => {
-                        setInput("звонки за неделю");
-                        window.setTimeout(() => send("звонки за неделю"), 60);
-                      }}
-                    >
-                      Открыть в чате
-                    </button>
-                  </div>
-                  <button
-                    type="button"
-                    className="shrink-0 rounded-full p-1 text-[#C7CBD6] hover:bg-slate-100 dark:hover:bg-slate-700"
-                    onClick={() => setShowWeeklyCard(false)}
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                  </CardContent>
-                </Card>
-              ) : null}
-              {activeHeroCard === "assist" ? (
-                <Card className="h-full rounded-[20px] border-[#DDE4FF] bg-gradient-to-br from-[#F7F9FF] to-white shadow-none dark:border-slate-700 dark:from-slate-800 dark:to-slate-800">
-                  <CardContent className="flex h-full items-center gap-3 pb-3 pt-3">
-                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ECEAFD]">
-                      <Bot className="h-4 w-4 text-[#4B5563]" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-semibold text-[#343A4A] dark:text-slate-100">AI ассистенты подключены</div>
-                      <div className="mt-0.5 text-xs leading-relaxed text-[#6B7280] dark:text-slate-300">
-                        У вас подключены AI ассистенты, но вы ими еще не пользовались.
-                      </div>
+                    {activeHeroCard === "missed" ? (
                       <button
                         type="button"
-                        className="mt-1 rounded-full bg-accent-yellow px-4 py-1.5 text-xs font-semibold text-[#2F3141] transition hover:brightness-95"
+                        className="block h-full w-full text-left"
                         onClick={() => {
-                          setInput("Мои продукты");
-                          window.setTimeout(() => send("Мои продукты"), 60);
+                          markMissedCallsSeen();
+                          setShowMissedCard(false);
+                          router.push("/missed-calls/");
                         }}
                       >
-                        Начать
+                        <Card className="h-full rounded-[24px] border-[#E8EAED] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
+                          <CardContent className="flex h-full items-center gap-3 pb-3 pt-3">
+                            <span className="relative shrink-0">
+                              <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#F2F2F7] dark:bg-slate-700">
+                                <PhoneOff className="h-6 w-6 text-[#E53935]" />
+                              </span>
+                              <span className="absolute -right-1 -top-1 flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#E53935] px-1 text-[11px] font-bold text-white">
+                                x2
+                              </span>
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-baseline justify-between gap-2">
+                                <div className="mt-0.5 truncate text-[18px] font-semibold leading-tight text-[#1F2430] dark:text-slate-100">
+                                  Доставка офисной техники
+                                </div>
+                                <span className="shrink-0 text-[12px] font-medium tabular-nums text-[#C3C7D4] dark:text-slate-400">
+                                  12:42
+                                </span>
+                              </div>
+                              <div className="mt-1 text-[14px] leading-tight text-[#7C8597] dark:text-slate-300">
+                                Пропущенный
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
                       </button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : null}
+                    ) : null}
+                    {activeHeroCard === "weekly" ? (
+                      <Card className="h-full rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
+                        <CardContent className="flex h-full items-center gap-3 overflow-hidden pb-2 pt-2">
+                          <button
+                            type="button"
+                            className="flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-full bg-[#ECEAFD]"
+                            onClick={() => {
+                              if (
+                                typeof window === "undefined" ||
+                                !("speechSynthesis" in window) ||
+                                !("SpeechSynthesisUtterance" in window)
+                              ) {
+                                return;
+                              }
+                              if (weeklySpeaking) {
+                                window.speechSynthesis.cancel();
+                                setWeeklySpeaking(false);
+                                return;
+                              }
+                              const u = new SpeechSynthesisUtterance(
+                                "Еженедельный отчет: 126 звонков, 6 пропущенных, средняя длительность две минуты сорок секунд. Есть 4 клиента в риске по оплате."
+                              );
+                              u.lang = "ru-RU";
+                              u.onend = () => setWeeklySpeaking(false);
+                              u.onerror = () => setWeeklySpeaking(false);
+                              setWeeklySpeaking(true);
+                              window.speechSynthesis.cancel();
+                              window.speechSynthesis.speak(u);
+                            }}
+                          >
+                            {weeklySpeaking ? <Pause className="h-4 w-4 text-[#4B5563]" /> : <Play className="h-4 w-4 text-[#4B5563]" />}
+                          </button>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1 text-sm font-semibold text-[#343A4A] dark:text-slate-100">
+                              <Sparkles className="h-4 w-4 text-[#9C8AF2]" />
+                              Еженедельный отчет
+                            </div>
+                            <div className="text-xs text-[#A2A8B8]">за 24 апреля</div>
+                            <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[#6B7280] dark:text-slate-300">
+                              126 звонков, 6 пропущенных, средняя длительность 2:40. Есть 4 клиента в риске по оплате.
+                            </p>
+                            <button
+                              type="button"
+                              className="mt-1 text-xs font-semibold text-accent-dark underline dark:text-accent-yellow"
+                              onClick={() => {
+                                setInput("звонки за неделю");
+                                window.setTimeout(() => send("звонки за неделю"), 60);
+                              }}
+                            >
+                              Открыть в чате
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            className="shrink-0 rounded-full p-1 text-[#C7CBD6] hover:bg-slate-100 dark:hover:bg-slate-700"
+                            onClick={() => setShowWeeklyCard(false)}
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </CardContent>
+                      </Card>
+                    ) : null}
+                    {activeHeroCard === "assist" ? (
+                      <Card className="h-full rounded-[20px] border-[#DDE4FF] bg-gradient-to-br from-[#F7F9FF] to-white shadow-none dark:border-slate-700 dark:from-slate-800 dark:to-slate-800">
+                        <CardContent className="flex h-full items-center gap-3 pb-3 pt-3">
+                          <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ECEAFD]">
+                            <Bot className="h-4 w-4 text-[#4B5563]" />
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-semibold text-[#343A4A] dark:text-slate-100">AI ассистенты подключены</div>
+                            <div className="mt-0.5 text-xs leading-relaxed text-[#6B7280] dark:text-slate-300">
+                              У вас подключены AI ассистенты, но вы ими еще не пользовались.
+                            </div>
+                            <button
+                              type="button"
+                              className="mt-1 rounded-full bg-accent-yellow px-4 py-1.5 text-xs font-semibold text-[#2F3141] transition hover:brightness-95"
+                              onClick={() => {
+                                setInput("Мои продукты");
+                                window.setTimeout(() => send("Мои продукты"), 60);
+                              }}
+                            >
+                              Начать
+                            </button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ) : null}
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
             </div>
             {visibleHeroCards.length > 1 ? (
               <div className="mt-2 flex justify-center gap-1.5">
@@ -655,7 +672,10 @@ export function AiAssistantScreen() {
                     key={`hero-dot-${idx}`}
                     type="button"
                     className={cn("h-1.5 w-5 rounded-full", heroCard === idx ? "bg-slate-900 dark:bg-slate-100" : "bg-slate-300 dark:bg-slate-600")}
-                    onClick={() => setHeroCard(idx)}
+                    onClick={() => {
+                      setHeroTransitionDirection(idx > heroCard ? 1 : -1);
+                      setHeroCard(idx);
+                    }}
                   />
                 ))}
               </div>

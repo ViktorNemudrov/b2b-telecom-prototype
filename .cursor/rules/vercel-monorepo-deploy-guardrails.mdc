@@ -1,0 +1,26 @@
+---
+description: Guardrails for Vercel deploy debugging in this monorepo
+alwaysApply: true
+---
+
+# Vercel Monorepo Deploy Guardrails
+
+When investigating Vercel 404/deploy issues, follow this exact sequence before proposing fixes:
+
+1. Identify which project is failing (`ai-first` or `classic`) and verify the route host/domain belongs to that project.
+2. Verify `Root Directory` matches project:
+   - AI: `apps/ai-first`
+   - Classic: `apps/classic`
+3. Keep `Framework Preset` as `Next.js` unless there is explicit proof a static builder is required.
+4. For Next.js runtime deploys, keep `Output Directory` empty.
+5. If `builds` exists in `vercel.json`, remember Project Settings build fields are ignored; warn user explicitly.
+6. Never mix AI and Classic build commands:
+   - AI project must not run `build:classic`
+   - Classic project must not run `build:ai`
+7. Treat Vercel page `404: NOT_FOUND` (with `ID: ...`) as platform routing/deployment mismatch, not a Next route-level 404.
+
+## Change Discipline
+
+- Prefer per-app `apps/*/vercel.json` over a root `vercel.json` in this monorepo.
+- If root `vercel.json` is used, validate it cannot override or confuse AI vs Classic project mapping.
+- After config edits, state exactly what user must set in Vercel UI (Root/Framework/Build/Install/Output).
