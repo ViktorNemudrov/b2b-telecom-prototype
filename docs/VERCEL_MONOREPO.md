@@ -49,6 +49,13 @@ npm run build:classic
 
 Так один проект Vercel всегда ставит зависимости из корневого `package-lock.json` и собирает только AI-приложение.
 
+Дополнительно (для стабильности, если Vercel «теряет» `index.html` в статическом экспорте из-за auto-настроек):
+
+- В корне репозитория можно держать `vercel.json` с:
+  - `buildCommand`: `npm run build:ai`
+  - `outputDirectory`: `apps/ai-first/out`
+  - `installCommand`: `npm install`
+
 ### 2) Проект «Классика»
 
 Повторите шаги, создав **второй** проект в Vercel:
