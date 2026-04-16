@@ -8,6 +8,7 @@ import { AlertTriangle, Calendar, Sparkles } from "lucide-react";
 import { TariffSubscriptionCard } from "@shared/components/TariffSubscriptionCard";
 import { RecordingPlayer } from "@shared/components/RecordingPlayer";
 import { CallSummaryCard } from "@shared/components/CallSummaryCard";
+import { useUiCustomization } from "@shared/lib/uiCustomization";
 
 export function FeedItem({
   item,
@@ -20,6 +21,10 @@ export function FeedItem({
   onToggleTranscript: (id: string) => void;
   onAction: (action: { type: "pay" | "report" }) => void;
 }) {
+  const alertCtaCustom = useUiCustomization("feed.cta.alert");
+  const summaryCtaCustom = useUiCustomization("feed.cta.summary");
+  const toolCtaCustom = useUiCustomization("feed.cta.tool");
+
   if (item.kind === "call") {
     const c = item.call;
     return (
@@ -66,7 +71,17 @@ export function FeedItem({
             </div>
           </div>
           <div className="mt-4">
-            <Button className="w-full" onClick={() => onAction({ type: "pay" })}>
+            <Button
+              className="w-full"
+              onClick={() => {
+                if (alertCtaCustom.useMock) {
+                  openDevelopmentStub("CTA предупреждения (мок из кастомизации).");
+                  return;
+                }
+                onAction({ type: "pay" });
+              }}
+              disabled={alertCtaCustom.dimmedDisabled}
+            >
               {item.cta}
             </Button>
           </div>
@@ -91,7 +106,12 @@ export function FeedItem({
           <Button
             variant="secondary"
             className="mt-4 w-full rounded-full"
-            onClick={() => openDevelopmentStub("Экспорт сводки в PDF.")}
+            onClick={() =>
+              openDevelopmentStub(
+                summaryCtaCustom.useMock ? "Экспорт сводки в PDF (мок из кастомизации)." : "Экспорт сводки в PDF."
+              )
+            }
+            disabled={summaryCtaCustom.dimmedDisabled}
           >
             Открыть сводку
           </Button>
@@ -114,7 +134,17 @@ export function FeedItem({
           </div>
         </div>
         <div className="mt-4">
-          <Button className="w-full" onClick={() => onAction({ type: "report" })}>
+          <Button
+            className="w-full"
+            onClick={() => {
+              if (toolCtaCustom.useMock) {
+                openDevelopmentStub("CTA AI-инструмента (мок из кастомизации).");
+                return;
+              }
+              onAction({ type: "report" });
+            }}
+            disabled={toolCtaCustom.dimmedDisabled}
+          >
             {item.cta}
           </Button>
         </div>

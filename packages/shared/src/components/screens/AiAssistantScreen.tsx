@@ -5,18 +5,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Loader2, Pause, PhoneOff, Play, Sparkles, X } from "lucide-react";
+import { Bot, Loader2, Pause, PhoneOff, Play, Sparkles, X } from "lucide-react";
 import { InvoicesMarchWidget } from "@shared/components/ai/InvoicesMarchWidget";
 import { WeeklyStatsWidget } from "@shared/components/ai/WeeklyStatsWidget";
 import { ActionCard } from "@shared/components/ActionCard";
 import { BottomInputBar } from "@shared/components/BottomInputBar";
 import { ChatBubble } from "@shared/components/ChatBubble";
+import { PageBackLink } from "@shared/components/PageBackLink";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { Modal } from "@shared/components/ui/modal";
 import { cn } from "@shared/components/ui/cn";
 import {
   chatHistoryPresets,
   defaultChat,
+  recentHistoryQuickPrompts,
   recentQueryChips,
   userProfile,
   standaloneCalls,
@@ -31,10 +33,12 @@ import {
   buildSafeLiveFallbackResponse,
   isLiveResponseReliable,
   resolveDeterministicResponse,
+  resolveSessionMemoryResponse,
   resolveSpecialMockResponse
 } from "@shared/lib/assistantResponse";
 import { useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
 import { isMissedCallsSeen, markMissedCallsSeen } from "@shared/lib/runtimeFlags";
+import { getCustomizationButtonClasses, useUiCustomization } from "@shared/lib/uiCustomization";
 
 const sphereSrc = "/mockups/%D0%A8%D0%B0%D1%80.png";
 
@@ -46,7 +50,7 @@ function nowIso() {
   return new Date().toISOString();
 }
 
-function toAiMessage(payload: Pick<ChatMessage, "text" | "widget" | "invoiceMonth" | "suggested" | "navigateTo" | "actions">): ChatMessage {
+function toAiMessage(payload: Pick<ChatMessage, "text" | "widget" | "invoiceMonth" | "suggested" | "navigateTo" | "actions" | "sourceLabel">): ChatMessage {
   return {
     id: id(),
     role: "ai",
@@ -96,6 +100,62 @@ function exportChatLogsToFile() {
   return true;
 }
 
+function traceAiSource(sourceLabel: string, prompt: string): void {
+  const isDev = typeof process !== "undefined" && process.env?.NODE_ENV === "development";
+  if (!isDev) return;
+  if (typeof window === "undefined") return;
+  try {
+    const key = "b2b_ai_self_check_trace_v1";
+    const cur = JSON.parse(window.localStorage.getItem(key) ?? "[]") as Array<{
+      at: string;
+      source: string;
+      prompt: string;
+    }>;
+    const next = Array.isArray(cur) ? cur : [];
+    next.push({ at: new Date().toISOString(), source: sourceLabel, prompt });
+    window.localStorage.setItem(key, JSON.stringify(next.slice(-50)));
+  } catch {
+    // ignore storage issues (private mode/limits)
+  }
+}
+
+function getLiveProviderLabel(provider: "openrouter" | "groq" | "grok") {
+  if (provider === "openrouter") return "ответ от OpenRouter";
+  if (provider === "grok") return "ответ от Grok/xAI";
+  return "ответ от Groq";
+}
+
+function getAiSourceLabel(intentUsed: string, liveProvider: "openrouter" | "groq" | "grok") {
+  switch (intentUsed) {
+    case "special-mock":
+      return "замоканный ответ";
+    case "deterministic":
+      return "детерминированный сценарий";
+    case "session-memory":
+      return "память в рамках диалога";
+    case "live":
+      return getLiveProviderLabel(liveProvider);
+    case "live-rejected":
+      return "live ответ отклонен (ненадежный)";
+    case "live-unavailable":
+      return "live недоступен → fallback";
+    case "live-error":
+      return "live ошибка → fallback";
+    case "fallback-no-live":
+      return "без live (fallback)";
+    default:
+      return intentUsed;
+  }
+}
+
+function formatLiveErrorLabel(err: unknown, liveProvider: "openrouter" | "groq" | "grok") {
+  const base = `${getLiveProviderLabel(liveProvider)} (ошибка)`;
+  const msg = err instanceof Error ? err.message : typeof err === "string" ? err : "";
+  const trimmed = msg.trim();
+  if (!trimmed) return base;
+  return `${base}: ${trimmed.slice(0, 90)}`;
+}
+
 function buildDataContextSummary(invoices: InvoiceItem[]) {
   const perMonth = ["январь", "февраль", "март", "апрель"]
     .map((m) => {
@@ -119,6 +179,7 @@ export function AiAssistantScreen() {
   const [chipTags, setChipTags] = React.useState<string[]>(() => [...recentQueryChips]);
   const [showMissedCard, setShowMissedCard] = React.useState(true);
   const [showWeeklyCard, setShowWeeklyCard] = React.useState(true);
+  const [showAiAssistCard] = React.useState(true);
   const [heroCard, setHeroCard] = React.useState(0);
   const [weeklySpeaking, setWeeklySpeaking] = React.useState(false);
   const heroSwipeStartX = React.useRef<number | null>(null);
@@ -132,10 +193,29 @@ export function AiAssistantScreen() {
   const aiReplyPendingRef = React.useRef(false);
   const [aiReplyPending, setAiReplyPending] = React.useState(false);
   const runtimeInvoices = useRuntimeInvoices();
+  const missedChipCustom = useUiCustomization("assistant.home.missed");
+  const appealsChipCustom = useUiCustomization("assistant.home.appeals");
+  const invoicesChipCustom = useUiCustomization("assistant.home.invoices");
+  const unpaidChipCustom = useUiCustomization("assistant.home.unpaid");
   const unpaidInvoicesCount = runtimeInvoices.filter((inv) => inv.status === "pay").length;
-  const liveApiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
-  const liveModel = process.env.NEXT_PUBLIC_OPENROUTER_MODEL;
-  const isLiveEnabled = Boolean(liveApiKey);
+  const openRouterApiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
+  const grokApiKey = process.env.NEXT_PUBLIC_GROK_API_KEY;
+  const groqApiKey = process.env.NEXT_PUBLIC_GROQ_API_KEY;
+  const liveProxyUrl = process.env.NEXT_PUBLIC_LLM_PROXY_URL;
+  const openRouterModel = process.env.NEXT_PUBLIC_OPENROUTER_MODEL;
+  const grokModel = process.env.NEXT_PUBLIC_GROK_MODEL ?? "grok-3-mini";
+  const groqModel = process.env.NEXT_PUBLIC_GROQ_MODEL ?? "llama-3.1-8b-instant";
+
+  const hasExplicitGrok = Boolean(grokApiKey);
+  const shouldUseGrok = hasExplicitGrok;
+  const isLiveEnabled = Boolean(openRouterApiKey || grokApiKey || groqApiKey);
+  const liveApiKey = openRouterApiKey ?? (shouldUseGrok ? grokApiKey : groqApiKey) ?? "";
+  const liveModel = openRouterApiKey ? openRouterModel : shouldUseGrok ? grokModel : groqModel;
+  const liveProvider: "openrouter" | "groq" | "grok" = openRouterApiKey
+    ? "openrouter"
+    : shouldUseGrok
+      ? "grok"
+      : "groq";
 
   React.useEffect(() => {
     setShowMissedCard(!isMissedCallsSeen());
@@ -253,18 +333,20 @@ export function AiAssistantScreen() {
 
       const specialMock = resolveSpecialMockResponse(v);
       if (specialMock) {
-        const resolved = toAiMessage(specialMock);
+        const resolved = toAiMessage({ ...specialMock, sourceLabel: getAiSourceLabel("special-mock", liveProvider) });
         setMessages((m) => [...m, resolved]);
         appendChatLog(v, resolved.text, "special-mock");
+        traceAiSource(getAiSourceLabel("special-mock", liveProvider), v);
         finishReply();
         return;
       }
 
       const deterministic = resolveDeterministicResponse(v, runtimeInvoices);
       if (deterministic) {
-        const resolved = toAiMessage(deterministic);
+        const resolved = toAiMessage({ ...deterministic, sourceLabel: getAiSourceLabel("deterministic", liveProvider) });
         setMessages((m) => [...m, resolved]);
         appendChatLog(v, resolved.text, "deterministic");
+        traceAiSource(getAiSourceLabel("deterministic", liveProvider), v);
         if (resolved.navigateTo) {
           window.setTimeout(() => router.push(resolved.navigateTo!), 320);
         }
@@ -272,10 +354,22 @@ export function AiAssistantScreen() {
         return;
       }
 
+      const sessionMemory = resolveSessionMemoryResponse(
+        v,
+        [...messages, userMsg].filter((m) => m.role === "user").map((m) => m.text)
+      );
+      if (sessionMemory) {
+        const resolved = toAiMessage({ ...sessionMemory, sourceLabel: getAiSourceLabel("session-memory", liveProvider) });
+        setMessages((m) => [...m, resolved]);
+        appendChatLog(v, resolved.text, "session-memory");
+        traceAiSource(getAiSourceLabel("session-memory", liveProvider), v);
+        finishReply();
+        return;
+      }
+
       let resolved: ChatMessage = toAiMessage({
-        text:
-          "Для этого запроса нужен live AI-ответ. Подключите `NEXT_PUBLIC_OPENROUTER_API_KEY`, и я передам вопрос в модель.",
-        suggested: ["Счета за март", "Звонки за неделю", "Активные обращения"]
+        ...buildSafeLiveFallbackResponse(),
+        sourceLabel: getAiSourceLabel("fallback-no-live", liveProvider)
       });
       let intentUsed = "fallback-no-live";
 
@@ -297,6 +391,8 @@ export function AiAssistantScreen() {
               history,
               apiKey: liveApiKey,
               model: liveModel,
+              provider: liveProvider,
+              proxyUrl: liveProxyUrl,
               contextSummary: buildDataContextSummary(runtimeInvoices),
               signal: controller.signal
             });
@@ -306,15 +402,25 @@ export function AiAssistantScreen() {
                 id: id(),
                 role: "ai",
                 text: liveText,
+                sourceLabel: getAiSourceLabel("live", liveProvider),
                 createdAt: nowIso()
               };
               intentUsed = "live";
             } else if (liveText) {
-              resolved = toAiMessage(buildSafeLiveFallbackResponse());
-              intentUsed = "live-rejected";
-              emitAiMetric({ type: "live_output_rejected", reason: "reliability" });
+              // Prefer returning live text with explicit source mark instead of generic fallback.
+              resolved = {
+                id: id(),
+                role: "ai",
+                text: liveText,
+                sourceLabel: `${getLiveProviderLabel(liveProvider)} (без строгой верификации)`,
+                createdAt: nowIso()
+              };
+              intentUsed = "live";
             } else {
-              resolved = toAiMessage(buildSafeLiveFallbackResponse());
+              resolved = toAiMessage({
+                ...buildSafeLiveFallbackResponse(),
+                sourceLabel: getAiSourceLabel("live-unavailable", liveProvider)
+              });
               intentUsed = "live-unavailable";
             }
           } catch (e) {
@@ -327,7 +433,10 @@ export function AiAssistantScreen() {
               finishReply();
               return;
             }
-            resolved = toAiMessage(buildSafeLiveFallbackResponse());
+            resolved = toAiMessage({
+              ...buildSafeLiveFallbackResponse(),
+              sourceLabel: formatLiveErrorLabel(e, liveProvider)
+            });
             intentUsed = "live-error";
           } finally {
             window.clearTimeout(timeout);
@@ -340,20 +449,42 @@ export function AiAssistantScreen() {
 
       if (mySeq !== sendSeqRef.current) return;
 
-      if (resolved.text.includes("нужен live AI-ответ")) {
-        intentUsed = "fallback-no-live";
-      }
-
       setMessages((m) => [...m, resolved]);
       appendChatLog(v, resolved.text, intentUsed);
+      traceAiSource(getAiSourceLabel(intentUsed, liveProvider), v);
       if (resolved.navigateTo) {
         window.setTimeout(() => router.push(resolved.navigateTo!), 320);
       }
       finishReply();
-    }, 350);
+    }, 120);
   };
 
   const hasChat = messages.length > 0;
+  const visibleHeroCards = React.useMemo(() => {
+    const cards: Array<"missed" | "weekly" | "assist"> = [];
+    if (showMissedCard) cards.push("missed");
+    if (showWeeklyCard) cards.push("weekly");
+    if (showAiAssistCard) cards.push("assist");
+    return cards;
+  }, [showAiAssistCard, showMissedCard, showWeeklyCard]);
+  const activeHeroCard = visibleHeroCards[heroCard] ?? null;
+
+  React.useEffect(() => {
+    if (heroCard >= visibleHeroCards.length) {
+      setHeroCard(Math.max(0, visibleHeroCards.length - 1));
+    }
+  }, [heroCard, visibleHeroCards.length]);
+
+  const moveHeroCard = (delta: number) => {
+    if (visibleHeroCards.length < 2) return;
+    setHeroCard((prev) => {
+      const next = prev + delta;
+      if (next < 0) return 0;
+      if (next >= visibleHeroCards.length) return visibleHeroCards.length - 1;
+      return next;
+    });
+  };
+
   const onHeroPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     heroSwipeStartX.current = e.clientX;
   };
@@ -363,8 +494,8 @@ export function AiAssistantScreen() {
     if (start === null) return;
     const delta = e.clientX - start;
     if (Math.abs(delta) < 40) return;
-    if (delta < 0 && showWeeklyCard) setHeroCard(1);
-    if (delta > 0 && showMissedCard) setHeroCard(0);
+    if (delta < 0) moveHeroCard(1);
+    if (delta > 0) moveHeroCard(-1);
   };
   const onHeroWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     const now = Date.now();
@@ -372,8 +503,8 @@ export function AiAssistantScreen() {
     const horizontal = Math.abs(e.deltaX) >= Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
     if (Math.abs(horizontal) < 28) return;
     heroWheelLastAt.current = now;
-    if (horizontal > 0 && showWeeklyCard) setHeroCard(1);
-    if (horizontal < 0 && showMissedCard) setHeroCard(0);
+    if (horizontal > 0) moveHeroCard(1);
+    if (horizontal < 0) moveHeroCard(-1);
   };
 
   return (
@@ -382,6 +513,7 @@ export function AiAssistantScreen() {
         <>
           <div
             className="-mx-1 cursor-grab px-1 active:cursor-grabbing"
+            data-testid="assistant-hero-swiper"
             onPointerDown={onHeroPointerDown}
             onPointerUp={onHeroPointerUp}
             onPointerCancel={() => {
@@ -390,49 +522,50 @@ export function AiAssistantScreen() {
             onWheel={onHeroWheel}
             style={{ touchAction: "pan-y" }}
           >
-            {heroCard === 0 && showMissedCard ? (
-              <button
-                type="button"
-                className="block w-full text-left"
-                onClick={() => {
-                  markMissedCallsSeen();
-                  setShowMissedCard(false);
-                  router.push("/missed-calls/");
-                }}
-              >
-                <Card className="min-h-[120px] rounded-[24px] border-[#E8EAED] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
-                  <CardContent className="flex min-h-[120px] items-center gap-3 pb-3 pt-3">
-                    <span className="relative shrink-0">
-                      <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#F2F2F7] dark:bg-slate-700">
-                        <PhoneOff className="h-6 w-6 text-[#E53935]" />
-                      </span>
-                      <span className="absolute -right-1 -top-1 flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#E53935] px-1 text-[11px] font-bold text-white">
-                        x2
-                      </span>
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <div className="mt-0.5 truncate text-[18px] font-semibold leading-tight text-[#1F2430] dark:text-slate-100">
-                          Доставка офисной техники
-                        </div>
-                        <span className="shrink-0 text-[12px] font-medium tabular-nums text-[#C3C7D4] dark:text-slate-400">
-                          12:42
+            <div className="h-[120px]" data-testid="assistant-hero-slot">
+              {activeHeroCard === "missed" ? (
+                <button
+                  type="button"
+                  className="block h-full w-full text-left"
+                  onClick={() => {
+                    markMissedCallsSeen();
+                    setShowMissedCard(false);
+                    router.push("/missed-calls/");
+                  }}
+                >
+                  <Card className="h-full rounded-[24px] border-[#E8EAED] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
+                    <CardContent className="flex h-full items-center gap-3 pb-3 pt-3">
+                      <span className="relative shrink-0">
+                        <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#F2F2F7] dark:bg-slate-700">
+                          <PhoneOff className="h-6 w-6 text-[#E53935]" />
                         </span>
+                        <span className="absolute -right-1 -top-1 flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#E53935] px-1 text-[11px] font-bold text-white">
+                          x2
+                        </span>
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <div className="mt-0.5 truncate text-[18px] font-semibold leading-tight text-[#1F2430] dark:text-slate-100">
+                            Доставка офисной техники
+                          </div>
+                          <span className="shrink-0 text-[12px] font-medium tabular-nums text-[#C3C7D4] dark:text-slate-400">
+                            12:42
+                          </span>
+                        </div>
+                        <div className="mt-1 text-[14px] leading-tight text-[#7C8597] dark:text-slate-300">
+                          Пропущенный
+                        </div>
                       </div>
-                      <div className="mt-1 text-[14px] leading-tight text-[#7C8597] dark:text-slate-300">
-                        Пропущенный
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </button>
-            ) : null}
-            {(heroCard === 1 || !showMissedCard) && showWeeklyCard ? (
-              <Card className="min-h-[160px] rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
-                <CardContent className="flex min-h-[160px] items-start gap-3 pb-3 pt-3">
+                    </CardContent>
+                  </Card>
+                </button>
+              ) : null}
+              {activeHeroCard === "weekly" ? (
+                <Card className="h-full rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
+                  <CardContent className="flex h-full items-center gap-3 overflow-hidden pb-2 pt-2">
                   <button
                     type="button"
-                    className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ECEAFD]"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-full bg-[#ECEAFD]"
                     onClick={() => {
                       if (
                         typeof window === "undefined" ||
@@ -465,12 +598,12 @@ export function AiAssistantScreen() {
                       Еженедельный отчет
                     </div>
                     <div className="text-xs text-[#A2A8B8]">за 24 апреля</div>
-                    <p className="mt-1 text-xs leading-relaxed text-[#6B7280] dark:text-slate-300">
+                    <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[#6B7280] dark:text-slate-300">
                       126 звонков, 6 пропущенных, средняя длительность 2:40. Есть 4 клиента в риске по оплате.
                     </p>
                     <button
                       type="button"
-                      className="mt-2 text-xs font-semibold text-accent-dark underline dark:text-accent-yellow"
+                      className="mt-1 text-xs font-semibold text-accent-dark underline dark:text-accent-yellow"
                       onClick={() => {
                         setInput("звонки за неделю");
                         window.setTimeout(() => send("звонки за неделю"), 60);
@@ -486,13 +619,45 @@ export function AiAssistantScreen() {
                   >
                     <X className="h-4 w-4" />
                   </button>
-                </CardContent>
-              </Card>
-            ) : null}
-            {showMissedCard && showWeeklyCard ? (
+                  </CardContent>
+                </Card>
+              ) : null}
+              {activeHeroCard === "assist" ? (
+                <Card className="h-full rounded-[20px] border-[#DDE4FF] bg-gradient-to-br from-[#F7F9FF] to-white shadow-none dark:border-slate-700 dark:from-slate-800 dark:to-slate-800">
+                  <CardContent className="flex h-full items-center gap-3 pb-3 pt-3">
+                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ECEAFD]">
+                      <Bot className="h-4 w-4 text-[#4B5563]" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-semibold text-[#343A4A] dark:text-slate-100">AI ассистенты подключены</div>
+                      <div className="mt-0.5 text-xs leading-relaxed text-[#6B7280] dark:text-slate-300">
+                        У вас подключены AI ассистенты, но вы ими еще не пользовались.
+                      </div>
+                      <button
+                        type="button"
+                        className="mt-1 rounded-full bg-accent-yellow px-4 py-1.5 text-xs font-semibold text-[#2F3141] transition hover:brightness-95"
+                        onClick={() => {
+                          setInput("Мои продукты");
+                          window.setTimeout(() => send("Мои продукты"), 60);
+                        }}
+                      >
+                        Начать
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : null}
+            </div>
+            {visibleHeroCards.length > 1 ? (
               <div className="mt-2 flex justify-center gap-1.5">
-                <button type="button" className={cn("h-1.5 w-5 rounded-full", heroCard === 0 ? "bg-slate-900 dark:bg-slate-100" : "bg-slate-300 dark:bg-slate-600")} onClick={() => setHeroCard(0)} />
-                <button type="button" className={cn("h-1.5 w-5 rounded-full", heroCard === 1 ? "bg-slate-900 dark:bg-slate-100" : "bg-slate-300 dark:bg-slate-600")} onClick={() => setHeroCard(1)} />
+                {visibleHeroCards.map((_, idx) => (
+                  <button
+                    key={`hero-dot-${idx}`}
+                    type="button"
+                    className={cn("h-1.5 w-5 rounded-full", heroCard === idx ? "bg-slate-900 dark:bg-slate-100" : "bg-slate-300 dark:bg-slate-600")}
+                    onClick={() => setHeroCard(idx)}
+                  />
+                ))}
               </div>
             ) : null}
           </div>
@@ -521,8 +686,13 @@ export function AiAssistantScreen() {
             <div className="flex w-full max-w-[360px] justify-center gap-2.5">
               <button
                 type="button"
-                className={pillBase}
+                className={cn(pillBase, getCustomizationButtonClasses(missedChipCustom.dimmedDisabled))}
+                disabled={missedChipCustom.dimmedDisabled}
                 onClick={() => {
+                  if (missedChipCustom.useMock) {
+                    setToast("Пропущенные звонки (мок из кастомизации).");
+                    return;
+                  }
                   markMissedCallsSeen();
                   setShowMissedCard(false);
                   router.push("/missed-calls/");
@@ -535,21 +705,50 @@ export function AiAssistantScreen() {
                   </span>
                 ) : null}
               </button>
-              <Link href="/appeals/" className={pillBase}>
+              <Link
+                href="/appeals/"
+                className={cn(pillBase, getCustomizationButtonClasses(appealsChipCustom.dimmedDisabled))}
+                onClick={(e) => {
+                  if (appealsChipCustom.dimmedDisabled) {
+                    e.preventDefault();
+                    return;
+                  }
+                  if (appealsChipCustom.useMock) {
+                    e.preventDefault();
+                    setToast("Обращения (мок из кастомизации).");
+                  }
+                }}
+              >
                 <span>Обращения</span>
               </Link>
             </div>
             <div className="flex w-full max-w-[360px] flex-wrap justify-center gap-2.5">
               <button
                 type="button"
-                className={pillBase}
+                className={cn(pillBase, getCustomizationButtonClasses(invoicesChipCustom.dimmedDisabled))}
+                disabled={invoicesChipCustom.dimmedDisabled}
                 onClick={() => {
+                  if (invoicesChipCustom.useMock) {
+                    setToast("Мои счета (мок из кастомизации).");
+                    return;
+                  }
                   router.push("/invoices/");
                 }}
               >
                 <span>Мои счета</span>
               </button>
-              <button type="button" className={pillBase} onClick={() => router.push("/invoices/")}>
+              <button
+                type="button"
+                className={cn(pillBase, getCustomizationButtonClasses(unpaidChipCustom.dimmedDisabled))}
+                disabled={unpaidChipCustom.dimmedDisabled}
+                onClick={() => {
+                  if (unpaidChipCustom.useMock) {
+                    setToast("Счета на оплату (мок из кастомизации).");
+                    return;
+                  }
+                  router.push("/invoices/");
+                }}
+              >
                 <span>Счета на оплату</span>
                 {unpaidInvoicesCount > 0 ? (
                   <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#2D2D2D] px-1.5 text-[11px] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
@@ -565,9 +764,7 @@ export function AiAssistantScreen() {
 
       <div className="space-y-3">
         {hasChat ? (
-          <button
-            type="button"
-            className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-softSm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+          <div
             onClick={() => {
               setMessages(defaultChat);
               setInput("");
@@ -575,8 +772,8 @@ export function AiAssistantScreen() {
               setChipTags([...recentQueryChips]);
             }}
           >
-            Назад
-          </button>
+            <PageBackLink href="/assistant/" />
+          </div>
         ) : null}
         <AnimatePresence initial={false}>
           {hasChat ? (
@@ -812,6 +1009,28 @@ export function AiAssistantScreen() {
 
       <Modal open={openHistory} onClose={() => setOpenHistory(false)} title="История запросов">
         <div className="space-y-2">
+          <div className="pb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Быстрые запросы
+          </div>
+          <div className="flex flex-wrap gap-2 pb-1">
+            {recentHistoryQuickPrompts.map((prompt) => (
+              <button
+                key={prompt}
+                type="button"
+                className="rounded-full border border-[#E8EAED] bg-white px-3 py-1.5 text-xs font-medium text-[#3C4858] shadow-sm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                onClick={() => {
+                  setOpenHistory(false);
+                  setInput(prompt);
+                  window.setTimeout(() => send(prompt), 60);
+                }}
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+          <div className="pb-1 pt-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            Сохраненные сессии
+          </div>
           {chatHistoryPresets.map((h) => (
             <button
               key={h.id}

@@ -15,6 +15,7 @@ import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { isFeedMissedSeen, markFeedMissedSeen } from "@shared/lib/runtimeFlags";
 import { feedDateLabel, feedItems } from "@shared/lib/mockData";
 import { goSmartBack } from "@shared/lib/smartBack";
+import { getCustomizationButtonClasses, useUiCustomization } from "@shared/lib/uiCustomization";
 
 type CommTab = "records" | "secretary";
 type FilterKey = "all" | "missed" | "incoming" | "reports" | "team";
@@ -27,6 +28,13 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
   const [missedSeen, setMissedSeen] = React.useState(() => isFeedMissedSeen());
   const [openDatePicker, setOpenDatePicker] = React.useState(false);
   const [expandedTranscriptById, setExpandedTranscriptById] = React.useState<Record<string, boolean>>({});
+  const settingsCustom = useUiCustomization("feed.settings");
+  const searchCustom = useUiCustomization("feed.search");
+  const teamCustom = useUiCustomization("feed.team");
+  const missedCustom = useUiCustomization("feed.missed");
+  const incomingCustom = useUiCustomization("feed.incoming");
+  const reportsCustom = useUiCustomization("feed.reports");
+  const secretarySetupCustom = useUiCustomization("feed.secretary.setup");
 
   const filteredComm = React.useMemo(() => {
     if (commTab !== "records") return [];
@@ -86,9 +94,14 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
             <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Коммуникация</h1>
             <button
               type="button"
-              onClick={() => openDevelopmentStub("Настройки ленты коммуникаций.")}
-              className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+              onClick={() =>
+                openDevelopmentStub(
+                  settingsCustom.useMock ? "Настройки ленты коммуникаций (мок из кастомизации)." : "Настройки ленты коммуникаций."
+                )
+              }
+              className={["flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700", getCustomizationButtonClasses(settingsCustom.dimmedDisabled)].join(" ")}
               aria-label="Настройки"
+              disabled={settingsCustom.dimmedDisabled}
             >
               <Settings className="h-4 w-4" />
             </button>
@@ -104,9 +117,10 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() => openDevelopmentStub("Поиск по коммуникациям.")}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 active:translate-y-[1px] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+              onClick={() => openDevelopmentStub(searchCustom.useMock ? "Поиск по коммуникациям (мок из кастомизации)." : "Поиск по коммуникациям.")}
+              className={["flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 active:translate-y-[1px] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700", getCustomizationButtonClasses(searchCustom.dimmedDisabled)].join(" ")}
               aria-label="Поиск"
+              disabled={searchCustom.dimmedDisabled}
             >
               <Search className="h-4 w-4" />
             </button>
@@ -121,15 +135,22 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
             <button
               type="button"
               onClick={() => {
+                if (teamCustom.dimmedDisabled) return;
                 setFilter("team");
-                openDevelopmentStub("Фильтр «Команда» и привязка ответственных.");
+                openDevelopmentStub(
+                  teamCustom.useMock
+                    ? "Фильтр «Команда» (мок из кастомизации)."
+                    : "Фильтр «Команда» и привязка ответственных."
+                );
               }}
               className={[
                 "rounded-full border px-3 py-2 text-xs font-semibold transition active:translate-y-[1px]",
+                getCustomizationButtonClasses(teamCustom.dimmedDisabled),
                 filter === "team"
                   ? "border-transparent bg-accent-dark text-white shadow-softSm"
                   : "border-slate-200 bg-white text-slate-800 shadow-softSm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               ].join(" ")}
+              disabled={teamCustom.dimmedDisabled}
             >
               Команда
             </button>
@@ -148,16 +169,23 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
             <button
               type="button"
               onClick={() => {
+                if (missedCustom.dimmedDisabled) return;
+                if (missedCustom.useMock) {
+                  openDevelopmentStub("Пропущенные в ленте (мок из кастомизации).");
+                  return;
+                }
                 markFeedMissedSeen();
                 setMissedSeen(true);
                 router.push("/missed-calls/");
               }}
               className={[
                 "inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition active:translate-y-[1px]",
+                getCustomizationButtonClasses(missedCustom.dimmedDisabled),
                 filter === "missed"
                   ? "border-transparent bg-accent-dark text-white shadow-softSm"
                   : "border-slate-200 bg-white text-slate-800 shadow-softSm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               ].join(" ")}
+              disabled={missedCustom.dimmedDisabled}
             >
               Пропущенные
               {!missedSeen ? (
@@ -173,25 +201,35 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => setFilter("incoming")}
+              onClick={() => {
+                if (incomingCustom.dimmedDisabled) return;
+                setFilter("incoming");
+              }}
               className={[
                 "rounded-full border px-3 py-1.5 text-[11px] font-semibold transition active:translate-y-[1px]",
+                getCustomizationButtonClasses(incomingCustom.dimmedDisabled),
                 filter === "incoming"
                   ? "border-transparent bg-slate-800 text-white"
                   : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               ].join(" ")}
+              disabled={incomingCustom.dimmedDisabled}
             >
               Входящие
             </button>
             <button
               type="button"
-              onClick={() => setFilter("reports")}
+              onClick={() => {
+                if (reportsCustom.dimmedDisabled) return;
+                setFilter("reports");
+              }}
               className={[
                 "rounded-full border px-3 py-1.5 text-[11px] font-semibold transition active:translate-y-[1px]",
+                getCustomizationButtonClasses(reportsCustom.dimmedDisabled),
                 filter === "reports"
                   ? "border-transparent bg-slate-800 text-white"
                   : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               ].join(" ")}
+              disabled={reportsCustom.dimmedDisabled}
             >
               Отчёты
             </button>
@@ -243,7 +281,12 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
             </p>
             <Button
               className="mt-4 w-full rounded-full"
-              onClick={() => openDevelopmentStub("Мастер сценариев секретаря.")}
+              onClick={() =>
+                openDevelopmentStub(
+                  secretarySetupCustom.useMock ? "Мастер сценариев секретаря (мок из кастомизации)." : "Мастер сценариев секретаря."
+                )
+              }
+              disabled={secretarySetupCustom.dimmedDisabled}
             >
               Настроить сценарии
             </Button>

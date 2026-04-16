@@ -125,14 +125,49 @@ function buildChecks(): Check[] {
 
 export function QaDiagnosticsScreen({ backHref = "/settings/" }: { backHref?: string }) {
   const [checks, setChecks] = React.useState<Check[]>([]);
+  const [aiTrace, setAiTrace] = React.useState<
+    Array<{
+      at: string;
+      source: string;
+      prompt: string;
+    }>
+  >([]);
+
+  const isDev = typeof process !== "undefined" && process.env?.NODE_ENV === "development";
+
+  const refreshAiTrace = React.useCallback(() => {
+    if (!isDev) return;
+    if (typeof window === "undefined") return;
+    try {
+      const key = "b2b_ai_self_check_trace_v1";
+      const cur = JSON.parse(window.localStorage.getItem(key) ?? "[]") as Array<{
+        at: string;
+        source: string;
+        prompt: string;
+      }>;
+      const next = Array.isArray(cur) ? cur : [];
+      setAiTrace(next.slice(-15).reverse());
+    } catch {
+      setAiTrace([]);
+    }
+  }, [isDev]);
 
   const runChecks = React.useCallback(() => {
     setChecks(buildChecks());
-  }, []);
+    refreshAiTrace();
+  }, [refreshAiTrace]);
 
   React.useEffect(() => {
     runChecks();
   }, [runChecks]);
+
+  React.useEffect(() => {
+    if (!isDev) return;
+    const t = window.setInterval(() => {
+      refreshAiTrace();
+    }, 1200);
+    return () => window.clearInterval(t);
+  }, [isDev, refreshAiTrace]);
 
   return (
     <div className="safe-px mx-auto max-w-[760px] space-y-4 pb-8 pt-2">
@@ -171,6 +206,27 @@ export function QaDiagnosticsScreen({ backHref = "/settings/" }: { backHref?: st
           </Card>
         ))}
       </div>
+
+      {isDev ? (
+        <Card>
+          <CardContent className="space-y-2 pb-4 pt-4">
+            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Self-check: источник ответов</div>
+            {aiTrace.length ? (
+              <div className="space-y-2">
+                {aiTrace.map((t) => (
+                  <div key={t.at} className="text-xs text-slate-500 dark:text-slate-400">
+                    <span className="font-medium text-slate-700 dark:text-slate-300">{t.source}</span>
+                    <span className="ml-2">{new Date(t.at).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}</span>
+                    <div className="mt-1 truncate">{t.prompt}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-xs text-slate-500 dark:text-slate-400">Пока нет данных. Отправьте запрос в чат и откройте QA.</div>
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   );
 }

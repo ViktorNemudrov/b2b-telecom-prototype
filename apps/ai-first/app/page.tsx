@@ -11,7 +11,15 @@ export default function HomePage() {
     const t = window.setTimeout(() => {
       router.replace("/assistant/");
     }, 3000);
-    return () => window.clearTimeout(t);
+    const hardFallback = window.setTimeout(() => {
+      if (window.location.pathname === "/") {
+        window.location.replace("/assistant/");
+      }
+    }, 5200);
+    return () => {
+      window.clearTimeout(t);
+      window.clearTimeout(hardFallback);
+    };
   }, [router]);
 
   return <LaunchScreen />;

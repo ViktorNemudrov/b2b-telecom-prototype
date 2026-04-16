@@ -9,6 +9,8 @@ function canSpeak() {
   return typeof window !== "undefined" && "speechSynthesis" in window;
 }
 
+let lastSpokenText: string | null = null;
+
 export function ChatBubble({
   message,
   onSuggestedClick
@@ -29,6 +31,9 @@ export function ChatBubble({
         )}
       >
         <div className="whitespace-pre-wrap">{message.text}</div>
+        {!isUser && message.sourceLabel ? (
+          <div className="mt-2 text-right text-[11px] text-slate-400 dark:text-slate-500">{message.sourceLabel}</div>
+        ) : null}
 
         {!isUser ? (
           <div className="mt-3 flex items-center gap-2">
@@ -38,14 +43,34 @@ export function ChatBubble({
               className="h-9 w-9 rounded-xl dark:text-slate-300 dark:hover:bg-slate-700"
               onClick={() => {
                 if (!canSpeak()) return;
+                const synth = window.speechSynthesis;
+                const isActive = synth.speaking || synth.paused || (synth as any).pending;
+                const shouldStop = isActive && lastSpokenText === message.text;
+
+                // If the same bubble is currently being spoken -> toggle stop.
+                if (shouldStop) {
+                  synth.cancel();
+                  lastSpokenText = null;
+                  return;
+                }
+
+                // Otherwise restart speaking from this bubble.
                 const u = new SpeechSynthesisUtterance(message.text);
                 u.lang = "ru-RU";
-                window.speechSynthesis.cancel();
-                window.speechSynthesis.speak(u);
+                synth.cancel();
+                lastSpokenText = message.text;
+                synth.speak(u);
               }}
-              aria-label="Озвучить"
+              aria-label={(() => {
+                if (!canSpeak()) return "Озвучить";
+                const synth = window.speechSynthesis;
+                const isActive = synth.speaking || synth.paused || (synth as any).pending;
+                const isSame = lastSpokenText === message.text;
+                const shouldStop = isActive && isSame;
+                return shouldStop ? "Остановить озвучку" : "Озвучить";
+              })()}
               disabled={!canSpeak()}
-              title={!canSpeak() ? "SpeechSynthesis недоступен" : "Озвучить"}
+              title={!canSpeak() ? "SpeechSynthesis недоступен" : "Озвучить / остановить"}
             >
               <Volume2 className="h-4 w-4" />
             </Button>

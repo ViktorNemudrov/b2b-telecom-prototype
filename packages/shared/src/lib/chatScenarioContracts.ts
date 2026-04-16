@@ -12,15 +12,25 @@ export type DeterministicScenarioCase = {
 
 export const specialScenarioCases: SpecialScenarioCase[] = [
   { prompt: "ты чмо", contains: "Вроде бы взрослый человек" },
-  { prompt: "что ты умеешь", contains: "умею" },
+  { prompt: "что ты умеешь", contains: "Я знаю ваши продукты" },
   { prompt: "привет", contains: "здравствуйте" },
   { prompt: "добрый вечер", contains: "здравствуйте" },
-  { prompt: "как дела", contains: "Работаю" }
+  { prompt: "как дела", contains: "Все хорошо, работаю на благо B2B в Билайне." }
 ];
 
 export const deterministicScenarioCases: DeterministicScenarioCase[] = [
   { prompt: "покажи неоплаченные счета", expectWidget: "invoices-unpaid-inline", contains: "Показываю неоплаченные счета" },
   { prompt: "Мои сервисы", contains: "По сервисам могу показать" },
+  { prompt: "Мои продукты", contains: "Ваши подключенные продукты" },
+  { prompt: "Покажи мои продукты", contains: "Ваши подключенные продукты" },
+  { prompt: "Инсайты", contains: "Ключевые инсайты" },
+  { prompt: "Открытые обращения", expectNavigateTo: "/appeals/", contains: "Открываю раздел с активными обращениями" },
+  { prompt: "Создать платеж", expectNavigateTo: "/invoices/", contains: "Открываю счета и оплату" },
+  { prompt: "Запустить смс рассылку", contains: "Подготовил черновик SMS-рассылки" },
+  { prompt: "Записи звонков", expectWidget: "missed-calls-inline", contains: "Показываю записи и сводку" },
+  { prompt: "Баланс", expectNavigateTo: "/invoices/", contains: "Открываю раздел счетов" },
+  { prompt: "Изменить настройки секретаря", contains: "пока в разработке" },
+  { prompt: "Настроить запись звонков", contains: "пока в разработке" },
   { prompt: "счета за март", expectWidget: "invoices-month", contains: "Показываю счета за март" },
   { prompt: "счета за февраль", expectWidget: "invoices-month", contains: "Показываю счета за февраль" },
   { prompt: "Мои счета", contains: "По счетам: всего" },
@@ -35,6 +45,10 @@ export const deterministicScenarioCases: DeterministicScenarioCase[] = [
   { prompt: "звонки за неделю", expectWidget: "weekly-stats-expanded", contains: "За неделю:" },
   { prompt: "Секретарь", contains: "сценарий «Секретарь»" },
   { prompt: "Увеличить срок хранения звонков", contains: "увеличение срока хранения" },
+  { prompt: "дай совет от ассистента", contains: "Совет от ассистента:" },
+  { prompt: "открыть список счетов", expectNavigateTo: "/invoices/", contains: "Открываю полный список счетов." },
+  { prompt: "да, создать обращение", expectNavigateTo: "/appeals/", contains: "Открываю создание обращения" },
+  { prompt: "позови оператора", contains: "Я в демо режиме и не могу звать людей" },
   { prompt: "Сводка дня", contains: "Сводка дня:" },
   { prompt: "Запусти рассылку", contains: "Подготовил сценарий рассылки" },
   { prompt: "обращения", contains: "По обращениям" },

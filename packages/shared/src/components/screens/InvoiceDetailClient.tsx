@@ -11,6 +11,7 @@ import { cn } from "@shared/components/ui/cn";
 import { downloadInvoicePdf } from "@shared/lib/minimalPdf";
 import { markInvoicePaid, useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
 import { goSmartBack } from "@shared/lib/smartBack";
+import { useUiCustomization } from "@shared/lib/uiCustomization";
 
 export function InvoiceDetailClient({
   id,
@@ -28,6 +29,11 @@ export function InvoiceDetailClient({
   const [toast, setToast] = React.useState<string | null>(null);
   const qrVideoRef = React.useRef<HTMLVideoElement | null>(null);
   const qrStreamRef = React.useRef<MediaStream | null>(null);
+  const payCustom = useUiCustomization("invoice.pay");
+  const downloadCustom = useUiCustomization("invoice.download");
+  const qrCustom = useUiCustomization("invoice.pay.qr");
+  const cardCustom = useUiCustomization("invoice.pay.card");
+  const requisitesCustom = useUiCustomization("invoice.pay.requisites");
 
   if (!inv) {
     return (
@@ -101,12 +107,29 @@ export function InvoiceDetailClient({
         <Button
           variant="secondary"
           className="flex-1 rounded-2xl dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
-          onClick={() => void downloadInvoicePdf(`schet-${id}-demo.pdf`)}
+          onClick={() => {
+            if (downloadCustom.useMock) {
+              setToast("Скачать PDF (мок из кастомизации).");
+              return;
+            }
+            void downloadInvoicePdf(`schet-${id}-demo.pdf`);
+          }}
+          disabled={downloadCustom.dimmedDisabled}
         >
           Скачать PDF
         </Button>
         {inv.status !== "paid" ? (
-          <Button className="flex-1 rounded-2xl" onClick={() => setPayOpen(true)}>
+          <Button
+            className="flex-1 rounded-2xl"
+            onClick={() => {
+              if (payCustom.useMock) {
+                setToast("Оплатить (мок из кастомизации).");
+                return;
+              }
+              setPayOpen(true);
+            }}
+            disabled={payCustom.dimmedDisabled}
+          >
             Оплатить
           </Button>
         ) : null}
@@ -118,6 +141,10 @@ export function InvoiceDetailClient({
           <Button
             className="w-full rounded-2xl"
             onClick={() => {
+              if (qrCustom.useMock) {
+                setToast("Оплата по QR-коду (мок из кастомизации).");
+                return;
+              }
               setQrActive(true);
               const mediaDevices = typeof navigator !== "undefined" ? navigator.mediaDevices : undefined;
               if (!mediaDevices?.getUserMedia) {
@@ -141,6 +168,7 @@ export function InvoiceDetailClient({
                   window.setTimeout(() => completePayment(), 5000);
                 });
             }}
+            disabled={qrCustom.dimmedDisabled}
           >
             Оплатить по QR-коду
           </Button>
@@ -185,16 +213,28 @@ export function InvoiceDetailClient({
           </Button>
           <Button
             className="w-full rounded-2xl bg-accent-yellow text-accent-dark hover:brightness-95"
-            onClick={() => setCardOpen(true)}
+            onClick={() => {
+              if (cardCustom.useMock) {
+                setToast("Оплата банковской картой (мок из кастомизации).");
+                return;
+              }
+              setCardOpen(true);
+            }}
+            disabled={cardCustom.dimmedDisabled}
           >
             Оплата банковской картой
           </Button>
           <Button
             className="w-full rounded-2xl bg-accent-yellow text-accent-dark hover:brightness-95"
             onClick={() => {
+              if (requisitesCustom.useMock) {
+                setToast("Оплата по реквизитам (мок из кастомизации).");
+                return;
+              }
               setPayOpen(false);
               setToast("Оплата по реквизитам (мок): реквизиты отправлены на e-mail.");
             }}
+            disabled={requisitesCustom.dimmedDisabled}
           >
             Оплата по реквизитам
           </Button>

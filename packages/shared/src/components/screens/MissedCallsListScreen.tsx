@@ -1,15 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { Volume2 } from "lucide-react";
 import { CommunicationLogRow } from "@shared/components/CommunicationLogRow";
+import { PageBackLink } from "@shared/components/PageBackLink";
 import { communicationLogMock } from "@shared/lib/dashboardMock";
 import { markMissedCallsSeen } from "@shared/lib/runtimeFlags";
-import { goSmartBack } from "@shared/lib/smartBack";
 
 export function MissedCallsListScreen() {
-  const router = useRouter();
   const groups = React.useMemo(() => {
     const m = new Map<string, typeof communicationLogMock>();
     for (const row of communicationLogMock) {
@@ -62,13 +60,7 @@ export function MissedCallsListScreen() {
         ))}
       </div>
 
-      <button
-        type="button"
-        className="block w-full text-center text-sm font-semibold text-accent-dark dark:text-accent-yellow"
-        onClick={() => goSmartBack(router, "/assistant/")}
-      >
-        Назад
-      </button>
+      <PageBackLink href="/assistant/" />
     </div>
   );
 }

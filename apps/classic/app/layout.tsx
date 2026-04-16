@@ -4,6 +4,7 @@ import { DemoSessionProvider } from "@shared/components/DemoSessionProvider";
 import { DevelopmentStubHost } from "@shared/components/DevelopmentStubHost";
 import { SessionGate } from "@shared/components/SessionGate";
 import { ThemeProvider } from "@shared/components/ThemeProvider";
+import { UiCustomizationProvider } from "@shared/lib/uiCustomization";
 import { PwaInstallPrompt } from "./PwaInstallPrompt";
 import "./globals.css";
 
@@ -36,11 +37,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="relative mx-auto min-h-dvh w-full max-w-[430px]">
           <ThemeProvider>
             <DemoSessionProvider>
-              <SessionGate publicPaths={["/"]} unauthenticatedRedirect="/">
-                {children}
-              </SessionGate>
-              <PwaInstallPrompt />
-              <DevelopmentStubHost />
+              <UiCustomizationProvider>
+                <SessionGate publicPaths={["/"]} unauthenticatedRedirect="/">
+                  {children}
+                </SessionGate>
+                <PwaInstallPrompt />
+                <DevelopmentStubHost />
+              </UiCustomizationProvider>
             </DemoSessionProvider>
           </ThemeProvider>
         </div>

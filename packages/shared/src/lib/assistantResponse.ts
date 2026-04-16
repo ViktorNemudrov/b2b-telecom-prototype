@@ -1,4 +1,11 @@
-import { getDemoNavigationIntent, standaloneCalls, type ChatMessage, type InvoiceItem } from "./mockData";
+import {
+  getDemoNavigationIntent,
+  recentHistoryQuickPrompts,
+  recentQueryChips,
+  standaloneCalls,
+  type ChatMessage,
+  type InvoiceItem
+} from "./mockData";
 import { resolveAnalyticsResponse } from "./chatAnalytics";
 import { containsProfanity } from "./profanity";
 
@@ -39,17 +46,115 @@ export function isLiveResponseReliable(prompt: string, response: string): boolea
 export function buildSafeLiveFallbackResponse(): AssistantPayload {
   return {
     text:
-      "Не могу подтвердить корректный ответ по вашему запросу на текущих данных. Уточните вопрос или выберите рабочий сценарий: счета, звонки, обращения.",
+      "Сейчас не удалось получить надежный live-ответ. Попробуйте уточнить запрос или выберите быстрый сценарий: счета, звонки, обращения.",
     suggested: ["Счета за март", "Звонки за неделю", "Активные обращения"]
   };
+}
+
+type SessionFacts = {
+  name: string | null;
+  likes: string[];
+};
+
+function extractSessionFacts(userUtterances: string[]): SessionFacts {
+  let name: string | null = null;
+  const likes: string[] = [];
+
+  for (const raw of userUtterances) {
+    const text = raw.trim();
+    if (!text) continue;
+
+    const nameMatch = text.match(/(?:меня\s+зовут|мо[её]\s+имя)\s+([а-яёa-z][а-яёa-z\-]{1,30})/i);
+    if (nameMatch?.[1]) {
+      const n = nameMatch[1];
+      name = n.charAt(0).toUpperCase() + n.slice(1).toLowerCase();
+    }
+
+    const likeMatch = text.match(/(?:я\s+люблю|мне\s+нрав(?:ится|ят))\s+([^.!?]+)/i);
+    if (likeMatch?.[1]) {
+      const value = likeMatch[1]
+        .replace(/[«»"']/g, "")
+        .trim()
+        .toLowerCase();
+      if (value && !likes.includes(value)) likes.push(value);
+    }
+  }
+
+  return { name, likes };
+}
+
+export function resolveSessionMemoryResponse(prompt: string, userUtterances: string[]): AssistantPayload | null {
+  const { clean, compact } = normalizePrompt(prompt);
+  const asksName = hasAny(clean, compact, ["как меня зовут", "мое имя", "моё имя", "кто я"]);
+  const asksLikes = hasAny(clean, compact, ["что я люблю", "что мне нравится", "мои предпочтения"]);
+
+  if (!asksName && !asksLikes) return null;
+
+  const facts = extractSessionFacts(userUtterances);
+  const chunks: string[] = [];
+
+  if (asksName) {
+    chunks.push(facts.name ? `В этом диалоге вы представились как ${facts.name}.` : "В этом диалоге вы еще не называли имя.");
+  }
+  if (asksLikes) {
+    chunks.push(facts.likes.length ? `Вы говорили, что вам нравится: ${facts.likes.join(", ")}.` : "В этом диалоге вы еще не описывали предпочтения.");
+  }
+
+  return { text: chunks.join(" ") };
 }
 
 function hasAny(clean: string, compact: string, samples: string[]) {
   return samples.some((s) => clean.includes(s) || compact.includes(s.replace(/\s+/g, "")));
 }
 
+function mapEnLayoutToRu(input: string): string {
+  const map: Record<string, string> = {
+    q: "й",
+    w: "ц",
+    e: "у",
+    r: "к",
+    t: "е",
+    y: "н",
+    u: "г",
+    i: "ш",
+    o: "щ",
+    p: "з",
+    "[": "х",
+    "]": "ъ",
+    a: "ф",
+    s: "ы",
+    d: "в",
+    f: "а",
+    g: "п",
+    h: "р",
+    j: "о",
+    k: "л",
+    l: "д",
+    ";": "ж",
+    "'": "э",
+    z: "я",
+    x: "ч",
+    c: "с",
+    v: "м",
+    b: "и",
+    n: "т",
+    m: "ь",
+    ",": "б",
+    ".": "ю",
+    "`": "ё"
+  };
+  return input
+    .split("")
+    .map((ch) => map[ch.toLowerCase()] ?? ch)
+    .join("");
+}
+
 function normalizePrompt(prompt: string) {
-  const clean = prompt
+  const trimmed = prompt.trim();
+  const hasRu = /[а-яё]/i.test(trimmed);
+  const hasEn = /[a-z]/i.test(trimmed);
+  const prepared = hasEn && !hasRu ? mapEnLayoutToRu(trimmed) : trimmed;
+  const clean = prepared
     .toLowerCase()
     .replace(/[^a-zа-яё0-9\s]/gi, " ")
     .replace(/\s+/g, " ")
@@ -78,7 +183,12 @@ export function resolveSpecialMockResponse(prompt: string): AssistantPayload | n
   if (asksCapabilities) {
     return {
       text:
-        "Сейчас в приложении я умею:\n" +
+        "Я знаю ваши продукты и помогаю управлять ими удобнее и эффективнее:\n" +
+        "- быстро запускаю сценарии\n" +
+        "- показываю аналитику и инсайты\n" +
+        "- быстро нахожу нужные данные, счета, платежи, обращения\n" +
+        "- подсказываю полезные функции, которые вы еще не используете\n" +
+        "- предлагаю новые возможности, если они могут быть вам полезны\n" +
         "- Показывать счета по месяцам, статусы и суммы\n" +
         "- Сравнивать месяцы, считать разницу, доли и динамику\n" +
         "- Подсказывать по неоплаченным счетам и оплате\n" +
@@ -86,9 +196,8 @@ export function resolveSpecialMockResponse(prompt: string): AssistantPayload | n
         "- Запускать недельные сводки и рекомендации\n" +
         "- Работать с обращениями и быстрыми действиями\n" +
         "- Делать простые расчеты и конвертацию единиц\n" +
-        "- Выгружать журнал диалога\n\n" +
-        "Это специальный демо-ответ о возможностях ассистента.",
-      suggested: ["Счета за февраль", "Звонки за неделю", "Мои обращения"]
+        "- Выгружать журнал диалога",
+      suggested: ["Мои продукты", "Инсайты", "Открытые обращения"]
     };
   }
 
@@ -99,7 +208,7 @@ export function resolveSpecialMockResponse(prompt: string): AssistantPayload | n
 
   const asksHowAreYou = hasAny(clean, compact, [...SPECIAL_MOCK_INTENTS.smallTalkHowAreYou]);
   if (asksHowAreYou) {
-    return { text: "Работаю в штатном режиме. Могу помочь по счетам, звонкам, обращениям или аналитике." };
+    return { text: "Все хорошо, работаю на благо B2B в Билайне." };
   }
 
   return null;
@@ -109,6 +218,38 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
   const rawLower = prompt.toLowerCase();
   const { clean, compact } = normalizePrompt(prompt);
   const monthDetected = parseMonth(clean, compact);
+  const quickPromptNormalized = new Set(
+    [...recentQueryChips, ...recentHistoryQuickPrompts].map((item) => normalizePrompt(item).clean)
+  );
+
+  if (quickPromptNormalized.has(clean)) {
+    if (hasAny(clean, compact, ["мои сервисы", "мои продукты"])) {
+      return {
+        text:
+          "Ваши подключенные продукты:\n" +
+          "- Сотовая связь: 12 номеров, 4 номера с остатком минут < 20%\n" +
+          "- Запись разговоров: хранение 60 дней, 18 новых записей за неделю\n" +
+          "- Секретарь: настроен, режим работы Пн-Пт 09:00-19:00\n" +
+          "- Этикетка: активна, тег «Приоритетный клиент»\n" +
+          "- Продвижение: 3 рассылки за месяц, последняя с откликом 14%\n" +
+          "- Прием платежей: 47 платежей за неделю, успешность 96%",
+        suggested: ["Изменить настройки секретаря", "Настроить запись звонков", "Инсайты"]
+      };
+    }
+    if (hasAny(clean, compact, ["обращения", "открытые обращения"])) {
+      return { text: "Открываю раздел с активными обращениями.", navigateTo: "/appeals/" };
+    }
+    if (hasAny(clean, compact, ["счета на оплату", "мои счета", "создать платеж", "создать платёж", "баланс"])) {
+      return { text: "Открываю счета и оплату: можно выбрать счет и провести платеж удобным способом.", navigateTo: "/invoices/" };
+    }
+    if (hasAny(clean, compact, ["звонки", "записи звонков", "записи разговоров"])) {
+      return {
+        text: "Показываю записи и сводку по звонкам прямо в чате.",
+        widget: "missed-calls-inline",
+        suggested: ["Список звонков", "Причины пропусков звонков", "Увеличить срок хранения звонков"]
+      };
+    }
+  }
 
   // Analytics should win over generic domain branches, otherwise mixed prompts
   // like "разница между счетами в феврале и марте" are downgraded to month view.
@@ -124,11 +265,140 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
     };
   }
 
+  const asksAssistantAdvice = hasAny(clean, compact, ["дай совет от ассистента", "совет от ассистента", "советы от ассистента"]);
+  if (asksAssistantAdvice) {
+    return {
+      text:
+        "Совет от ассистента: чтобы снизить потери лидов, сначала обработайте свежие пропущенные, затем закройте неоплаченные счета с ближайшим сроком.",
+      suggested: ["Пропущенные звонки", "Покажи неоплаченные", "Как оптимизировать остаток пакета"]
+    };
+  }
+
+  const asksOperator = hasAny(clean, compact, [
+    "позови человека",
+    "позови оператора",
+    "соедини с оператором",
+    "позвать оператора",
+    "нужен человек"
+  ]);
+  if (asksOperator) {
+    return {
+      text: "Я в демо режиме и не могу звать людей, може позвонить Леониду Пальчикову и ему все рассказать."
+    };
+  }
+
   const asksServices = hasAny(clean, compact, ["мои сервисы", "сервисы", "услуги", "подключенные сервисы"]);
   if (asksServices) {
     return {
       text: "По сервисам могу показать активные пакеты, остатки и рекомендации по оптимизации расходов.",
       suggested: ["Остаток по тарифу", "Как оптимизировать остаток пакета", "Пополнить пакет минут"]
+    };
+  }
+
+  const asksProducts = hasAny(clean, compact, ["мои продукты", "покажи мои продукты", "какие продукты подключены", "мои подключения"]);
+  if (asksProducts) {
+    return {
+      text:
+        "Ваши подключенные продукты:\n" +
+        "- Сотовая связь: 12 номеров, 4 номера с остатком минут < 20%\n" +
+        "- Запись разговоров: хранение 60 дней, 18 новых записей за неделю\n" +
+        "- Секретарь: настроен, режим работы Пн-Пт 09:00-19:00\n" +
+        "- Этикетка: активна, тег «Приоритетный клиент»\n" +
+        "- Продвижение: 3 рассылки за месяц, последняя с откликом 14%\n" +
+        "- Прием платежей: 47 платежей за неделю, успешность 96%",
+      suggested: ["Изменить настройки секретаря", "Настроить запись звонков", "Инсайты"]
+    };
+  }
+
+  const asksInsights = hasAny(clean, compact, ["инсайты", "покажи инсайты", "какие инсайты", "бизнес инсайты"]);
+  if (asksInsights) {
+    return {
+      text:
+        "Ключевые инсайты: 1) у 4 клиентов есть риск неоплаты, 2) по 6 пропущенным звонкам нужен приоритетный перезвон, 3) последняя рассылка по базе дала 14% отклика.",
+      suggested: ["Открытые обращения", "Покажи неоплаченные", "Запустить смс рассылку"]
+    };
+  }
+
+  const asksOpenAppeals = hasAny(clean, compact, ["открытые обращения", "покажи открытые обращения", "мои открытые обращения"]);
+  if (asksOpenAppeals) {
+    return { text: "Открываю раздел с активными обращениями.", navigateTo: "/appeals/" };
+  }
+
+  const asksCreatePayment = hasAny(clean, compact, ["создать платеж", "создай платеж", "новый платеж", "сформировать платеж"]);
+  if (asksCreatePayment) {
+    return {
+      text: "Открываю счета и оплату: можно выбрать счет и провести платеж удобным способом.",
+      navigateTo: "/invoices/"
+    };
+  }
+
+  const asksSmsCampaign = hasAny(clean, compact, [
+    "запустить смс рассылку",
+    "запусти смс рассылку",
+    "запустить sms рассылку",
+    "запусти sms рассылку",
+    "запустить смс-рассылку",
+    "запусти смс-рассылку",
+    "запустить sms-рассылку",
+    "запусти sms-рассылку",
+    "смс рассылка",
+    "sms рассылка",
+    "сделай смс рассылку"
+  ]);
+  if (asksSmsCampaign) {
+    return {
+      text: "Подготовил черновик SMS-рассылки по сегменту клиентов с риском просадки активности.",
+      actions: [
+        {
+          type: "cta",
+          title: "Запустить SMS-рассылку",
+          subtitle: "Сегмент: клиенты с низкой активностью",
+          ctaLabel: "Запустить",
+          intent: "start-campaign"
+        }
+      ],
+      suggested: ["Посмотри сегмент", "Согласовать текст", "Открытые обращения"]
+    };
+  }
+
+  const asksCallRecords = hasAny(clean, compact, ["записи звонков", "покажи записи звонков", "журнал записей", "записи разговоров"]);
+  if (asksCallRecords) {
+    return {
+      text: "Показываю записи и сводку по звонкам прямо в чате.",
+      widget: "missed-calls-inline",
+      suggested: ["Список звонков", "Причины пропусков звонков", "Увеличить срок хранения звонков"]
+    };
+  }
+
+  const asksBalance = hasAny(clean, compact, ["баланс", "мой баланс", "покажи баланс"]);
+  if (asksBalance) {
+    return {
+      text: "Текущий баланс положительный. Открываю раздел счетов и оплат, чтобы посмотреть детали.",
+      navigateTo: "/invoices/"
+    };
+  }
+
+  const asksSecretarySettings = hasAny(clean, compact, [
+    "изменить настройки секретаря",
+    "настроить секретаря",
+    "поменять настройки секретаря",
+    "настроить секретарь"
+  ]);
+  if (asksSecretarySettings) {
+    return {
+      text: "Сценарий изменения настроек секретаря пока в разработке. Могу показать ваши продукты или активные обращения."
+    };
+  }
+
+  const asksCallRecordingSettings = hasAny(clean, compact, [
+    "настроить запись звонков",
+    "изменить запись звонков",
+    "настройка записи разговоров",
+    "настроить записи звонков"
+  ]);
+  if (asksCallRecordingSettings) {
+    return {
+      text: "Сценарий настройки записи звонков пока в разработке. Могу помочь с текущими записями и аналитикой звонков."
     };
   }
 
@@ -174,6 +444,10 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
   }
 
   const asksInvoicesDomain = hasAny(clean, compact, ["счета", "счет", "счёт", "оплата", "неоплаченные", "долг"]);
+  const asksOpenInvoicesList = hasAny(clean, compact, ["открыть список счетов", "открой список счетов", "открыть счета", "открой счета"]);
+  if (asksOpenInvoicesList) {
+    return { text: "Открываю полный список счетов.", navigateTo: "/invoices/" };
+  }
   if (asksInvoicesDomain && monthDetected) {
     return {
       text: `Показываю счета за ${monthDetected} в чате.`,
@@ -212,6 +486,11 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
       widget: "missed-calls-inline",
       suggested: ["Звонки за неделю", "Открыть журнал звонков", "Кто чаще звонит"]
     };
+  }
+
+  const asksCreateAppealConfirm = hasAny(clean, compact, ["да создать обращение", "да, создать обращение", "создать обращение"]);
+  if (asksCreateAppealConfirm) {
+    return { text: "Открываю создание обращения в разделе обращений.", navigateTo: "/appeals/" };
   }
 
   const asksAppealsDomain = hasAny(clean, compact, ["обращения", "обращение", "тикет", "заявка"]);
@@ -303,6 +582,27 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
 
   const navIntent = getDemoNavigationIntent(prompt);
   if (navIntent) return { text: navIntent.ack, navigateTo: navIntent.to };
+
+  // Safety net for quick-prompt UX: these phrases must never drop to live fallback.
+  const looksLikeQuickPrompt = hasAny(clean, compact, [
+    "мои сервисы",
+    "мои продукты",
+    "инсайты",
+    "открытые обращения",
+    "создать платеж",
+    "создать платёж",
+    "запустить смс рассылку",
+    "записи звонков",
+    "баланс",
+    "изменить настройки секретаря",
+    "настроить запись звонков"
+  ]);
+  if (looksLikeQuickPrompt) {
+    return {
+      text: "Сценарий распознан. Подскажите, какой вариант открыть: продукты, обращения, счета/оплату или звонки?",
+      suggested: ["Мои продукты", "Открытые обращения", "Создать платеж", "Записи звонков"]
+    };
+  }
 
   return null;
 }

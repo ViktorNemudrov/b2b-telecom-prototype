@@ -69,7 +69,7 @@ export function SwipeSheet({
             role="dialog"
             aria-modal="true"
             className={cn(
-              "absolute bottom-0 left-0 right-0 mx-auto w-full max-w-[430px] rounded-t-3xl border border-slate-200 bg-white shadow-soft",
+              "absolute bottom-0 left-0 right-0 mx-auto w-full max-w-[430px] rounded-t-3xl border border-slate-200 bg-white shadow-soft dark:border-slate-600 dark:bg-slate-900",
               innerClassName
             )}
             initial={{ y: 48, opacity: 0 }}
@@ -94,7 +94,7 @@ export function SwipeSheet({
 export function SwipeSheetHandle() {
   return (
     <div className="flex justify-center pt-2 pb-1" aria-hidden>
-      <div className="h-1 w-10 rounded-full bg-slate-300/90" />
+      <div className="h-1 w-10 rounded-full bg-slate-300/90 dark:bg-slate-600/90" />
     </div>
   );
 }

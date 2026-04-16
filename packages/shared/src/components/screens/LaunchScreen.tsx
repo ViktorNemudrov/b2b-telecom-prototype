@@ -27,6 +27,9 @@ export function LaunchScreen() {
           <span className="rounded-full bg-[#FFD429] px-4 py-1 text-[16px] font-medium text-[#2F3141]">One</span>
         </div>
         <p className="mt-3 text-[22px] font-semibold tracking-tight text-[#2F3141]">Просто. Для бизнеса</p>
+        <p className="mt-2 max-w-[320px] text-center text-[14px] leading-relaxed text-[#5A6376]">
+          Новая эра во взаимодействии с Билайн Бизнес
+        </p>
       </div>
     </div>
   );

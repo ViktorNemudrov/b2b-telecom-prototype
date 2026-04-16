@@ -1,15 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
-import { ChevronLeft, FileText, Settings } from "lucide-react";
+import { FileText, Settings } from "lucide-react";
 import { RecordingPlayer } from "@shared/components/RecordingPlayer";
+import { PageBackLink } from "@shared/components/PageBackLink";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { getCallById } from "@shared/lib/mockData";
 import { markMissedCallsSeen } from "@shared/lib/runtimeFlags";
-import { goSmartBack } from "@shared/lib/smartBack";
+import { getCustomizationButtonClasses, useUiCustomization } from "@shared/lib/uiCustomization";
 
 export function CallDetailClient({
   id,
@@ -19,9 +19,11 @@ export function CallDetailClient({
   /** Куда вести «Назад» (AI: /assistant, Classic: /communication). */
   backHref?: string;
 }) {
-  const router = useRouter();
   const call = id ? getCallById(id) : undefined;
   const [showTranscript, setShowTranscript] = React.useState(false);
+  const settingsCustom = useUiCustomization("calldetail.settings");
+  const transcriptCustom = useUiCustomization("calldetail.transcript");
+  const storageCustom = useUiCustomization("calldetail.storage");
 
   React.useEffect(() => {
     markMissedCallsSeen();
@@ -30,16 +32,7 @@ export function CallDetailClient({
   if (!call) {
     return (
       <div className="safe-px mx-auto min-h-dvh max-w-[430px] pb-8 pt-4">
-        <button
-          type="button"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900"
-          onClick={() => goSmartBack(router, backHref)}
-        >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-100">
-            <ChevronLeft className="h-4 w-4" />
-          </span>
-          Назад
-        </button>
+        <PageBackLink href={backHref} />
         <p className="mt-8 text-center text-sm text-slate-500">Звонок не найден (демо).</p>
       </div>
     );
@@ -53,21 +46,20 @@ export function CallDetailClient({
   return (
     <div className="safe-px mx-auto min-h-dvh max-w-[430px] pb-8 pt-3">
       <div className="flex items-center justify-between gap-2">
+        <PageBackLink href={backHref} />
         <button
           type="button"
-          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 pr-3 text-sm font-semibold text-slate-800 shadow-softSm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
-          onClick={() => goSmartBack(router, backHref)}
-        >
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-100">
-            <ChevronLeft className="h-4 w-4" />
-          </span>
-          Назад
-        </button>
-        <button
-          type="button"
-          onClick={() => openDevelopmentStub("Настройки записи звонка.")}
-          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          onClick={() =>
+            openDevelopmentStub(
+              settingsCustom.useMock ? "Настройки записи звонка (мок из кастомизации)." : "Настройки записи звонка."
+            )
+          }
+          className={[
+            "flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700",
+            getCustomizationButtonClasses(settingsCustom.dimmedDisabled)
+          ].join(" ")}
           aria-label="Настройки"
+          disabled={settingsCustom.dimmedDisabled}
         >
           <Settings className="h-5 w-5" />
         </button>
@@ -102,8 +94,19 @@ export function CallDetailClient({
           </ul>
           <button
             type="button"
-            onClick={() => setShowTranscript((v) => !v)}
-            className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E8D5F5] via-[#C4B5FD] to-[#7E6DBF] px-4 py-3 text-sm font-semibold text-slate-900 shadow-softSm transition hover:opacity-95 active:translate-y-[1px]"
+            onClick={() => {
+              if (transcriptCustom.dimmedDisabled) return;
+              if (transcriptCustom.useMock) {
+                openDevelopmentStub("Расшифровка звонка (мок из кастомизации).");
+                return;
+              }
+              setShowTranscript((v) => !v);
+            }}
+            className={[
+              "mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E8D5F5] via-[#C4B5FD] to-[#7E6DBF] px-4 py-3 text-sm font-semibold text-slate-900 shadow-softSm transition hover:opacity-95 active:translate-y-[1px]",
+              getCustomizationButtonClasses(transcriptCustom.dimmedDisabled)
+            ].join(" ")}
+            disabled={transcriptCustom.dimmedDisabled}
           >
             <FileText className="h-4 w-4" />
             Расшифровка
@@ -122,7 +125,12 @@ export function CallDetailClient({
           <Button
             variant="secondary"
             className="mt-3 w-full rounded-full"
-            onClick={() => openDevelopmentStub("Продление срока хранения записи.")}
+            onClick={() =>
+              openDevelopmentStub(
+                storageCustom.useMock ? "Продление срока хранения записи (мок из кастомизации)." : "Продление срока хранения записи."
+              )
+            }
+            disabled={storageCustom.dimmedDisabled}
           >
             Увеличить срок хранения
           </Button>

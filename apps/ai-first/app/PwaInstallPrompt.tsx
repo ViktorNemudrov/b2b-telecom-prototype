@@ -19,23 +19,10 @@ export function PwaInstallPrompt() {
   }, []);
 
   React.useEffect(() => {
-    try {
-      if (window.localStorage.getItem("pwa-install-dismissed") === "1") setPassiveDismissed(true);
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  React.useEffect(() => {
     const isStandalone =
       (window.matchMedia?.("(display-mode: standalone)")?.matches ?? false) ||
       (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
     if (isStandalone) return;
-    try {
-      if (window.localStorage.getItem("pwa-install-dismissed") === "1") return;
-    } catch {
-      // Safari private mode/local storage restrictions.
-    }
     const ua = window.navigator.userAgent.toLowerCase();
     const isIos = /iphone|ipad|ipod/.test(ua);
     const isSafari = /safari/.test(ua) && !/crios|fxios|edgios/.test(ua);
@@ -56,11 +43,7 @@ export function PwaInstallPrompt() {
     const onAppInstalled = () => {
       setDeferredPrompt(null);
       setShowInstall(false);
-      try {
-        window.localStorage.setItem("pwa-install-dismissed", "1");
-      } catch {
-        // ignore
-      }
+      // keep install prompt hidden only for current session
     };
 
     window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
@@ -72,25 +55,21 @@ export function PwaInstallPrompt() {
     };
   }, []);
 
+  if (!showInstall) return null;
   if (!deferredPrompt && !iosHint) {
     if (passiveDismissed) return null;
     return (
       <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 mx-auto w-full max-w-[430px] px-4">
-        <div className="pointer-events-auto rounded-2xl border border-[#E8EAED] bg-white/95 p-3 shadow-soft backdrop-blur">
-          <div className="text-sm font-semibold text-[#212529]">Установить Билайн.One</div>
-          <div className="mt-1 text-xs text-[#6B7280]">
+        <div className="pointer-events-auto rounded-2xl border border-[#E8EAED] bg-white/95 p-3 shadow-soft backdrop-blur dark:border-slate-600 dark:bg-slate-900/95">
+          <div className="text-sm font-semibold text-[#212529] dark:text-slate-100">Установить Билайн.One</div>
+          <div className="mt-1 text-xs text-[#6B7280] dark:text-slate-300">
             В браузере установка может требовать меню «Установить приложение» или «Добавить на экран Домой».
           </div>
           <div className="mt-3 flex items-center justify-end gap-2">
             <button
               type="button"
-              className="rounded-full px-3 py-1.5 text-xs font-semibold text-[#8E8E93]"
+              className="rounded-full px-3 py-1.5 text-xs font-semibold text-[#8E8E93] dark:text-slate-300"
               onClick={() => {
-                try {
-                  window.localStorage.setItem("pwa-install-dismissed", "1");
-                } catch {
-                  // ignore
-                }
                 setPassiveDismissed(true);
                 setShowInstall(false);
               }}
@@ -102,13 +81,12 @@ export function PwaInstallPrompt() {
       </div>
     );
   }
-  if (!showInstall) return null;
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 mx-auto w-full max-w-[430px] px-4">
-      <div className="pointer-events-auto rounded-2xl border border-[#E8EAED] bg-white/95 p-3 shadow-soft backdrop-blur">
-        <div className="text-sm font-semibold text-[#212529]">Установить Билайн.One</div>
-        <div className="mt-1 text-xs text-[#6B7280]">
+      <div className="pointer-events-auto rounded-2xl border border-[#E8EAED] bg-white/95 p-3 shadow-soft backdrop-blur dark:border-slate-600 dark:bg-slate-900/95">
+        <div className="text-sm font-semibold text-[#212529] dark:text-slate-100">Установить Билайн.One</div>
+        <div className="mt-1 text-xs text-[#6B7280] dark:text-slate-300">
           {deferredPrompt
             ? "Добавьте приложение на экран телефона для быстрого доступа."
             : "На iPhone: нажмите «Поделиться» в Safari и выберите «На экран Домой»."}
@@ -116,13 +94,8 @@ export function PwaInstallPrompt() {
         <div className="mt-3 flex items-center justify-end gap-2">
           <button
             type="button"
-            className="rounded-full px-3 py-1.5 text-xs font-semibold text-[#8E8E93]"
+            className="rounded-full px-3 py-1.5 text-xs font-semibold text-[#8E8E93] dark:text-slate-300"
             onClick={() => {
-              try {
-                window.localStorage.setItem("pwa-install-dismissed", "1");
-              } catch {
-                // ignore
-              }
               setShowInstall(false);
             }}
           >
@@ -136,11 +109,6 @@ export function PwaInstallPrompt() {
                 await deferredPrompt.prompt();
                 const result = await deferredPrompt.userChoice;
                 if (result.outcome === "accepted") {
-                  try {
-                    window.localStorage.setItem("pwa-install-dismissed", "1");
-                  } catch {
-                    // ignore
-                  }
                   setShowInstall(false);
                 }
                 setDeferredPrompt(null);

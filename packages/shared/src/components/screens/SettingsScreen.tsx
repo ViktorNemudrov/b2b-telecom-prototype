@@ -15,12 +15,18 @@ export function SettingsScreen({
   appealsHref = "/appeals/",
   backHref = "/assistant/",
   faqHref = "/settings/faq/",
-  qaHref = "/qa/"
+  qaHref = "/qa/",
+  onboardingHref = "/settings/onboarding/",
+  subscriptionHref = "/settings/subscription/",
+  customizationHref = "/settings/customization/"
 }: {
   appealsHref?: string;
   backHref?: string;
   faqHref?: string;
   qaHref?: string;
+  onboardingHref?: string;
+  subscriptionHref?: string;
+  customizationHref?: string;
 }) {
   const { mode, setMode } = useAppTheme();
   const [notificationsOn, setNotificationsOn] = React.useState(true);
@@ -54,13 +60,11 @@ export function SettingsScreen({
               25.04
             </span>
           </div>
-          <Button
-            variant="secondary"
-            className="w-full rounded-2xl"
-            onClick={() => openDevelopmentStub("Управление подпиской (мок).")}
-          >
-            Управление подпиской
-          </Button>
+          <Link href={subscriptionHref}>
+            <Button variant="secondary" className="w-full rounded-2xl">
+              Управление подпиской
+            </Button>
+          </Link>
         </CardContent>
       </Card>
 
@@ -131,11 +135,19 @@ export function SettingsScreen({
             <span className="flex-1 text-sm text-slate-700 dark:text-slate-300">Проверка устройства (QA)</span>
             <ChevronLeft className="h-4 w-4 rotate-180 text-slate-400" />
           </Link>
+          <Link href={onboardingHref} className="flex items-center gap-3 px-4 py-3">
+            <span className="flex-1 text-sm text-slate-700 dark:text-slate-300">Онбординг</span>
+            <ChevronLeft className="h-4 w-4 rotate-180 text-slate-400" />
+          </Link>
+          <Link href={customizationHref} className="flex items-center gap-3 px-4 py-3">
+            <span className="flex-1 text-sm text-slate-700 dark:text-slate-300">Кастомизация приложения</span>
+            <ChevronLeft className="h-4 w-4 rotate-180 text-slate-400" />
+          </Link>
         </CardContent>
       </Card>
 
       <div className="space-y-1 px-1 text-[11px] text-slate-500 dark:text-slate-400">
-        <p>Версия продукта: v.0.2.1</p>
+        <p>Версия продукта: v.0.2.14</p>
         <p>Дизайнер: Балашов Влад</p>
         <p>Создатель: Немудров Виктор</p>
         <p>Владелец продукта: Пальчиков Леонид</p>

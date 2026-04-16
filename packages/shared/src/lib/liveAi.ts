@@ -41,8 +41,10 @@ export async function getLiveAiText(args: {
   model?: string;
   contextSummary?: string;
   signal?: AbortSignal;
+  provider?: "openrouter" | "groq" | "grok";
+  proxyUrl?: string;
 }): Promise<string | null> {
-  const { prompt, history, apiKey, signal, contextSummary } = args;
+  const { prompt, history, apiKey, signal, contextSummary, provider = "openrouter", proxyUrl } = args;
   const model = args.model || "mistralai/mistral-small-3.2-24b-instruct:free";
   const t0 = typeof performance !== "undefined" ? performance.now() : Date.now();
   emitAiMetric({ type: "live_fetch_start", at: Date.now() });
@@ -54,14 +56,25 @@ export async function getLiveAiText(args: {
     });
   }
   let res: Response;
+  const endpoint = proxyUrl?.trim()
+    ? proxyUrl.trim()
+    : provider === "groq"
+      ? "https://api.groq.com/openai/v1/chat/completions"
+      : provider === "grok"
+        ? "https://api.x.ai/v1/chat/completions"
+        : "https://openrouter.ai/api/v1/chat/completions";
   try {
-    res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    res = await fetch(endpoint, {
       method: "POST",
       cache: "no-store",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
+      headers: proxyUrl?.trim()
+        ? {
+            "Content-Type": "application/json"
+          }
+        : {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json"
+          },
       body: JSON.stringify({
         model,
         messages,
