@@ -2,17 +2,7 @@
 
 import { PageBackLink } from "@shared/components/PageBackLink";
 import { Card, CardContent } from "@shared/components/ui/card";
-
-const productsInSubscription = [
-  "Сотовая связь",
-  "Запись разговоров",
-  "Секретарь",
-  "Этикетка",
-  "ИИ-ассистенты",
-  "Продвижение",
-  "Прием платежей",
-  "Конструктор сайтов"
-];
+import { subscriptionProductsMock } from "@shared/lib/mockData";
 
 export function SubscriptionManagementScreen({ backHref = "/settings/" }: { backHref?: string }) {
   return (
@@ -31,7 +21,7 @@ export function SubscriptionManagementScreen({ backHref = "/settings/" }: { back
       <Card>
         <CardContent className="pb-4 pt-4">
           <ul className="space-y-2">
-            {productsInSubscription.map((product) => (
+            {subscriptionProductsMock.map((product) => (
               <li
                 key={product}
                 className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"

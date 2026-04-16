@@ -19,7 +19,7 @@ export type ChatWidget =
   | "invoices-unpaid-inline";
 
 /** После ответа ассистента — клиентский переход (демо-навигация по ТЗ). */
-export type ChatNavigateTo = "/missed-calls/" | "/appeals/" | "/invoices/";
+export type ChatNavigateTo = "/missed-calls/" | "/appeals/" | "/invoices/" | "/home/";
 
 export type ChatMessage = {
   id: string;
@@ -428,7 +428,21 @@ export const appealTopicOptions = [
   { title: "Мне не могут дозвониться", subtitle: "Техническая поддержка" },
   { title: "Ошибочный платёж", subtitle: "Финансы" },
   { title: "Интернет пропадает, медленно работает", subtitle: "Техническая поддержка" },
-  { title: "Низкая скорость", subtitle: "Техническая поддержка" }
+  { title: "Низкая скорость", subtitle: "Техническая поддержка" },
+  { title: "Переоформление договора", subtitle: "Прочие операции" },
+  { title: "Проблема с приёмом платежей", subtitle: "Финансы" },
+  { title: "Подключение новой услуги", subtitle: "Обслуживание" }
+] as const;
+
+export const subscriptionProductsMock = [
+  "Сотовая связь",
+  "Запись разговоров",
+  "Секретарь",
+  "Этикетка",
+  "ИИ-ассистенты",
+  "Продвижение",
+  "Прием платежей",
+  "Конструктор сайтов"
 ] as const;
 
 export const feedItems: FeedItem[] = [

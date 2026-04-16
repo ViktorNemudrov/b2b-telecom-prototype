@@ -7,11 +7,13 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 };
 
+const PWA_INSTALL_DISMISSED_KEY = "b2b_pwa_install_dismissed_v1";
+const PWA_INSTALL_COMPLETED_KEY = "b2b_pwa_install_completed_v1";
+
 export function PwaInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = React.useState<BeforeInstallPromptEvent | null>(null);
   const [showInstall, setShowInstall] = React.useState(false);
   const [iosHint, setIosHint] = React.useState(false);
-  const [passiveDismissed, setPassiveDismissed] = React.useState(false);
 
   React.useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
@@ -23,6 +25,9 @@ export function PwaInstallPrompt() {
       (window.matchMedia?.("(display-mode: standalone)")?.matches ?? false) ||
       (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
     if (isStandalone) return;
+    const dismissed = window.localStorage.getItem(PWA_INSTALL_DISMISSED_KEY) === "1";
+    const completed = window.localStorage.getItem(PWA_INSTALL_COMPLETED_KEY) === "1";
+    if (dismissed || completed) return;
     const ua = window.navigator.userAgent.toLowerCase();
     const isIos = /iphone|ipad|ipod/.test(ua);
     const isSafari = /safari/.test(ua) && !/crios|fxios|edgios/.test(ua);
@@ -43,7 +48,7 @@ export function PwaInstallPrompt() {
     const onAppInstalled = () => {
       setDeferredPrompt(null);
       setShowInstall(false);
-      // keep install prompt hidden only for current session
+      window.localStorage.setItem(PWA_INSTALL_COMPLETED_KEY, "1");
     };
 
     window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
@@ -57,7 +62,6 @@ export function PwaInstallPrompt() {
 
   if (!showInstall) return null;
   if (!deferredPrompt && !iosHint) {
-    if (passiveDismissed) return null;
     return (
       <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 mx-auto w-full max-w-[430px] px-4">
         <div className="pointer-events-auto rounded-2xl border border-[#E8EAED] bg-white/95 p-3 shadow-soft backdrop-blur dark:border-slate-600 dark:bg-slate-900/95">
@@ -70,11 +74,11 @@ export function PwaInstallPrompt() {
               type="button"
               className="rounded-full px-3 py-1.5 text-xs font-semibold text-[#8E8E93] dark:text-slate-300"
               onClick={() => {
-                setPassiveDismissed(true);
+                window.localStorage.setItem(PWA_INSTALL_DISMISSED_KEY, "1");
                 setShowInstall(false);
               }}
             >
-              Понятно
+              Позже
             </button>
           </div>
         </div>
@@ -96,6 +100,7 @@ export function PwaInstallPrompt() {
             type="button"
             className="rounded-full px-3 py-1.5 text-xs font-semibold text-[#8E8E93] dark:text-slate-300"
             onClick={() => {
+              window.localStorage.setItem(PWA_INSTALL_DISMISSED_KEY, "1");
               setShowInstall(false);
             }}
           >
@@ -109,6 +114,7 @@ export function PwaInstallPrompt() {
                 await deferredPrompt.prompt();
                 const result = await deferredPrompt.userChoice;
                 if (result.outcome === "accepted") {
+                  window.localStorage.setItem(PWA_INSTALL_COMPLETED_KEY, "1");
                   setShowInstall(false);
                 }
                 setDeferredPrompt(null);

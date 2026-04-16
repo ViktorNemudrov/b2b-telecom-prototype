@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 async function openAssistant(page: Page) {
   await page.addInitScript(() => {
-    window.localStorage.setItem("pwa-install-dismissed", "1");
+    window.localStorage.setItem("b2b_pwa_install_dismissed_v1", "1");
     window.localStorage.setItem("b2b_chat_logs_v1", "[]");
   });
   await page.goto("/assistant/");
@@ -26,14 +26,14 @@ test("assistant routing smoke: special -> deterministic -> live/fallback", async
   await expect(page.getByText("Неоплаченные счета", { exact: true })).toBeVisible();
 
   await sendMessage(page, "расскажи что-нибудь про квантовый отжиг");
-  await expect(
-    page.getByText("Для этого запроса нужен live AI-ответ. Подключите `NEXT_PUBLIC_OPENROUTER_API_KEY`, и я передам вопрос в модель.")
-  ).toBeVisible();
+  await expect(page.getByText("Сейчас не удалось получить надежный live-ответ.", { exact: false })).toBeVisible();
 });
 
 test("assistant navigates to appeals from deterministic chat intent", async ({ page }) => {
   await openAssistant(page);
   await sendMessage(page, "активные обращения");
+  await expect(page.getByText("Активные обращения", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Все обращения" }).click();
   await expect(page).toHaveURL(/\/appeals\/?$/, { timeout: 15_000 });
   await expect(page.getByText("Сейчас у вас:", { exact: false })).toBeVisible();
 });
@@ -41,8 +41,9 @@ test("assistant navigates to appeals from deterministic chat intent", async ({ p
 test("assistant opens invoice detail from unpaid widget", async ({ page }) => {
   await openAssistant(page);
   await sendMessage(page, "покажи неоплаченные счета");
+  const unpaidWidget = page.locator("div").filter({ hasText: "Неоплаченные счета" }).first();
   await page.getByText("Неоплаченные счета", { exact: true }).waitFor();
-  const firstInvoiceButton = page.locator("button", { hasText: "₽" }).first();
+  const firstInvoiceButton = unpaidWidget.locator("button", { hasText: "₽" }).first();
   await firstInvoiceButton.scrollIntoViewIfNeeded();
   await firstInvoiceButton.click();
   await expect(page).toHaveURL(/\/invoices\/.+\/?$/, { timeout: 10_000 });

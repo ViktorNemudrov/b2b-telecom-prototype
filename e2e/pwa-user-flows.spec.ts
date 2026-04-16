@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 async function dispatchBeforeInstallPrompt(page: import("@playwright/test").Page) {
   await page.evaluate(() => {
-    localStorage.removeItem("pwa-install-dismissed");
+    localStorage.removeItem("b2b_pwa_install_dismissed_v1");
     (window as Window & { __pwaPromptCalled?: boolean }).__pwaPromptCalled = false;
 
     const installEvent = new Event("beforeinstallprompt") as Event & {
@@ -24,7 +24,7 @@ test.describe("PWA install user flows", () => {
     await page.goto("/assistant/");
 
     await expect(page.getByText("Установить Билайн.One")).toBeVisible();
-    await page.getByRole("button", { name: "Понятно" }).click();
+    await page.getByRole("button", { name: "Позже" }).click();
     await expect(page.getByText("Установить Билайн.One")).toBeHidden();
   });
 

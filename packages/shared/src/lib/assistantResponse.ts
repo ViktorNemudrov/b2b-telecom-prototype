@@ -2,6 +2,7 @@ import {
   getDemoNavigationIntent,
   recentHistoryQuickPrompts,
   recentQueryChips,
+  subscriptionProductsMock,
   standaloneCalls,
   type ChatMessage,
   type InvoiceItem
@@ -10,10 +11,13 @@ import { resolveAnalyticsResponse } from "./chatAnalytics";
 import { containsProfanity } from "./profanity";
 
 type AssistantPayload = Pick<ChatMessage, "text" | "widget" | "invoiceMonth" | "suggested" | "navigateTo" | "actions">;
+const subscriptionProductsText = subscriptionProductsMock.map((item) => `- ${item}`).join("\n");
 
 export const SPECIAL_MOCK_INTENTS = {
   profanity: ["нецензурная лексика"],
   capabilities: ["что ты умеешь", "что умеешь", "что ты можешь", "твои возможности", "что можешь"],
+  creator: ["кто тебя создал", "кто твой создатель", "кто тебя сделал", "кто твой автор"],
+  whoDoYouLove: ["кого ты любишь", "кого любишь", "ты кого любишь"],
   greeting: ["привет", "здравствуй", "здравствуйте", "добрый день", "доброго дня", "доброе утро", "добрый вечер", "хай"],
   smallTalkHowAreYou: ["как дела", "как ты", "как поживаешь", "как жизнь"]
 } as const;
@@ -203,6 +207,16 @@ export function resolveSpecialMockResponse(prompt: string): AssistantPayload | n
     return { text: "Все хорошо, работаю на благо B2B в Билайне." };
   }
 
+  const asksCreator = hasAny(clean, compact, [...SPECIAL_MOCK_INTENTS.creator]);
+  if (asksCreator) {
+    return { text: "Меня создал легендарный Виктор Немудров - архитектор, который превращает идеи в продуктовый космос." };
+  }
+
+  const asksWhoDoYouLove = hasAny(clean, compact, [...SPECIAL_MOCK_INTENTS.whoDoYouLove]);
+  if (asksWhoDoYouLove) {
+    return { text: "Тебя" };
+  }
+
   return null;
 }
 
@@ -218,21 +232,32 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
     if (hasAny(clean, compact, ["мои сервисы", "мои продукты"])) {
       return {
         text:
+          "По сервисам могу показать активные пакеты и состав подписки.\n\n" +
           "Ваши подключенные продукты:\n" +
-          "- Сотовая связь: 12 номеров, 4 номера с остатком минут < 20%\n" +
-          "- Запись разговоров: хранение 60 дней, 18 новых записей за неделю\n" +
-          "- Секретарь: настроен, режим работы Пн-Пт 09:00-19:00\n" +
-          "- Этикетка: активна, тег «Приоритетный клиент»\n" +
-          "- Продвижение: 3 рассылки за месяц, последняя с откликом 14%\n" +
-          "- Прием платежей: 47 платежей за неделю, успешность 96%",
+          subscriptionProductsText,
         suggested: ["Изменить настройки секретаря", "Настроить запись звонков", "Инсайты"]
       };
     }
     if (hasAny(clean, compact, ["обращения", "открытые обращения"])) {
-      return { text: "Открываю раздел с активными обращениями.", navigateTo: "/appeals/" };
+      return {
+        text:
+          "На данный момент у вас 3 активных обращения:\n" +
+          "- В работе: 2 штуки\n" +
+          "- Ожидает подписания: 1 штука\n" +
+          "Хотите создать новое обращение?",
+        widget: "appeals-summary",
+        suggested: ["Создать обращение", "Список обращений", "Выполненные", "Отклонённые"]
+      };
     }
     if (hasAny(clean, compact, ["счета на оплату", "мои счета", "создать платеж", "создать платёж", "баланс"])) {
       return { text: "Открываю счета и оплату: можно выбрать счет и провести платеж удобным способом.", navigateTo: "/invoices/" };
+    }
+    if (hasAny(clean, compact, ["звонки за неделю", "сводка звонков", "недельный отчет"])) {
+      return {
+        text: "Открываю дашборд со сводкой звонков за неделю.",
+        navigateTo: "/home/",
+        suggested: ["Пропущенные звонки", "Статистика по времени суток", "Кого перезвонить в первую очередь"]
+      };
     }
     if (hasAny(clean, compact, ["звонки", "записи звонков", "записи разговоров"])) {
       return {
@@ -308,12 +333,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
     return {
       text:
         "Ваши подключенные продукты:\n" +
-        "- Сотовая связь: 12 номеров, 4 номера с остатком минут < 20%\n" +
-        "- Запись разговоров: хранение 60 дней, 18 новых записей за неделю\n" +
-        "- Секретарь: настроен, режим работы Пн-Пт 09:00-19:00\n" +
-        "- Этикетка: активна, тег «Приоритетный клиент»\n" +
-        "- Продвижение: 3 рассылки за месяц, последняя с откликом 14%\n" +
-        "- Прием платежей: 47 платежей за неделю, успешность 96%",
+        subscriptionProductsText,
       suggested: ["Изменить настройки секретаря", "Настроить запись звонков", "Инсайты"]
     };
   }
@@ -329,7 +349,15 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
 
   const asksOpenAppeals = hasAny(clean, compact, ["открытые обращения", "покажи открытые обращения", "мои открытые обращения"]);
   if (asksOpenAppeals) {
-    return { text: "Открываю раздел с активными обращениями.", navigateTo: "/appeals/" };
+    return {
+      text:
+        "На данный момент у вас 3 активных обращения:\n" +
+        "- В работе: 2 штуки\n" +
+        "- Ожидает подписания: 1 штука\n" +
+        "Хотите создать новое обращение?",
+      widget: "appeals-summary",
+      suggested: ["Создать обращение", "Список обращений", "Выполненные", "Отклонённые"]
+    };
   }
 
   const asksCreatePayment = hasAny(clean, compact, ["создать платеж", "создай платеж", "новый платеж", "сформировать платеж"]);
@@ -381,7 +409,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
   const asksBalance = hasAny(clean, compact, ["баланс", "мой баланс", "покажи баланс"]);
   if (asksBalance) {
     return {
-      text: "Текущий баланс положительный. Открываю раздел счетов и оплат, чтобы посмотреть детали.",
+      text: "Текущий баланс положительный. Открываю счета и оплату, чтобы посмотреть детали.",
       navigateTo: "/invoices/"
     };
   }
@@ -445,8 +473,8 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
   ]);
   if (asksWeeklyCallsFollowUp) {
     return {
-      text: "Показываю расширенную сводку звонков за неделю с детализацией по вашему вопросу.",
-      widget: "weekly-stats-expanded",
+      text: "Открываю дашборд со сводкой звонков за неделю.",
+      navigateTo: "/home/",
       suggested: ["Пропущенные звонки", "Причины пропусков звонков", "Увеличить срок хранения звонков"]
     };
   }
@@ -467,7 +495,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
   if (asksInvoicesDomain) {
     const unpaid = runtimeInvoices.filter((inv) => inv.status === "pay").length;
     return {
-      text: `По счетам: всего ${runtimeInvoices.length}, неоплаченных ${unpaid}. Могу показать их в чате или открыть список счетов.`,
+      text: `Открываю счета и оплату. По счетам: всего ${runtimeInvoices.length}, неоплаченных ${unpaid}. Могу показать их в чате или открыть список счетов.`,
       suggested: ["Покажи неоплаченные", "Счета за февраль", "Открыть список счетов"]
     };
   }
@@ -483,8 +511,8 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
     }
     if (hasAny(clean, compact, ["звонки за неделю", "сводка звонков", "недельный отчет"])) {
       return {
-        text: "За неделю: 126 звонков, 6 пропущенных, средняя длительность 2:40. Показываю расширенную сводку и могу дать следующий шаг.",
-        widget: "weekly-stats-expanded",
+        text: "Открываю дашборд: за неделю 126 звонков, 6 пропущенных, средняя длительность 2:40.",
+        navigateTo: "/home/",
         suggested: ["Пропущенные звонки", "Статистика по времени суток", "Кого перезвонить в первую очередь"]
       };
     }
@@ -511,12 +539,25 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
   }
   const asksActiveAppeals = hasAny(clean, compact, ["активные обращения", "активные заявки", "открой активные обращения"]);
   if (asksActiveAppeals) {
-    return { text: "Открываю раздел с обращениями. Покажу активные и можно сразу продолжить диалог.", navigateTo: "/appeals/" };
+    return {
+      text:
+        "На данный момент у вас 3 активных обращения:\n" +
+        "- В работе: 2 штуки\n" +
+        "- Ожидает подписания: 1 штука\n" +
+        "Хотите создать новое обращение?",
+      widget: "appeals-summary",
+      suggested: ["Создать обращение", "Список обращений", "Выполненные", "Отклонённые"]
+    };
   }
   if (asksAppealsDomain) {
     return {
-      text: "По обращениям могу показать активные, выполненные и отклоненные. При необходимости открою раздел обращений.",
-      suggested: ["Активные обращения", "Открыть обращения", "Создать обращение"]
+      text:
+        "На данный момент у вас 3 активных обращения:\n" +
+        "- В работе: 2 штуки\n" +
+        "- Ожидает подписания: 1 штука\n" +
+        "Хотите создать новое обращение?",
+      widget: "appeals-summary",
+      suggested: ["Создать обращение", "Список обращений", "Выполненные", "Отклонённые"]
     };
   }
 

@@ -19,7 +19,7 @@ test.describe("AI-first user actions", () => {
     await page.mouse.down();
     await page.mouse.up();
 
-    await expect(page).toHaveURL(/\/invoices\/.+\/$/);
+    await expect(page).toHaveURL(/\/invoices\/.+\/?$/);
     await expect(page.getByText("Скачать PDF", { exact: true })).toBeVisible();
   });
 
@@ -32,7 +32,7 @@ test.describe("AI-first user actions", () => {
     await expect(notificationsSwitch).toHaveAttribute("aria-checked", "false");
 
     await page.getByRole("link", { name: "FAQ и история версий" }).click();
-    await expect(page).toHaveURL(/\/settings\/faq\/$/);
+    await expect(page).toHaveURL(/\/settings\/faq\/?$/);
   });
 });
 

@@ -20,6 +20,12 @@ describe("assistantResponse routing", () => {
           "твои возможности",
           "что можешь",
         ],
+        "creator": [
+          "кто тебя создал",
+          "кто твой создатель",
+          "кто тебя сделал",
+          "кто твой автор",
+        ],
         "greeting": [
           "привет",
           "здравствуй",
@@ -38,6 +44,11 @@ describe("assistantResponse routing", () => {
           "как ты",
           "как поживаешь",
           "как жизнь",
+        ],
+        "whoDoYouLove": [
+          "кого ты любишь",
+          "кого любишь",
+          "ты кого любишь",
         ],
       }
     `);
@@ -73,6 +84,18 @@ describe("assistantResponse routing", () => {
     expect(res?.text).toContain("Все хорошо, работаю на благо B2B в Билайне.");
   });
 
+  it("routes creator question to special mock", () => {
+    const res = resolveSpecialMockResponse("кто твой создатель?");
+    expect(res).not.toBeNull();
+    expect(res?.text).toContain("Виктор Немудров");
+  });
+
+  it("routes love question to special mock", () => {
+    const res = resolveSpecialMockResponse("Кого ты любишь?");
+    expect(res).not.toBeNull();
+    expect(res?.text).toBe("Тебя");
+  });
+
   it("does not treat invoice request as special mock", () => {
     const res = resolveSpecialMockResponse("счета за март");
     expect(res).toBeNull();
@@ -99,6 +122,12 @@ describe("assistantResponse routing", () => {
     const res = resolveDeterministicResponse("Увеличить срок хранения звонков", invoicesMarch2026);
     expect(res).not.toBeNull();
     expect(res?.text).toContain("увеличение срока хранения");
+  });
+
+  it("routes weekly calls prompts to dashboard", () => {
+    const res = resolveDeterministicResponse("звонки за неделю", invoicesMarch2026);
+    expect(res).not.toBeNull();
+    expect(res?.navigateTo).toBe("/home/");
   });
 
   it("routes assistant advice prompt without live", () => {
@@ -129,7 +158,7 @@ describe("assistantResponse routing", () => {
     expect(insights?.text).toContain("Ключевые инсайты");
 
     const openAppeals = resolveDeterministicResponse("Открытые обращения", invoicesMarch2026);
-    expect(openAppeals?.navigateTo).toBe("/appeals/");
+    expect(openAppeals?.widget).toBe("appeals-summary");
 
     const createPayment = resolveDeterministicResponse("Создать платеж", invoicesMarch2026);
     expect(createPayment?.navigateTo).toBe("/invoices/");
@@ -154,7 +183,7 @@ describe("assistantResponse routing", () => {
 
   it("handles exact quick chips/history prompts deterministically", () => {
     expect(resolveDeterministicResponse("Мои сервисы", invoicesMarch2026)?.text).toContain("Ваши подключенные продукты");
-    expect(resolveDeterministicResponse("Обращения", invoicesMarch2026)?.navigateTo).toBe("/appeals/");
+    expect(resolveDeterministicResponse("Обращения", invoicesMarch2026)?.widget).toBe("appeals-summary");
     expect(resolveDeterministicResponse("Счета на оплату", invoicesMarch2026)?.navigateTo).toBe("/invoices/");
     expect(resolveDeterministicResponse("Записи звонков", invoicesMarch2026)?.widget).toBe("missed-calls-inline");
   });

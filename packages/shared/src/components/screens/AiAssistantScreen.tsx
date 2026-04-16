@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bot, Loader2, Pause, PhoneOff, Play, Sparkles, X } from "lucide-react";
+import { Bot, ChevronRight, Loader2, Pause, PhoneOff, Play, Sparkles, X } from "lucide-react";
 import { InvoicesMarchWidget } from "@shared/components/ai/InvoicesMarchWidget";
 import { WeeklyStatsWidget } from "@shared/components/ai/WeeklyStatsWidget";
 import { ActionCard } from "@shared/components/ActionCard";
@@ -13,9 +13,11 @@ import { BottomInputBar } from "@shared/components/BottomInputBar";
 import { ChatBubble } from "@shared/components/ChatBubble";
 import { PageBackLink } from "@shared/components/PageBackLink";
 import { Card, CardContent } from "@shared/components/ui/card";
+import { Button } from "@shared/components/ui/button";
 import { Modal } from "@shared/components/ui/modal";
 import { cn } from "@shared/components/ui/cn";
 import {
+  getAppealsFiltered,
   chatHistoryPresets,
   defaultChat,
   recentHistoryQuickPrompts,
@@ -41,6 +43,8 @@ import { isMissedCallsSeen, markMissedCallsSeen } from "@shared/lib/runtimeFlags
 import { getCustomizationButtonClasses, useUiCustomization } from "@shared/lib/uiCustomization";
 
 const sphereSrc = "/mockups/%D0%A8%D0%B0%D1%80.png";
+type LiveProvider = "openrouter" | "groq" | "grok";
+type LiveCandidate = { provider: LiveProvider; apiKey: string; model: string };
 
 function id() {
   return Math.random().toString(16).slice(2);
@@ -119,13 +123,13 @@ function traceAiSource(sourceLabel: string, prompt: string): void {
   }
 }
 
-function getLiveProviderLabel(provider: "openrouter" | "groq" | "grok") {
+function getLiveProviderLabel(provider: LiveProvider) {
   if (provider === "openrouter") return "ответ от OpenRouter";
   if (provider === "grok") return "ответ от Grok/xAI";
   return "ответ от Groq";
 }
 
-function getAiSourceLabel(intentUsed: string, liveProvider: "openrouter" | "groq" | "grok") {
+function getAiSourceLabel(intentUsed: string, liveProvider: LiveProvider) {
   switch (intentUsed) {
     case "special-mock":
       return "замоканный ответ";
@@ -148,12 +152,40 @@ function getAiSourceLabel(intentUsed: string, liveProvider: "openrouter" | "groq
   }
 }
 
-function formatLiveErrorLabel(err: unknown, liveProvider: "openrouter" | "groq" | "grok") {
+function formatLiveErrorLabel(err: unknown, liveProvider: LiveProvider) {
   const base = `${getLiveProviderLabel(liveProvider)} (ошибка)`;
   const msg = err instanceof Error ? err.message : typeof err === "string" ? err : "";
   const trimmed = msg.trim();
+  if (trimmed.toLowerCase().includes("failed to fetch")) {
+    return `${base}: сеть недоступна или запрос заблокирован`;
+  }
   if (!trimmed) return base;
   return `${base}: ${trimmed.slice(0, 90)}`;
+}
+
+function buildLiveCandidates(args: {
+  openRouterApiKey?: string;
+  openRouterModel?: string;
+  grokApiKey?: string;
+  grokModel: string;
+  groqApiKey?: string;
+  groqModel: string;
+}): LiveCandidate[] {
+  const candidates: LiveCandidate[] = [];
+  if (args.openRouterApiKey) {
+    candidates.push({
+      provider: "openrouter",
+      apiKey: args.openRouterApiKey,
+      model: args.openRouterModel || "mistralai/mistral-small-3.2-24b-instruct:free"
+    });
+  }
+  if (args.grokApiKey) {
+    candidates.push({ provider: "grok", apiKey: args.grokApiKey, model: args.grokModel });
+  }
+  if (args.groqApiKey) {
+    candidates.push({ provider: "groq", apiKey: args.groqApiKey, model: args.groqModel });
+  }
+  return candidates;
 }
 
 function buildDataContextSummary(invoices: InvoiceItem[]) {
@@ -194,6 +226,9 @@ export function AiAssistantScreen() {
   const aiReplyPendingRef = React.useRef(false);
   const [aiReplyPending, setAiReplyPending] = React.useState(false);
   const runtimeInvoices = useRuntimeInvoices();
+  const chatAppeals = React.useMemo(() => getAppealsFiltered("all").filter((a) => a.status === "active").slice(0, 3), []);
+  const inWorkAppealsCount = React.useMemo(() => chatAppeals.filter((a) => a.badgeLabel.includes("работе")).length, [chatAppeals]);
+  const signPendingAppealsCount = React.useMemo(() => chatAppeals.filter((a) => a.badgeLabel.includes("подпис")).length, [chatAppeals]);
   const missedChipCustom = useUiCustomization("assistant.home.missed");
   const appealsChipCustom = useUiCustomization("assistant.home.appeals");
   const invoicesChipCustom = useUiCustomization("assistant.home.invoices");
@@ -207,16 +242,16 @@ export function AiAssistantScreen() {
   const grokModel = process.env.NEXT_PUBLIC_GROK_MODEL ?? "grok-3-mini";
   const groqModel = process.env.NEXT_PUBLIC_GROQ_MODEL ?? "llama-3.1-8b-instant";
 
-  const hasExplicitGrok = Boolean(grokApiKey);
-  const shouldUseGrok = hasExplicitGrok;
-  const isLiveEnabled = Boolean(openRouterApiKey || grokApiKey || groqApiKey);
-  const liveApiKey = openRouterApiKey ?? (shouldUseGrok ? grokApiKey : groqApiKey) ?? "";
-  const liveModel = openRouterApiKey ? openRouterModel : shouldUseGrok ? grokModel : groqModel;
-  const liveProvider: "openrouter" | "groq" | "grok" = openRouterApiKey
-    ? "openrouter"
-    : shouldUseGrok
-      ? "grok"
-      : "groq";
+  const liveCandidates = buildLiveCandidates({
+    openRouterApiKey,
+    openRouterModel,
+    grokApiKey,
+    grokModel,
+    groqApiKey,
+    groqModel
+  });
+  const isLiveEnabled = liveCandidates.length > 0;
+  const primaryLiveProvider: LiveProvider = liveCandidates[0]?.provider ?? "groq";
 
   React.useEffect(() => {
     setShowMissedCard(!isMissedCallsSeen());
@@ -334,20 +369,20 @@ export function AiAssistantScreen() {
 
       const specialMock = resolveSpecialMockResponse(v);
       if (specialMock) {
-        const resolved = toAiMessage({ ...specialMock, sourceLabel: getAiSourceLabel("special-mock", liveProvider) });
+        const resolved = toAiMessage({ ...specialMock, sourceLabel: getAiSourceLabel("special-mock", primaryLiveProvider) });
         setMessages((m) => [...m, resolved]);
         appendChatLog(v, resolved.text, "special-mock");
-        traceAiSource(getAiSourceLabel("special-mock", liveProvider), v);
+        traceAiSource(getAiSourceLabel("special-mock", primaryLiveProvider), v);
         finishReply();
         return;
       }
 
       const deterministic = resolveDeterministicResponse(v, runtimeInvoices);
       if (deterministic) {
-        const resolved = toAiMessage({ ...deterministic, sourceLabel: getAiSourceLabel("deterministic", liveProvider) });
+        const resolved = toAiMessage({ ...deterministic, sourceLabel: getAiSourceLabel("deterministic", primaryLiveProvider) });
         setMessages((m) => [...m, resolved]);
         appendChatLog(v, resolved.text, "deterministic");
-        traceAiSource(getAiSourceLabel("deterministic", liveProvider), v);
+        traceAiSource(getAiSourceLabel("deterministic", primaryLiveProvider), v);
         if (resolved.navigateTo) {
           window.setTimeout(() => router.push(resolved.navigateTo!), 320);
         }
@@ -360,22 +395,23 @@ export function AiAssistantScreen() {
         [...messages, userMsg].filter((m) => m.role === "user").map((m) => m.text)
       );
       if (sessionMemory) {
-        const resolved = toAiMessage({ ...sessionMemory, sourceLabel: getAiSourceLabel("session-memory", liveProvider) });
+        const resolved = toAiMessage({ ...sessionMemory, sourceLabel: getAiSourceLabel("session-memory", primaryLiveProvider) });
         setMessages((m) => [...m, resolved]);
         appendChatLog(v, resolved.text, "session-memory");
-        traceAiSource(getAiSourceLabel("session-memory", liveProvider), v);
+        traceAiSource(getAiSourceLabel("session-memory", primaryLiveProvider), v);
         finishReply();
         return;
       }
 
       let resolved: ChatMessage = toAiMessage({
         ...buildSafeLiveFallbackResponse(),
-        sourceLabel: getAiSourceLabel("fallback-no-live", liveProvider)
+        sourceLabel: getAiSourceLabel("fallback-no-live", primaryLiveProvider)
       });
       let intentUsed = "fallback-no-live";
+      let resolvedLiveProvider: LiveProvider = primaryLiveProvider;
 
       try {
-        if (isLiveEnabled && liveApiKey) {
+        if (isLiveEnabled) {
           const controller = new AbortController();
           liveAbortRef.current = controller;
           const abortMeta: { kind: "timeout" | "supersede" } = { kind: "supersede" };
@@ -387,42 +423,62 @@ export function AiAssistantScreen() {
             const history: LiveAiMessage[] = [...messages, userMsg]
               .slice(-6)
               .map((m) => ({ role: m.role === "ai" ? "assistant" : "user", content: m.text }));
-            const liveText = await getLiveAiText({
-              prompt: v,
-              history,
-              apiKey: liveApiKey,
-              model: liveModel,
-              provider: liveProvider,
-              proxyUrl: liveProxyUrl,
-              contextSummary: buildDataContextSummary(runtimeInvoices),
-              signal: controller.signal
-            });
-            if (mySeq !== sendSeqRef.current) return;
-            if (liveText && isLiveResponseReliable(v, liveText)) {
-              resolved = {
-                id: id(),
-                role: "ai",
-                text: liveText,
-                sourceLabel: getAiSourceLabel("live", liveProvider),
-                createdAt: nowIso()
-              };
-              intentUsed = "live";
-            } else if (liveText) {
-              // Prefer returning live text with explicit source mark instead of generic fallback.
-              resolved = {
-                id: id(),
-                role: "ai",
-                text: liveText,
-                sourceLabel: `${getLiveProviderLabel(liveProvider)} (без строгой верификации)`,
-                createdAt: nowIso()
-              };
-              intentUsed = "live";
-            } else {
+            let liveResolved = false;
+            let lastErrorLabel: string | null = null;
+            for (const candidate of liveCandidates) {
+              resolvedLiveProvider = candidate.provider;
+              try {
+                const liveText = await getLiveAiText({
+                  prompt: v,
+                  history,
+                  apiKey: candidate.apiKey,
+                  model: candidate.model,
+                  provider: candidate.provider,
+                  proxyUrl: liveProxyUrl,
+                  contextSummary: buildDataContextSummary(runtimeInvoices),
+                  signal: controller.signal
+                });
+                if (mySeq !== sendSeqRef.current) return;
+                if (!liveText) continue;
+                if (isLiveResponseReliable(v, liveText)) {
+                  resolved = {
+                    id: id(),
+                    role: "ai",
+                    text: liveText,
+                    sourceLabel: getAiSourceLabel("live", candidate.provider),
+                    createdAt: nowIso()
+                  };
+                } else {
+                  resolved = {
+                    id: id(),
+                    role: "ai",
+                    text: liveText,
+                    sourceLabel: `${getLiveProviderLabel(candidate.provider)} (без строгой верификации)`,
+                    createdAt: nowIso()
+                  };
+                }
+                intentUsed = "live";
+                liveResolved = true;
+                break;
+              } catch (e) {
+                if (mySeq !== sendSeqRef.current) return;
+                if (e instanceof DOMException && e.name === "AbortError") {
+                  emitAiMetric({
+                    type: "live_aborted",
+                    reason: abortMeta.kind === "timeout" ? "timeout" : "new_message"
+                  });
+                  finishReply();
+                  return;
+                }
+                lastErrorLabel = formatLiveErrorLabel(e, candidate.provider);
+              }
+            }
+            if (!liveResolved) {
               resolved = toAiMessage({
                 ...buildSafeLiveFallbackResponse(),
-                sourceLabel: getAiSourceLabel("live-unavailable", liveProvider)
+                sourceLabel: lastErrorLabel ?? getAiSourceLabel("live-unavailable", resolvedLiveProvider)
               });
-              intentUsed = "live-unavailable";
+              intentUsed = lastErrorLabel ? "live-error" : "live-unavailable";
             }
           } catch (e) {
             if (mySeq !== sendSeqRef.current) return;
@@ -436,7 +492,7 @@ export function AiAssistantScreen() {
             }
             resolved = toAiMessage({
               ...buildSafeLiveFallbackResponse(),
-              sourceLabel: formatLiveErrorLabel(e, liveProvider)
+              sourceLabel: formatLiveErrorLabel(e, resolvedLiveProvider)
             });
             intentUsed = "live-error";
           } finally {
@@ -452,7 +508,7 @@ export function AiAssistantScreen() {
 
       setMessages((m) => [...m, resolved]);
       appendChatLog(v, resolved.text, intentUsed);
-      traceAiSource(getAiSourceLabel(intentUsed, liveProvider), v);
+      traceAiSource(getAiSourceLabel(intentUsed, resolvedLiveProvider), v);
       if (resolved.navigateTo) {
         window.setTimeout(() => router.push(resolved.navigateTo!), 320);
       }
@@ -915,6 +971,83 @@ export function AiAssistantScreen() {
                               <span className="text-xs text-slate-500 dark:text-slate-400">{c.time}</span>
                             </button>
                           ))}
+                      </CardContent>
+                    </Card>
+                  ) : null}
+                  {m.role === "ai" && m.widget === "appeals-summary" ? (
+                    <Card className="border-slate-200 dark:border-slate-700">
+                      <CardContent className="space-y-3 pb-3 pt-3">
+                        <Button
+                          type="button"
+                          className="w-full rounded-xl bg-slate-900 text-sm font-semibold text-white dark:bg-slate-100 dark:text-slate-900"
+                          onClick={() => router.push("/appeals/")}
+                        >
+                          Создать обращение
+                        </Button>
+                        <div className="rounded-xl border border-slate-100 bg-white p-3 dark:border-slate-600 dark:bg-slate-800">
+                          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Активные обращения</div>
+                          <div className="mt-2 space-y-2">
+                            {chatAppeals.map((appeal) => (
+                              <button
+                                key={appeal.id}
+                                type="button"
+                                className="flex w-full items-center justify-between gap-2 text-left"
+                                onClick={() => router.push("/appeals/")}
+                              >
+                                <div className="min-w-0 flex-1">
+                                  <div className="truncate text-sm text-slate-900 dark:text-slate-100">{appeal.title}</div>
+                                  <div className="truncate text-xs text-slate-500 dark:text-slate-400">
+                                    {appeal.category} — от {appeal.dateLabel}
+                                  </div>
+                                </div>
+                                <span
+                                  className={cn(
+                                    "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold",
+                                    appeal.badgeLabel.includes("работе") &&
+                                      "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200",
+                                    appeal.badgeLabel.includes("подпис") &&
+                                      "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100"
+                                  )}
+                                >
+                                  {appeal.badgeLabel}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                          <button
+                            type="button"
+                            className="mt-3 flex w-full items-center justify-center gap-1 text-sm font-semibold text-slate-700 dark:text-slate-200"
+                            onClick={() => router.push("/appeals/")}
+                          >
+                            Все обращения
+                          </button>
+                        </div>
+                        <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                          Для поиска конкретного обращения укажите: дату создания, номер договора или контекст обращения.
+                        </p>
+                        <Card className="border-slate-200 dark:border-slate-700">
+                          <CardContent className="divide-y divide-slate-100 p-0 dark:divide-slate-700">
+                            {[
+                              { label: "Создать обращение", onClick: () => router.push("/appeals/") },
+                              { label: "Список обращений", onClick: () => router.push("/appeals/") },
+                              { label: "Выполненные", onClick: () => router.push("/appeals/") },
+                              { label: "Отклонённые", onClick: () => router.push("/appeals/") }
+                            ].map((item) => (
+                              <button
+                                key={item.label}
+                                type="button"
+                                className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-slate-900 dark:text-slate-100"
+                                onClick={item.onClick}
+                              >
+                                {item.label}
+                                <ChevronRight className="h-4 w-4 text-slate-400" />
+                              </button>
+                            ))}
+                          </CardContent>
+                        </Card>
+                        <div className="sr-only">
+                          В работе: {inWorkAppealsCount}, ожидает подписания: {signPendingAppealsCount}
+                        </div>
                       </CardContent>
                     </Card>
                   ) : null}

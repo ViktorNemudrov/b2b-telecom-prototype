@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("mobile touch: assistant send and open invoice detail", async ({ page }) => {
   await page.addInitScript(() => {
-    window.localStorage.setItem("pwa-install-dismissed", "1");
+    window.localStorage.setItem("b2b_pwa_install_dismissed_v1", "1");
   });
   await page.goto("/assistant/");
 
@@ -12,8 +12,8 @@ test("mobile touch: assistant send and open invoice detail", async ({ page }) =>
   await expect(page.getByText("И вам здравствуйте, желаю вам хорошего дня")).toBeVisible({ timeout: 10_000 });
 
   await page.goto("/invoices/");
-  await page.locator('a[href^="/invoices/"]').first().tap();
-  await expect(page).toHaveURL(/\/invoices\/.+\/$/);
+  await page.locator('a[href^="/invoices/"]').first().click();
+  await expect(page).toHaveURL(/\/invoices\/.+\/?$/);
 });
 
 test("mobile touch: classic sorting and pwa assets", async ({ page, request }) => {

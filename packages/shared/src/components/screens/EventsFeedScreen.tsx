@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Pause, PhoneCall, PhoneOff, Play, Sparkles, X } from "lucide-react";
 import { RecordingPlayer } from "@shared/components/RecordingPlayer";
 import { Card, CardContent } from "@shared/components/ui/card";
-import { getCallById } from "@shared/lib/mockData";
+import { getAppealsFiltered, getCallById } from "@shared/lib/mockData";
 import { isMissedCallsSeen, markMissedCallsSeen } from "@shared/lib/runtimeFlags";
 
 const dailyReportText =
@@ -34,6 +34,7 @@ function FeedCallCard({
   missed?: boolean;
 }) {
   const [expanded, setExpanded] = React.useState(false);
+  const canExpand = transcript.trim().length > 140 || transcript.includes("\n");
 
   return (
     <Card className="rounded-[22px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
@@ -81,13 +82,15 @@ function FeedCallCard({
           >
             {transcript}
           </p>
-          <button
-            type="button"
-            className="mt-1 text-xs font-medium text-[#2B6CE0] hover:underline"
-            onClick={() => setExpanded((v) => !v)}
-          >
-            {expanded ? "Скрыть" : "Показать полностью"}
-          </button>
+          {canExpand ? (
+            <button
+              type="button"
+              className="mt-1 text-xs font-medium text-[#2B6CE0] hover:underline"
+              onClick={() => setExpanded((v) => !v)}
+            >
+              {expanded ? "Скрыть" : "Показать полностью"}
+            </button>
+          ) : null}
         </div>
       </CardContent>
     </Card>
@@ -99,6 +102,12 @@ export function EventsFeedScreen() {
   const [dismissDaily, setDismissDaily] = React.useState(false);
   const [speaking, setSpeaking] = React.useState(false);
   const [missedSeen, setMissedSeen] = React.useState(() => isMissedCallsSeen());
+  const activeAppeals = React.useMemo(() => getAppealsFiltered("all").filter((a) => a.status === "active"), []);
+  const inWorkAppealsCount = React.useMemo(() => activeAppeals.filter((a) => a.badgeLabel.includes("работе")).length, [activeAppeals]);
+  const signPendingAppealsCount = React.useMemo(
+    () => activeAppeals.filter((a) => a.badgeLabel.includes("подпис")).length,
+    [activeAppeals]
+  );
   const c1 = getCallById("c1");
   const c2 = getCallById("c2");
 
@@ -285,6 +294,83 @@ export function EventsFeedScreen() {
               💬
             </button>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-[22px] border-[#E5E7EE] bg-[#F7F7FF] shadow-none dark:border-slate-700 dark:bg-slate-800/80">
+        <CardContent className="space-y-3 pb-4 pt-4">
+          <div className="text-2xl font-semibold text-[#343A4A] dark:text-slate-100">Активные обращения</div>
+          <p className="text-sm leading-relaxed text-[#4B5563] dark:text-slate-300">
+            На данный момент у вас: <span className="font-semibold">{activeAppeals.length} активных обращения</span>
+            <br />- В работе: {inWorkAppealsCount} штуки
+            <br />- Ожидает подписания: {signPendingAppealsCount} штука
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push("/appeals/")}
+            className="rounded-2xl bg-[#16181D] px-5 py-3 text-sm font-semibold text-white dark:bg-slate-100 dark:text-slate-900"
+          >
+            Создать обращение
+          </button>
+
+          <Card className="rounded-[18px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-600 dark:bg-slate-900">
+            <CardContent className="space-y-3 pb-3 pt-3">
+              {activeAppeals.slice(0, 3).map((appeal) => (
+                <button
+                  key={appeal.id}
+                  type="button"
+                  onClick={() => router.push("/appeals/")}
+                  className="flex w-full items-center justify-between gap-2 text-left"
+                >
+                  <div className="min-w-0">
+                    <div className="truncate text-base font-medium text-[#1F2430] dark:text-slate-100">{appeal.title}</div>
+                    <div className="truncate text-sm text-[#9CA3B5] dark:text-slate-400">
+                      {appeal.category} — {appeal.id}
+                    </div>
+                  </div>
+                  <span
+                    className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                      appeal.badgeLabel.includes("работе")
+                        ? "bg-[#E8F1FF] text-[#2B6CE0] dark:bg-sky-900/40 dark:text-sky-200"
+                        : "bg-[#FFF2DC] text-[#D97706] dark:bg-amber-900/40 dark:text-amber-200"
+                    }`}
+                  >
+                    {appeal.badgeLabel}
+                  </span>
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => router.push("/appeals/")}
+                className="flex items-center justify-center gap-1 text-sm font-medium text-[#343A4A] dark:text-slate-200"
+              >
+                Все обращения
+              </button>
+            </CardContent>
+          </Card>
+
+          <p className="text-sm leading-relaxed text-[#4B5563] dark:text-slate-300">
+            Для поиска конкретного обращения укажите:
+            <br />- Дату создания: точная дата, месяц или интервал
+            <br />- Номер договора
+            <br />- Контекст обращения
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-[22px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
+        <CardContent className="space-y-2 pb-2 pt-2">
+          {["Создать обращение", "Список обращений", "Выполненные", "Отклонённые"].map((item) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => router.push("/appeals/")}
+              className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-base text-[#1F2430] hover:bg-[#F7F8FB] dark:text-slate-100 dark:hover:bg-slate-700/40"
+            >
+              {item}
+              <span className="text-[#9CA3B5] dark:text-slate-400">›</span>
+            </button>
+          ))}
         </CardContent>
       </Card>
 
