@@ -7,18 +7,44 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "npm run dev:ai",
     "dev:ai": "npm run dev -w @b2b/ai-first",
     "dev:classic": "npm run dev -w @b2b/classic",
     "build:ai": "npm run build -w @b2b/ai-first",
     "build:classic": "npm run build -w @b2b/classic",
+    "prebuild": "npm run verify && npm run test:e2e:smoke && npm run test:e2e:mobile && npm run test:e2e:mobile:ios && npm run check:artifacts",
     "build": "npm run build:ai && npm run build:classic",
     "lint:ai": "npm run lint -w @b2b/ai-first",
     "lint:classic": "npm run lint -w @b2b/classic",
     "lint": "npm run lint:ai && npm run lint:classic",
+    "typecheck": "tsc -p apps/ai-first/tsconfig.json --noEmit && tsc -p apps/classic/tsconfig.json --noEmit",
+    "check:artifacts": "node scripts/check-no-build-artifacts.mjs",
+    "test": "vitest run --config vitest.config.ts",
+    "test:customization": "vitest run --config vitest.config.ts packages/shared/src/lib/uiCustomization.test.ts",
+    "test:watch": "vitest --config vitest.config.ts",
+    "verify:customization": "npm run typecheck && npm run test:customization",
+    "verify": "npm run lint && npm run test && npm run verify:customization && npm run predeploy:chat",
+    "verify:full": "npm run lint && npm run test && npx playwright test",
+    "test:e2e": "playwright test",
+    "test:e2e:chat": "playwright test e2e/assistant-routing.spec.ts e2e/assistant-ai.spec.ts",
+    "test:e2e:chat:gate": "playwright test e2e/chat-scenarios-gate.spec.ts --project=desktop-chromium --project=mobile-android-chrome",
+    "test:e2e:smoke": "playwright test e2e/smoke-release.spec.ts --project=desktop-chromium",
+    "test:e2e:mobile": "playwright test e2e/mobile-touch.spec.ts --project=mobile-android-chrome",
+    "test:e2e:mobile:ios": "playwright test e2e/mobile-touch.spec.ts --project=mobile-ios-safari",
+    "test:e2e:pwa": "playwright test e2e/pwa-user-flows.spec.ts --project=desktop-chromium",
+    "test:regression:e2e": "playwright test --config playwright.regression.config.ts",
+    "test:chat:unit": "vitest run --config vitest.config.ts packages/shared/src/lib/assistantResponse.test.ts packages/shared/src/lib/assistantScenarios.test.ts packages/shared/src/lib/chatRoutingFuzz.test.ts packages/shared/src/lib/chatAnalytics.test.ts packages/shared/src/lib/chatIntentRegistry.test.ts packages/shared/src/lib/liveAi.test.ts packages/shared/src/lib/liveAiGuards.test.ts packages/shared/src/lib/liveUserPromptSchema.test.ts packages/shared/src/lib/aiClientMetrics.test.ts",
+    "chat:e2e:report": "node scripts/chat-e2e-summary.mjs",
+    "predeploy:chat": "npm run test:chat:unit && npm run test:e2e:chat && npm run test:e2e:chat:gate && npm run test:e2e:pwa",
+    "ci:check": "npx turbo run lint test build --filter=...[origin/main]",
+    "ci:e2e": "playwright test --config playwright.regression.config.ts --project=desktop-chromium",
     "mobile:sync": "npm run mobile:sync -w @b2b/ai-first",
     "mobile:android": "npm run mobile:android -w @b2b/ai-first"
   },
   "devDependencies": {
-    "typescript": "^5.8.3"
+    "@playwright/test": "^1.55.0",
+    "turbo": "^2.9.6",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.4"
   }
 }

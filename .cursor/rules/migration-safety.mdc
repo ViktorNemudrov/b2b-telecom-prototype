@@ -1,0 +1,21 @@
+---
+description: Safe migration process for refactors and structural changes
+alwaysApply: true
+---
+
+# Migration Safety Rules
+
+- Never delete old paths without confirming replacement behavior.
+- Migrate in phases: prepare, dual-run, switch, cleanup.
+- Keep temporary adapters small and time-boxed.
+
+## Risk Controls
+
+- For destructive changes, add backup or revert instructions in the PR description.
+- Validate critical user flows before and after each migration step.
+- If unexpected repo changes appear, stop and clarify before continuing.
+
+## Completion Criteria
+
+- Legacy code removal happens only after production verification.
+- Migration notes include what changed, why, and how to rollback.

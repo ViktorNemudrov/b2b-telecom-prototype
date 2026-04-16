@@ -6,32 +6,24 @@ import { SwipeSheet, SwipeSheetHandle } from "@/components/ui/SwipeSheet";
 
 export function DevelopmentStubHost() {
   const [open, setOpen] = useState(false);
-  const [hint, setHint] = useState("");
 
   const close = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
-    const onStub = (e: Event) => {
-      const ce = e as CustomEvent<string>;
-      setHint(typeof ce.detail === "string" ? ce.detail : "");
-      setOpen(true);
-    };
+    const onStub = () => setOpen(true);
     window.addEventListener("development-stub", onStub as EventListener);
     return () => window.removeEventListener("development-stub", onStub as EventListener);
   }, []);
 
   return (
-    <SwipeSheet open={open} onClose={close} innerClassName="border-slate-200">
+    <SwipeSheet open={open} onClose={close} innerClassName="border-slate-200 dark:border-slate-600">
       <SwipeSheetHandle />
       <div className="safe-px px-4 pb-[max(20px,env(safe-area-inset-bottom))] pt-2">
-        <h2 className="text-lg font-bold text-slate-900">Раздел в разработке</h2>
-        <p className="mt-2 text-sm leading-relaxed text-slate-600">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Раздел в разработке</h2>
+        <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
           В демо-версии этот сценарий пока не подключён. Доступны экраны с моковыми данными и навигация по прототипу.
         </p>
-        {hint ? (
-          <p className="mt-3 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-700">{hint}</p>
-        ) : null}
-        <p className="mt-3 text-xs text-slate-500">Потяните вниз, чтобы закрыть.</p>
+        <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">Потяните вниз, чтобы закрыть.</p>
         <Button type="button" className="mt-5 w-full rounded-2xl py-6 text-base font-semibold" onClick={close}>
           Понятно
         </Button>

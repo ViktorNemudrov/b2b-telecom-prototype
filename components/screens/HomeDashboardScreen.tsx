@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronRight, Sparkles } from "lucide-react";
 import { TariffSubscriptionCard } from "@/components/TariffSubscriptionCard";
 import { TargetMailingModal } from "@/components/TargetMailingModal";
@@ -29,6 +30,7 @@ function CallHeatmap() {
 }
 
 export function HomeDashboardScreen() {
+  const router = useRouter();
   const [mailingOpen, setMailingOpen] = React.useState(false);
   const tariff = getTariffFromFeed();
 
@@ -242,7 +244,7 @@ export function HomeDashboardScreen() {
         <div className="flex gap-3 overflow-x-auto pb-1">
           <button
             type="button"
-            onClick={() => openDevelopmentStub("Статья: AI-агенты в малом бизнесе (демо).")}
+            onClick={() => router.push("/assistant/?q=Дай советы для бизнеса")}
             className="w-[260px] shrink-0 overflow-hidden rounded-[22px] border border-slate-200 bg-white text-left shadow-softSm transition hover:bg-slate-50/80"
           >
             <div className="h-28 bg-gradient-to-br from-emerald-100 via-amber-50 to-rose-100" />
@@ -252,7 +254,7 @@ export function HomeDashboardScreen() {
           </button>
           <button
             type="button"
-            onClick={() => openDevelopmentStub("Ещё материалы в ленте (демо).")}
+            onClick={() => router.push("/assistant/")}
             className="w-[200px] shrink-0 rounded-[22px] border border-slate-200 bg-slate-50 p-3 text-left text-xs text-slate-600 transition hover:bg-slate-100"
           >
             Ещё статьи в ленте (демо)

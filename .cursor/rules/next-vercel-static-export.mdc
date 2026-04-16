@@ -1,0 +1,20 @@
+---
+description: Next.js static export and Vercel deployment guardrails
+alwaysApply: true
+---
+
+# Next + Vercel Static Export Rules
+
+- If `output: "export"` is used, treat app as static artifact deployment.
+- Build output for AI app must be `apps/ai-first/out`; for classic app `apps/classic/out`.
+- Keep Vercel build commands explicit and workspace-safe from repo root.
+
+## Deployment Safety
+
+- Before changing deploy settings, verify current Root Directory, Build Command, and Output Directory.
+- Do not assume framework auto-detection is correct for monorepo static exports.
+- After deployment changes, trigger redeploy and verify target branch and project mapping.
+
+## Documentation Sync
+
+- Any deployment setting change must update `docs/VERCEL_MONOREPO.md`.

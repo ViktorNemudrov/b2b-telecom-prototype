@@ -107,6 +107,12 @@ describe("assistantResponse routing", () => {
     expect(res?.text).toContain("Совет от ассистента:");
   });
 
+  it("routes top up minutes prompt without live", () => {
+    const res = resolveDeterministicResponse("Как пополнить пакет минут", invoicesMarch2026);
+    expect(res).not.toBeNull();
+    expect(res?.text).toContain("пополнить пакет минут");
+  });
+
   it("routes open invoices list to navigation", () => {
     const res = resolveDeterministicResponse("открыть список счетов", invoicesMarch2026);
     expect(res?.navigateTo).toBe("/invoices/");

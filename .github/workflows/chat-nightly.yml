@@ -1,0 +1,49 @@
+name: Chat nightly
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  chat-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Pre-deploy chat gate
+        id: chat
+        run: npm run predeploy:chat
+        continue-on-error: true
+
+      - name: Summarize chat E2E failures
+        if: steps.chat.outcome == 'failure'
+        run: npm run chat:e2e:report
+
+      - name: Upload chat test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chat-test-results
+          path: |
+            test-results/e2e-results.json
+            test-results/chat-failures-summary.md
+            playwright-report/
+          if-no-files-found: ignore
+
+      - name: Fail if chat gate failed
+        if: steps.chat.outcome == 'failure'
+        run: exit 1

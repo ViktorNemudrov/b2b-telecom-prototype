@@ -1,0 +1,25 @@
+---
+description: Core modernization principles and decision criteria
+alwaysApply: true
+---
+
+# Modernization Core
+
+- Prefer incremental modernization over big-bang rewrites.
+- Preserve behavior first, then improve architecture.
+- For each change, define: business goal, rollback path, and measurable success metric.
+- Favor shared abstractions only after at least two real use-cases exist.
+- Keep pull requests small enough for focused review.
+
+## Decision Rules
+
+- If migration risk is high, ship behind feature flags.
+- If a dependency is changed, document reason, alternatives, and impact.
+- If timeline and quality conflict, reduce scope before reducing quality gates.
+
+## Definition of Done
+
+- `npm run verify` passes (lint + Vitest + chat E2E gate); for broad UI changes also run `npm run verify:full` or targeted Playwright suites as appropriate.
+- Code compiles; affected app builds succeed after verification.
+- Docs for changed behavior are updated when user-facing behavior changes.
+- Deployment path and operational impact are clear.

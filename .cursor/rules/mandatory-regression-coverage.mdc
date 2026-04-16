@@ -1,0 +1,16 @@
+---
+description: Mandatory tests for new and frequently changed functionality
+alwaysApply: true
+---
+
+# Mandatory Regression Coverage
+
+- For any new user-visible functionality, add automated tests in the same task:
+  - unit tests for logic/contract behavior;
+  - e2e test (or extension of an existing gate spec) for user flow.
+- For functionality that is edited repeatedly (chat, routing, PWA, invoices, key UI flows), always add/refresh anti-regression tests for the exact changed scenarios.
+- Before completing any coding task, run relevant checks after each meaningful change:
+  - minimum: targeted tests for touched modules and `typecheck`;
+  - for release-ready work: run repository verification gates (`verify`, and `verify:full` when UI/navigation/PWA scope is broad).
+- Do not report "done" if tests were not executed. Report what was run and the result.
+- If tests fail, fix or explicitly explain blocker and what remains.

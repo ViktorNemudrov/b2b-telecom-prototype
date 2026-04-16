@@ -1,0 +1,22 @@
+---
+description: Monorepo workspace standards for app and shared packages
+alwaysApply: true
+---
+
+# Monorepo Workspace Rules
+
+- Keep `apps/*` deployable and `packages/*` reusable.
+- Place cross-app code in `packages/shared`, not by copying between apps.
+- Use workspace-aware scripts from repo root for CI and production parity.
+- Avoid app-to-app imports; apps may depend only on shared packages.
+
+## Dependency Hygiene
+
+- Add dependencies to the package that uses them.
+- Prefer explicit internal package names (for example `@b2b/shared`).
+- Remove unused dependencies during modernization tasks.
+
+## Change Discipline
+
+- When changing shared code, validate both app variants.
+- Document any breaking API changes in shared package README or changelog notes.

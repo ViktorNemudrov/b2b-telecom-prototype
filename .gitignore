@@ -1,8 +1,16 @@
 node_modules/
 .next/
+**/.next/
 out/
+**/out/
 dist/
+**/dist/
 .turbo/
+coverage/
+**/coverage/
+
+test-results/
+playwright-report/
 
 # env / secrets
 .env

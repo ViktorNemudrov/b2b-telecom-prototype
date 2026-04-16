@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Calendar, ChevronLeft, Search, Settings } from "lucide-react";
 import { CommunicationLogRow } from "@/components/CommunicationLogRow";
 import { DatePickerModal } from "@/components/DatePickerModal";
@@ -17,6 +18,7 @@ type CommTab = "records" | "secretary";
 type FilterKey = "all" | "missed" | "incoming" | "reports" | "team";
 
 export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) {
+  const router = useRouter();
   const [commTab, setCommTab] = React.useState<CommTab>("records");
   const [filter, setFilter] = React.useState<FilterKey>("all");
   const [date, setDate] = React.useState(() => new Date("2026-04-14T10:00:00.000Z"));
@@ -141,7 +143,10 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
             </button>
             <button
               type="button"
-              onClick={() => setFilter("missed")}
+              onClick={() => {
+                setFilter("missed");
+                router.push("/missed-calls");
+              }}
               className={[
                 "inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition active:translate-y-[1px]",
                 filter === "missed"
