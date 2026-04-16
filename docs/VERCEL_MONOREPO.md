@@ -37,47 +37,27 @@ npm run build:classic
 2. В настройках проекта (**Settings → General** или на шаге импорта): **Root Directory** → **Edit** → укажите **`apps/ai-first`**.
 3. **Framework Preset:** Next.js (подхватится автоматически).
 4. **Build Command:** `npm run build` (или оставьте по умолчанию — Vercel в подпапке часто сам запускает `next build` из `apps/ai-first`; при ошибке задайте явно: `cd ../.. && npm run build:ai` или из корня: `npm run build -w @b2b/ai-first`).
-5. **Output Directory:** для `output: 'export'` задайте **`out`** (относительно `apps/ai-first`, т.е. в UI Vercel часто **`out`** уже относительно root directory).
+5. **Output Directory:** оставьте **пустым** (на Vercel статический экспорт `out/` отключается автоматически через `process.env.VERCEL`).
 6. **Install Command:** из корня монорепо: `npm install` (корень репозитория; Vercel по умолчанию делает install в root при указанном Root Directory — если нет, используйте override: `cd ../.. && npm install`).
 
-Практичный вариант **без путаницы с `cd`**:
+Примечание: лучше указывать **Root Directory** строго как `apps/ai-first` (для AI) / `apps/classic` (для Classic). Тогда Vercel будет использовать `apps/*/vercel.json` и не будет путать команды сборки между приложениями.
 
-- **Root Directory:** оставьте **корень репозитория** (пусто / `.`).
-- **Build Command:** `npm run build:ai`
-- **Output Directory:** `apps/ai-first/out`
-- **Install Command:** `npm install`
-
-Так один проект Vercel всегда ставит зависимости из корневого `package-lock.json` и собирает только AI-приложение.
-
-Альтернатива (если вы хотите/вынуждены ставить **Root Directory = `apps/ai-first`**):
-
-- В репозитории есть `apps/ai-first/vercel.json`, поэтому Vercel возьмёт команды и `Output Directory` **из этой папки**.
-- В UI Vercel тогда достаточно:
-  - **Root Directory:** `apps/ai-first`
-  - **Output Directory:** `out` (или оставить пустым, если Vercel сам подхватит из `vercel.json`)
-  - Если в логах видно `Build Completed in /vercel/output` и на сайте 404, значит Vercel всё ещё включает Next.js builder. В этом случае `apps/ai-first/vercel.json` принудительно переключает сборку на статический билд и публикацию `out/`.
-
-Дополнительно (для стабильности, если Vercel «теряет» `index.html` в статическом экспорте из-за auto-настроек):
-
-- В корне репозитория можно держать `vercel.json` с:
-  - `buildCommand`: `npm run build:ai`
-  - `outputDirectory`: `apps/ai-first/out`
-  - `installCommand`: `npm install`
+В репозитории есть `apps/ai-first/vercel.json`, поэтому Vercel возьмёт команды из этой папки.
 
 ### 2) Проект «Классика»
 
 Повторите шаги, создав **второй** проект в Vercel:
 
 - **Build Command:** `npm run build:classic`
-- **Output Directory:** `apps/classic/out`
+- **Output Directory:** оставьте пустым
 - **Install Command:** `npm install`
 
-Если Root Directory у проекта «Классика» = `apps/classic`, то в репозитории есть `apps/classic/vercel.json` (аналогично AI), и Output Directory должен быть `out`.
+Если Root Directory у проекта «Классика» = `apps/classic`, то в репозитории есть `apps/classic/vercel.json` (аналогично AI), и Output Directory нужно оставлять пустым.
 
 В итоге у вас **два URL** (`*.vercel.app`), по одному на вариант.
 
 ### Замечания
 
-- Оба приложения используют **`output: 'export'`** (статический сайт). Подходит для CDN и для Capacitor (см. `docs/MOBILE_ANDROID.md` в контексте `apps/ai-first`).
+- Оба приложения поддерживают **статический экспорт для Capacitor** локально (см. `docs/MOBILE_ANDROID.md` в контексте `apps/ai-first`). Для Vercel статический экспорт `out/` отключается автоматически.
 - Если Vercel ругается на lockfile / workspaces, держите **один** `package-lock.json` в **корне** и не отключайте workspaces.
 - **Переменные окружения** задаются **отдельно** в каждом проекте Vercel.
