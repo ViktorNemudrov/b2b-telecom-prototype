@@ -55,6 +55,7 @@ npm run build:classic
 - В UI Vercel тогда достаточно:
   - **Root Directory:** `apps/ai-first`
   - **Output Directory:** `out` (или оставить пустым, если Vercel сам подхватит из `vercel.json`)
+  - Если в логах видно `Build Completed in /vercel/output` и на сайте 404, значит Vercel всё ещё включает Next.js builder. В этом случае `apps/ai-first/vercel.json` принудительно переключает сборку на статический билд и публикацию `out/`.
 
 Дополнительно (для стабильности, если Vercel «теряет» `index.html` в статическом экспорте из-за auto-настроек):
 
