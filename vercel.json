@@ -1,0 +1,6 @@
+{
+  "buildCommand": "npm run build:ai",
+  "outputDirectory": "apps/ai-first/out",
+  "installCommand": "npm install"
+}
+
