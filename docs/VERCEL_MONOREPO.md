@@ -49,6 +49,13 @@ npm run build:classic
 
 Так один проект Vercel всегда ставит зависимости из корневого `package-lock.json` и собирает только AI-приложение.
 
+Альтернатива (если вы хотите/вынуждены ставить **Root Directory = `apps/ai-first`**):
+
+- В репозитории есть `apps/ai-first/vercel.json`, поэтому Vercel возьмёт команды и `Output Directory` **из этой папки**.
+- В UI Vercel тогда достаточно:
+  - **Root Directory:** `apps/ai-first`
+  - **Output Directory:** `out` (или оставить пустым, если Vercel сам подхватит из `vercel.json`)
+
 Дополнительно (для стабильности, если Vercel «теряет» `index.html` в статическом экспорте из-за auto-настроек):
 
 - В корне репозитория можно держать `vercel.json` с:
@@ -63,6 +70,8 @@ npm run build:classic
 - **Build Command:** `npm run build:classic`
 - **Output Directory:** `apps/classic/out`
 - **Install Command:** `npm install`
+
+Если Root Directory у проекта «Классика» = `apps/classic`, то в репозитории есть `apps/classic/vercel.json` (аналогично AI), и Output Directory должен быть `out`.
 
 В итоге у вас **два URL** (`*.vercel.app`), по одному на вариант.
 
