@@ -10,7 +10,7 @@
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["out/**", ".next/**"]
+      "outputs": ["apps/ai-first/out/**", "apps/classic/out/**", "out/**", ".next/**"]
     }
   }
 }
