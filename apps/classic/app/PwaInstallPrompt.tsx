@@ -9,6 +9,7 @@ type BeforeInstallPromptEvent = Event & {
 
 const PWA_INSTALL_DISMISSED_KEY = "b2b_pwa_install_dismissed_v1";
 const PWA_INSTALL_COMPLETED_KEY = "b2b_pwa_install_completed_v1";
+const LEGACY_PWA_INSTALL_DISMISSED_KEY = "pwa-install-dismissed";
 
 export function PwaInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = React.useState<BeforeInstallPromptEvent | null>(null);
@@ -25,9 +26,16 @@ export function PwaInstallPrompt() {
       (window.matchMedia?.("(display-mode: standalone)")?.matches ?? false) ||
       (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
     if (isStandalone) return;
-    const dismissed = window.localStorage.getItem(PWA_INSTALL_DISMISSED_KEY) === "1";
+    const dismissed =
+      window.localStorage.getItem(PWA_INSTALL_DISMISSED_KEY) === "1" ||
+      window.localStorage.getItem(LEGACY_PWA_INSTALL_DISMISSED_KEY) === "1";
     const completed = window.localStorage.getItem(PWA_INSTALL_COMPLETED_KEY) === "1";
-    if (dismissed || completed) return;
+    if (dismissed || completed) {
+      if (dismissed) {
+        window.localStorage.setItem(PWA_INSTALL_DISMISSED_KEY, "1");
+      }
+      return;
+    }
     const ua = window.navigator.userAgent.toLowerCase();
     const isIos = /iphone|ipad|ipod/.test(ua);
     const isSafari = /safari/.test(ua) && !/crios|fxios|edgios/.test(ua);
@@ -75,6 +83,7 @@ export function PwaInstallPrompt() {
               className="rounded-full px-3 py-1.5 text-xs font-semibold text-[#8E8E93] dark:text-slate-300"
               onClick={() => {
                 window.localStorage.setItem(PWA_INSTALL_DISMISSED_KEY, "1");
+                window.localStorage.setItem(LEGACY_PWA_INSTALL_DISMISSED_KEY, "1");
                 setShowInstall(false);
               }}
             >
@@ -101,6 +110,7 @@ export function PwaInstallPrompt() {
             className="rounded-full px-3 py-1.5 text-xs font-semibold text-[#8E8E93] dark:text-slate-300"
             onClick={() => {
               window.localStorage.setItem(PWA_INSTALL_DISMISSED_KEY, "1");
+              window.localStorage.setItem(LEGACY_PWA_INSTALL_DISMISSED_KEY, "1");
               setShowInstall(false);
             }}
           >

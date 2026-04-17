@@ -130,6 +130,12 @@ describe("assistantResponse routing", () => {
     expect(res?.navigateTo).toBe("/home/");
   });
 
+  it("routes explicit weekly call statistics prompt to dashboard", () => {
+    const res = resolveDeterministicResponse("Статистика звонков за неделю", invoicesMarch2026);
+    expect(res).not.toBeNull();
+    expect(res?.navigateTo).toBe("/home/");
+  });
+
   it("routes assistant advice prompt without live", () => {
     const res = resolveDeterministicResponse("дай совет от ассистента", invoicesMarch2026);
     expect(res).not.toBeNull();

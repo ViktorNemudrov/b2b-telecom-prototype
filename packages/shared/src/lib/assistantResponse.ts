@@ -252,7 +252,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
     if (hasAny(clean, compact, ["счета на оплату", "мои счета", "создать платеж", "создать платёж", "баланс"])) {
       return { text: "Открываю счета и оплату: можно выбрать счет и провести платеж удобным способом.", navigateTo: "/invoices/" };
     }
-    if (hasAny(clean, compact, ["звонки за неделю", "сводка звонков", "недельный отчет"])) {
+    if (hasAny(clean, compact, ["звонки за неделю", "сводка звонков", "недельный отчет", "статистика звонков за неделю"])) {
       return {
         text: "Открываю дашборд со сводкой звонков за неделю.",
         navigateTo: "/home/",
@@ -468,6 +468,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
     "список звонков",
     "причины пропусков звонков",
     "статистика по времени суток",
+    "статистика звонков за неделю",
     "сравнение звонков с предыдущей неделей",
     "средняя конвертация в лид"
   ]);
@@ -509,7 +510,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
         suggested: ["Да, создать обращение", "Открыть обращения", "Какие условия хранения сейчас"]
       };
     }
-    if (hasAny(clean, compact, ["звонки за неделю", "сводка звонков", "недельный отчет"])) {
+    if (hasAny(clean, compact, ["звонки за неделю", "сводка звонков", "недельный отчет", "статистика звонков за неделю"])) {
       return {
         text: "Открываю дашборд: за неделю 126 звонков, 6 пропущенных, средняя длительность 2:40.",
         navigateTo: "/home/",

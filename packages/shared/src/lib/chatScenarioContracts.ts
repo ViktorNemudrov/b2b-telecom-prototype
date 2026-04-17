@@ -43,6 +43,7 @@ export const deterministicScenarioCases: DeterministicScenarioCase[] = [
   { prompt: "Сравнение звонков с предыдущей неделей", expectNavigateTo: "/home/", contains: "Открываю дашборд" },
   { prompt: "Средняя конвертация в лид", expectNavigateTo: "/home/", contains: "Открываю дашборд" },
   { prompt: "звонки за неделю", expectNavigateTo: "/home/", contains: "Открываю дашборд" },
+  { prompt: "Статистика звонков за неделю", expectNavigateTo: "/home/", contains: "Открываю дашборд" },
   { prompt: "Секретарь", contains: "сценарий «Секретарь»" },
   { prompt: "Увеличить срок хранения звонков", contains: "увеличение срока хранения" },
   { prompt: "дай совет от ассистента", contains: "Совет от ассистента:" },
