@@ -64,7 +64,7 @@ export function WeeklyStatsWidget({
               }
               window.speechSynthesis.cancel();
               const u = new SpeechSynthesisUtterance(
-                `За неделю звонков ${s.total}, входящих ${s.incoming}, исходящих ${s.outgoing}, пропущенных 6.`
+                `За неделю звонков ${s.total}, входящих ${s.incoming}, исходящих ${s.outgoing}, пропущенных ${s.missed}.`
               );
               u.lang = "ru-RU";
               window.speechSynthesis.speak(u);
@@ -94,7 +94,9 @@ export function WeeklyStatsWidget({
           <div className="space-y-2 rounded-2xl border border-slate-200 bg-white p-3 dark:border-slate-600 dark:bg-slate-800">
             <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">Пропущенные звонки</div>
             <p className="text-sm text-slate-700 dark:text-slate-200">
-              У вас 6 пропущенных звонков, которые требуется обработать.
+              {s.missed === 1
+                ? "У вас 1 пропущенный звонок, который требуется обработать."
+                : `У вас ${s.missed} пропущенных звонков, которые требуется обработать.`}
             </p>
             <button
               type="button"

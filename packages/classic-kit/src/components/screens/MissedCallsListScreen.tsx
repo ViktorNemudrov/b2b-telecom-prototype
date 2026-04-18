@@ -5,7 +5,14 @@ import { Volume2 } from "lucide-react";
 import { CommunicationLogRow } from "@shared/components/CommunicationLogRow";
 import { PageBackLink } from "@shared/components/PageBackLink";
 import { communicationLogMock } from "@shared/lib/dashboardMock";
+import { missedCallsCount } from "@shared/lib/mockData";
 import { markMissedCallsSeen } from "@shared/lib/runtimeFlags";
+
+function missedCallsIntroText(count: number) {
+  if (count === 1) return "У вас 1 пропущенный звонок, который требуется обработать.";
+  if (count >= 2 && count <= 4) return `У вас ${count} пропущенных звонка, которые требуется обработать.`;
+  return `У вас ${count} пропущенных звонков, которые требуется обработать.`;
+}
 
 export function MissedCallsListScreen() {
   const groups = React.useMemo(() => {
@@ -25,7 +32,7 @@ export function MissedCallsListScreen() {
     <div className="space-y-4 pb-6">
       <div className="flex items-start justify-between gap-2">
         <p className="flex-1 text-sm leading-relaxed text-slate-800 dark:text-slate-100">
-          У вас 6 пропущенных звонков, которые требуется обработать.
+          {missedCallsIntroText(missedCallsCount)}
         </p>
         <button
           type="button"
@@ -33,9 +40,7 @@ export function MissedCallsListScreen() {
           aria-label="Озвучить"
           onClick={() => {
             if (!("speechSynthesis" in window)) return;
-            const u = new SpeechSynthesisUtterance(
-              "У вас 6 пропущенных звонков, которые требуется обработать."
-            );
+            const u = new SpeechSynthesisUtterance(missedCallsIntroText(missedCallsCount));
             u.lang = "ru-RU";
             window.speechSynthesis.cancel();
             window.speechSynthesis.speak(u);

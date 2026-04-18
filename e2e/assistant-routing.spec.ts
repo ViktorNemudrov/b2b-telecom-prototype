@@ -39,6 +39,13 @@ test("assistant routing smoke: special -> deterministic -> live/fallback", async
   ).toBeVisible({ timeout: 25_000 });
 });
 
+test("assistant chip Обращения shows appeals summary in chat without leaving assistant", async ({ page }) => {
+  await openAssistant(page);
+  await page.getByRole("button", { name: "Обращения" }).click();
+  await expect(page.getByTestId("appeals-summary-widget")).toBeVisible({ timeout: 25_000 });
+  await expect(page).toHaveURL(/\/assistant\/?$/);
+});
+
 test("assistant navigates to appeals from deterministic chat intent", async ({ page }) => {
   await openAssistant(page);
   await sendMessage(page, "активные обращения");
@@ -46,6 +53,16 @@ test("assistant navigates to appeals from deterministic chat intent", async ({ p
   await page.getByRole("button", { name: "Все обращения" }).click();
   await expect(page).toHaveURL(/\/appeals\/?$/, { timeout: 15_000 });
   await expect(page.getByText("Сейчас у вас:", { exact: false })).toBeVisible();
+});
+
+test("assistant opens appeal detail from chat widget via open query", async ({ page }) => {
+  await openAssistant(page);
+  await sendMessage(page, "активные обращения");
+  await expect(page.getByTestId("appeals-summary-widget")).toBeVisible({ timeout: 25_000 });
+  await page.getByRole("button", { name: /Мне не могут дозвониться/ }).click();
+  await expect(page).toHaveURL(/\/appeals/);
+  await expect(page.getByRole("dialog")).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText("Со стороны абонента не проходят", { exact: false })).toBeVisible();
 });
 
 test("assistant opens invoice detail from unpaid widget", async ({ page }) => {

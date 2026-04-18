@@ -96,6 +96,20 @@ function openAiCompatibleEndpoint(provider: Exclude<LiveAiProviderId, "gemini">)
   return "https://openrouter.ai/api/v1/chat/completions";
 }
 
+async function readHttpErrorSnippet(res: Response): Promise<string> {
+  try {
+    const t = await res.text();
+    return t.replace(/\s+/g, " ").trim().slice(0, 160);
+  } catch {
+    return "";
+  }
+}
+
+/** Встроенный Next Route Handler: `/api/llm/chat` и `/api/llm/gemini`; внешний прокси — полный URL без доп. суффикса. */
+function isAppLlmProxyBase(p?: string): boolean {
+  return Boolean(p?.trim().startsWith("/api/llm"));
+}
+
 export async function getLiveAiText(args: {
   prompt: string;
   history: LiveAiMessage[];
@@ -120,7 +134,6 @@ export async function getLiveAiText(args: {
   }
 
   if (provider === "gemini") {
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
     const { systemInstruction, contents } = geminiMessagesToRequest(messages);
     const body: Record<string, unknown> = {
       contents,
@@ -132,15 +145,31 @@ export async function getLiveAiText(args: {
     };
     if (systemInstruction) body.systemInstruction = systemInstruction;
 
+    const useProxy = Boolean(proxyUrl?.trim());
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+
     let res: Response;
     try {
-      res = await fetch(geminiUrl, {
-        method: "POST",
-        cache: "no-store",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        signal
-      });
+      if (useProxy) {
+        const url = isAppLlmProxyBase(proxyUrl)
+          ? `${proxyUrl!.replace(/\/$/, "")}/gemini`
+          : proxyUrl!.trim();
+        res = await fetch(url, {
+          method: "POST",
+          cache: "no-store",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ model, body }),
+          signal
+        });
+      } else {
+        res = await fetch(geminiUrl, {
+          method: "POST",
+          cache: "no-store",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          signal
+        });
+      }
     } catch (e) {
       const ms = typeof performance !== "undefined" ? performance.now() - t0 : 0;
       emitAiMetric({ type: "live_fetch_end", at: Date.now(), ok: false, ms });
@@ -149,7 +178,8 @@ export async function getLiveAiText(args: {
     if (!res.ok) {
       const ms = typeof performance !== "undefined" ? performance.now() - t0 : 0;
       emitAiMetric({ type: "live_fetch_end", at: Date.now(), ok: false, ms });
-      return null;
+      const snippet = await readHttpErrorSnippet(res);
+      throw new Error(`HTTP ${res.status}${snippet ? `: ${snippet}` : ""}`);
     }
     const data = (await res.json()) as GeminiResponse;
     const raw = extractGeminiText(data);
@@ -171,7 +201,11 @@ export async function getLiveAiText(args: {
   }
 
   const useProxy = Boolean(proxyUrl?.trim());
-  const endpoint = useProxy ? proxyUrl!.trim() : openAiCompatibleEndpoint(provider);
+  const endpoint = useProxy
+    ? isAppLlmProxyBase(proxyUrl)
+      ? `${proxyUrl!.replace(/\/$/, "")}/chat`
+      : proxyUrl!.trim()
+    : openAiCompatibleEndpoint(provider);
 
   let res: Response;
   try {
@@ -180,7 +214,8 @@ export async function getLiveAiText(args: {
       cache: "no-store",
       headers: useProxy
         ? {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            ...(isAppLlmProxyBase(proxyUrl) ? { "X-LLM-Provider": provider } : {})
           }
         : {
             Authorization: `Bearer ${apiKey}`,
@@ -201,7 +236,8 @@ export async function getLiveAiText(args: {
   if (!res.ok) {
     const ms = typeof performance !== "undefined" ? performance.now() - t0 : 0;
     emitAiMetric({ type: "live_fetch_end", at: Date.now(), ok: false, ms });
-    return null;
+    const snippet = await readHttpErrorSnippet(res);
+    throw new Error(`HTTP ${res.status}${snippet ? `: ${snippet}` : ""}`);
   }
   const data = (await res.json()) as OpenRouterResponse;
   const raw = extractAssistantText(data);

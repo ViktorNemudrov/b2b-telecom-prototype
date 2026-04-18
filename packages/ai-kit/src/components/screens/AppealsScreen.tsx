@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, ChevronRight, Paperclip } from "lucide-react";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
@@ -9,6 +10,7 @@ import { cn } from "@shared/components/ui/cn";
 import {
   appealTopicOptions,
   filterAppealsBySearch,
+  getAppealById,
   getAppealsFiltered,
   type AppealItem
 } from "@shared/lib/mockData";
@@ -42,6 +44,8 @@ function AppealRow({ a, onOpen }: { a: AppealItem; onOpen: () => void }) {
 }
 
 export function AppealsScreen() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [filter, setFilter] = React.useState<"all" | "done" | "rejected">("all");
   const [expandedAll, setExpandedAll] = React.useState(false);
   const [createOpen, setCreateOpen] = React.useState(false);
@@ -69,6 +73,18 @@ export function AppealsScreen() {
     () => activeAppeals.filter((a) => a.badgeLabel.includes("подпис")).length,
     [activeAppeals]
   );
+
+  React.useEffect(() => {
+    const openId = searchParams.get("open");
+    if (!openId) return;
+    const fromCreated = createdAppeals.find((a) => a.id === openId);
+    const fromMock = getAppealById(openId);
+    const found = fromCreated ?? fromMock;
+    if (found) {
+      setDetail(found);
+      router.replace("/appeals/", { scroll: false });
+    }
+  }, [searchParams, createdAppeals, router]);
 
   const onSubmitAppeal = () => {
     if (!body.trim()) {

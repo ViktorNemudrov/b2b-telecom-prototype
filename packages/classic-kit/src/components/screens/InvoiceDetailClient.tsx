@@ -3,6 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { Modal } from "@shared/components/ui/modal";
@@ -12,6 +13,7 @@ import { downloadInvoicePdf } from "@shared/lib/minimalPdf";
 import { markInvoicePaid, useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
 import { goSmartBack } from "@shared/lib/smartBack";
 import { useUiCustomization } from "@shared/lib/uiCustomization";
+import { userProfile } from "@shared/lib/mockData";
 
 export function InvoiceDetailClient({
   id,
@@ -50,8 +52,12 @@ export function InvoiceDetailClient({
     );
   }
 
-  const statusLabel =
+  const badgeLabel =
     inv.status === "paid" ? "Оплачен" : inv.status === "pending" ? "В оплате" : "Оплатить";
+  const detailStatusLabel =
+    inv.status === "paid" ? "Оплачен" : inv.status === "pending" ? "В оплате" : "К оплате";
+  const accrualMain = Math.round(inv.amountRub * 0.72);
+  const accrualExtra = inv.amountRub - accrualMain;
   const completePayment = () => {
     markInvoicePaid(inv.id);
     setPayOpen(false);
@@ -93,7 +99,7 @@ export function InvoiceDetailClient({
               inv.status === "pay" && "bg-rose-100 text-rose-800"
             )}
           >
-            {statusLabel}
+            {badgeLabel}
           </div>
           {inv.status === "pay" ? (
             <p className="text-sm text-rose-700 dark:text-rose-300">
@@ -102,6 +108,75 @@ export function InvoiceDetailClient({
           ) : null}
         </CardContent>
       </Card>
+
+      <div className="space-y-2">
+        <details className="group rounded-2xl border border-slate-200 bg-white dark:border-slate-600 dark:bg-slate-800/50" open>
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-sm font-semibold text-slate-900 dark:text-slate-100 [&::-webkit-details-marker]:hidden">
+            Общая информация
+            <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition group-open:rotate-180" aria-hidden />
+          </summary>
+          <div className="space-y-2 border-t border-slate-100 px-4 pb-4 pt-2 text-sm leading-relaxed text-slate-700 dark:border-slate-600 dark:text-slate-300">
+            <div className="flex justify-between gap-2">
+              <span className="text-slate-500 dark:text-slate-400">Документ / номер</span>
+              <span className="max-w-[60%] text-right font-medium text-slate-900 dark:text-slate-100">{inv.meta}</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-slate-500 dark:text-slate-400">Период</span>
+              <span className="font-medium">{inv.periodLabel}</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-slate-500 dark:text-slate-400">Срок оплаты</span>
+              <span className="font-medium">{inv.dueLabel}</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-slate-500 dark:text-slate-400">Статус</span>
+              <span className="font-medium">{detailStatusLabel}</span>
+            </div>
+          </div>
+        </details>
+
+        <details className="group rounded-2xl border border-slate-200 bg-white dark:border-slate-600 dark:bg-slate-800/50">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-sm font-semibold text-slate-900 dark:text-slate-100 [&::-webkit-details-marker]:hidden">
+            Реквизиты
+            <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition group-open:rotate-180" aria-hidden />
+          </summary>
+          <div className="space-y-2 border-t border-slate-100 px-4 pb-4 pt-2 text-sm leading-relaxed text-slate-700 dark:border-slate-600 dark:text-slate-300">
+            <p>
+              <span className="text-slate-500 dark:text-slate-400">Получатель:</span> {userProfile.legalName}
+            </p>
+            <p>
+              <span className="text-slate-500 dark:text-slate-400">ИНН:</span> 771234567890
+            </p>
+            <p>
+              <span className="text-slate-500 dark:text-slate-400">Р/с:</span> 40702 810 5 0000 012345 в ПАО «Демо-Банк»
+            </p>
+            <p>
+              <span className="text-slate-500 dark:text-slate-400">БИК:</span> 044525225, к/с 30101 810 5 0000 00001234
+            </p>
+          </div>
+        </details>
+
+        <details className="group rounded-2xl border border-slate-200 bg-white dark:border-slate-600 dark:bg-slate-800/50">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-sm font-semibold text-slate-900 dark:text-slate-100 [&::-webkit-details-marker]:hidden">
+            Начисления
+            <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition group-open:rotate-180" aria-hidden />
+          </summary>
+          <div className="space-y-2 border-t border-slate-100 px-4 pb-4 pt-2 text-sm dark:border-slate-600">
+            <div className="flex justify-between gap-2 text-slate-700 dark:text-slate-300">
+              <span>Абонентская плата и пакеты</span>
+              <span className="tabular-nums font-medium">{accrualMain.toLocaleString("ru-RU")} ₽</span>
+            </div>
+            <div className="flex justify-between gap-2 text-slate-700 dark:text-slate-300">
+              <span>Дополнительные услуги и оборудование</span>
+              <span className="tabular-nums font-medium">{accrualExtra.toLocaleString("ru-RU")} ₽</span>
+            </div>
+            <div className="flex justify-between gap-2 border-t border-slate-100 pt-2 text-slate-900 dark:border-slate-600 dark:text-slate-100">
+              <span className="font-semibold">Итого</span>
+              <span className="tabular-nums font-bold">{inv.amountRub.toLocaleString("ru-RU")} ₽</span>
+            </div>
+          </div>
+        </details>
+      </div>
 
       <div className="flex gap-2">
         <Button

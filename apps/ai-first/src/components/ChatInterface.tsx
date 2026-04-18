@@ -47,7 +47,14 @@ export function ChatInterface() {
                     : "bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-gray-100"
                 }`}
               >
-                {msg.content || <span className="italic text-gray-400">печатает...</span>}
+                {msg.role === "assistant" &&
+                !msg.content &&
+                isLoading &&
+                i === messages.length - 1 ? (
+                  <span className="italic text-gray-400">печатает...</span>
+                ) : (
+                  msg.content
+                )}
               </div>
             </motion.div>
           ))}

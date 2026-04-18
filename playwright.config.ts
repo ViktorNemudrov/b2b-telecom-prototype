@@ -14,23 +14,35 @@ export default defineConfig({
     baseURL: "http://127.0.0.1:3000",
     trace: "on-first-retry"
   },
+  /** Сценарии только для Classic (порт 3001) — не смешивать с AI-first. */
   projects: [
     {
       name: "desktop-chromium",
+      testIgnore: "**/classic-call-scenarios.spec.ts",
       use: {
         ...devices["Desktop Chrome"]
       }
     },
     {
       name: "mobile-android-chrome",
+      testIgnore: "**/classic-call-scenarios.spec.ts",
       use: {
         ...devices["Pixel 7"]
       }
     },
     {
       name: "mobile-ios-safari",
+      testIgnore: "**/classic-call-scenarios.spec.ts",
       use: {
         ...devices["iPhone 13"]
+      }
+    },
+    {
+      name: "desktop-chromium-classic",
+      testMatch: "**/classic-call-scenarios.spec.ts",
+      use: {
+        baseURL: "http://127.0.0.1:3001",
+        ...devices["Desktop Chrome"]
       }
     }
   ],

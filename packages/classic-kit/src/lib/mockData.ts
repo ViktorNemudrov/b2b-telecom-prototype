@@ -16,7 +16,10 @@ export type ChatWidget =
   | "appeals-summary"
   | "invoices-month"
   | "missed-calls-inline"
-  | "invoices-unpaid-inline";
+  | "invoices-unpaid-inline"
+  | "invoices-summary-inline"
+  | "subscription-balance-inline"
+  | "my-numbers-inline";
 
 /** После ответа ассистента — клиентский переход (демо-навигация по ТЗ). */
 export type ChatNavigateTo = "/missed-calls/" | "/appeals/" | "/invoices/" | "/home/";
@@ -97,6 +100,29 @@ export const userProfile = {
   legalName: "ИП Балашов Владислав"
 };
 
+/** Детерминированный сценарий чата «Баланс / подписка». */
+export const subscriptionBalanceChatMock = {
+  productName: "Связь для бизнеса",
+  priceRub: 1999,
+  validUntilLabel: "25.04.2026",
+  renewalNote: "Напомним о продлении за 3 дня до окончания"
+} as const;
+
+export type MyNumberLine = {
+  holder: string;
+  phone: string;
+  tariff: string;
+  remainData: string;
+  remainMinutes: string;
+};
+
+/** Детерминированный сценарий чата «Мои номера». */
+export const myNumbersChatMock: MyNumberLine[] = [
+  { holder: "Иванов Алексей", phone: "+79011234567", tariff: "Лайт", remainData: "120 Гб", remainMinutes: "200 мин" },
+  { holder: "Петрова Мария", phone: "+79122345678", tariff: "Бизнес+", remainData: "520 Гб", remainMinutes: "700 мин" },
+  { holder: "Сидоров Дмитрий", phone: "+792534567889", tariff: "Лайт", remainData: "20 Гб", remainMinutes: "100 мин" }
+];
+
 /** Последние запросы — чипсы над поиском (ТЗ). */
 export const recentQueryChips = [
   "Мои сервисы",
@@ -118,6 +144,7 @@ export const recentHistoryQuickPrompts = [
   "Инсайты",
   "Открытые обращения",
   "Баланс",
+  "Мои номера",
   "Изменить настройки секретаря",
   "Настроить запись звонков"
 ] as const;
@@ -236,7 +263,7 @@ export const standaloneCalls: CallItem[] = [
     id: "c2",
     time: "16:02",
     phone: "+7 (946) 525-00-24",
-    missed: true,
+    missed: false,
     summary: "Короткий контакт, секретарь принял сообщение.",
     transcript: "Секретарь: Клиент оставил номер для перезвона по счёту.",
     recordingUrl: "/call-invoice.wav",
@@ -246,7 +273,7 @@ export const standaloneCalls: CallItem[] = [
     id: "c3",
     time: "14:15",
     phone: "+7 (906) 062-60-26",
-    missed: true,
+    missed: false,
     title: "Поставщик канцелярии",
     summary: "Уточнение по заказу канцтоваров.",
     transcript: "Клиент: Нужен счёт на дополнительную партию.\n\nСекретарь: Передал менеджеру.",
@@ -257,7 +284,7 @@ export const standaloneCalls: CallItem[] = [
     id: "c4",
     time: "11:04",
     phone: "+7 (904) 023-53-21",
-    missed: true,
+    missed: false,
     summary: "Входящий: уточнение по графику.",
     transcript: "Секретарь: Клиент спросил про график поставок.",
     recordingUrl: "/call-schedule.wav",
@@ -267,7 +294,7 @@ export const standaloneCalls: CallItem[] = [
     id: "c5",
     time: "09:02",
     phone: "+7 (903) 111-22-33",
-    missed: true,
+    missed: false,
     title: "Вода офис",
     summary: "Заказ воды, уточнение адреса.",
     transcript: "Секретарь: Уточнили адрес и подъезд.",
@@ -278,7 +305,7 @@ export const standaloneCalls: CallItem[] = [
     id: "c6",
     time: "09:01",
     phone: "+7 (902) 444-55-66",
-    missed: true,
+    missed: false,
     title: "Канцелярия",
     summary: "Мелкий заказ расходников.",
     transcript: "Секретарь: Оставили заявку на расходники.",
@@ -289,6 +316,9 @@ export const standaloneCalls: CallItem[] = [
 
 export const allCallIds = standaloneCalls.map((c) => c.id);
 
+/** Число пропущенных в моке (для бейджей и сводок). */
+export const missedCallsCount = standaloneCalls.filter((c) => c.missed).length;
+
 export const weeklyCallStatsMock = {
   total: 126,
   incoming: 82,
@@ -296,6 +326,7 @@ export const weeklyCallStatsMock = {
   botIncoming: 57,
   botClosed: 41,
   botWaitingManager: 16,
+  missed: missedCallsCount,
   avgDuration: "2 минуты 40 секунд",
   peakNote: "пиковая активность была во вторник днём",
   storageDays: 60,
@@ -500,16 +531,12 @@ export function getAppealById(id: string): AppealItem | undefined {
   return appealsMock.find((a) => a.id === id);
 }
 
-/** Навигация из чата (ТЗ: «мои обращения», «пропущенные звонки», «мои счета» / «счета за …»). */
+/** Навигация из чата (ТЗ: «мои обращения», «мои счета» / «счета за …»). Пропущенные — в чате. */
 export function getDemoNavigationIntent(
   prompt: string
 ): { to: ChatNavigateTo; ack: string } | undefined {
   const q = prompt.trim().toLowerCase();
   if (!q) return undefined;
-
-  if (q.includes("пропущенные") && (q.includes("звон") || q.includes("вызов"))) {
-    return { to: "/missed-calls/", ack: "Открываю список пропущенных звонков." };
-  }
 
   if (q === "обращения" || q.includes("мои обращения") || q.includes("активные обращения")) {
     return { to: "/appeals/", ack: "Открываю раздел обращений." };

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { invoicesMarch2026 } from "./mockData";
 import {
+  buildNoLiveKeysFallbackResponse,
   buildSafeLiveFallbackResponse,
   isLiveResponseReliable,
   resolveDeterministicResponse,
@@ -112,6 +113,12 @@ describe("assistantResponse routing", () => {
     expect(res?.widget).toBe("missed-calls-inline");
   });
 
+  it("routes missed calls chip phrase to analytics missed widget in chat", () => {
+    const res = resolveDeterministicResponse("Пропущенные звонки", invoicesMarch2026);
+    expect(res?.widget).toBe("missed-calls-inline");
+    expect(res?.text).toContain("По текущим данным");
+  });
+
   it("routes secretary prompt to deterministic path", () => {
     const res = resolveDeterministicResponse("Секретарь", invoicesMarch2026);
     expect(res).not.toBeNull();
@@ -124,16 +131,18 @@ describe("assistantResponse routing", () => {
     expect(res?.text).toContain("увеличение срока хранения");
   });
 
-  it("routes weekly calls prompts to dashboard", () => {
+  it("routes weekly calls prompts to in-chat weekly stats widget", () => {
     const res = resolveDeterministicResponse("звонки за неделю", invoicesMarch2026);
     expect(res).not.toBeNull();
-    expect(res?.navigateTo).toBe("/home/");
+    expect(res?.widget).toBe("weekly-stats");
+    expect(res?.text).toContain("Детали и график ниже");
   });
 
-  it("routes explicit weekly call statistics prompt to dashboard", () => {
+  it("routes explicit weekly call statistics prompt to in-chat weekly stats widget", () => {
     const res = resolveDeterministicResponse("Статистика звонков за неделю", invoicesMarch2026);
     expect(res).not.toBeNull();
-    expect(res?.navigateTo).toBe("/home/");
+    expect(res?.widget).toBe("weekly-stats");
+    expect(res?.text).toContain("126 звонков");
   });
 
   it("routes assistant advice prompt without live", () => {
@@ -148,9 +157,10 @@ describe("assistantResponse routing", () => {
     expect(res?.text).toContain("пополнить пакет минут");
   });
 
-  it("routes open invoices list to navigation", () => {
+  it("routes open invoices list to summary widget in chat", () => {
     const res = resolveDeterministicResponse("открыть список счетов", invoicesMarch2026);
-    expect(res?.navigateTo).toBe("/invoices/");
+    expect(res?.widget).toBe("invoices-summary-inline");
+    expect(res?.text).toContain("Полный список счетов");
   });
 
   it("routes operator request to deterministic response", () => {
@@ -167,7 +177,7 @@ describe("assistantResponse routing", () => {
     expect(openAppeals?.widget).toBe("appeals-summary");
 
     const createPayment = resolveDeterministicResponse("Создать платеж", invoicesMarch2026);
-    expect(createPayment?.navigateTo).toBe("/invoices/");
+    expect(createPayment?.widget).toBe("invoices-summary-inline");
 
     const smsCampaign = resolveDeterministicResponse("Запустить смс рассылку", invoicesMarch2026);
     expect(smsCampaign?.text).toContain("SMS-рассылки");
@@ -190,8 +200,10 @@ describe("assistantResponse routing", () => {
   it("handles exact quick chips/history prompts deterministically", () => {
     expect(resolveDeterministicResponse("Мои сервисы", invoicesMarch2026)?.text).toContain("Ваши подключенные продукты");
     expect(resolveDeterministicResponse("Обращения", invoicesMarch2026)?.widget).toBe("appeals-summary");
-    expect(resolveDeterministicResponse("Счета на оплату", invoicesMarch2026)?.navigateTo).toBe("/invoices/");
+    expect(resolveDeterministicResponse("Счета на оплату", invoicesMarch2026)?.widget).toBe("invoices-summary-inline");
     expect(resolveDeterministicResponse("Записи звонков", invoicesMarch2026)?.widget).toBe("missed-calls-inline");
+    expect(resolveDeterministicResponse("Баланс", invoicesMarch2026)?.widget).toBe("subscription-balance-inline");
+    expect(resolveDeterministicResponse("Мои номера", invoicesMarch2026)?.widget).toBe("my-numbers-inline");
   });
 
   it("returns null for query that should go to live AI", () => {
@@ -216,6 +228,13 @@ describe("assistantResponse routing", () => {
     const fallback = buildSafeLiveFallbackResponse();
     expect(fallback.text).toContain("не удалось получить надежный live-ответ");
     expect(fallback.suggested?.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("builds no-live-keys fallback when NEXT_PUBLIC keys are absent from bundle", () => {
+    const noKeys = buildNoLiveKeysFallbackResponse();
+    expect(noKeys.text).toContain("нет ключей API");
+    expect(noKeys.text).toContain("NEXT_PUBLIC");
+    expect(noKeys.suggested?.length).toBeGreaterThanOrEqual(3);
   });
 
   it("answers from session memory without hardcoded query", () => {

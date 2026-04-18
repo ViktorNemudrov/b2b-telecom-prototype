@@ -12,7 +12,6 @@ test("assistant hero cards keep stable height when swiping", async ({ page, isMo
   await page.getByTestId("assistant-hero-slot").waitFor({ state: "visible", timeout: 20_000 });
 
   const slot = page.getByTestId("assistant-hero-slot");
-  const swiper = page.getByTestId("assistant-hero-swiper");
   await expect(slot).toBeVisible();
 
   const readHeroSlotHeight = () =>
@@ -25,15 +24,37 @@ test("assistant hero cards keep stable height when swiping", async ({ page, isMo
   const initialHeight = await readHeroSlotHeight();
   expect(initialHeight).toBe(120);
 
-  const box = await swiper.boundingBox();
-  if (!box) throw new Error("Hero swiper bounding box is unavailable");
+  // Prefer scrolling the carousel track (Classic horizontal slider).
+  const scrolled = await slot.evaluate((el) => {
+    if (el.scrollWidth <= el.clientWidth + 2) return false;
+    const slideW = Math.round(el.clientWidth * 0.88);
+    const stride = slideW + 12;
+    el.scrollTo({ left: stride, behavior: "instant" });
+    return true;
+  });
 
-  // Swipe left to next card and verify height remains the same.
-  await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.5);
-  await page.mouse.down();
-  await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.5);
-  await page.mouse.up();
+  if (!scrolled) {
+    // Do not drive Playwright mouse drag across the card surface: the first hero may be a full-width <button> and the gesture can synthesize a click → /call/.... Dispatch pointer events on the swiper shell so React swipe handlers run without activating the card.
+    await page.evaluate(() => {
+      const sw = document.querySelector('[data-testid="assistant-hero-swiper"]');
+      if (!sw) throw new Error("assistant-hero-swiper missing");
+      const r = sw.getBoundingClientRect();
+      const y = r.top + Math.min(48, r.height * 0.22);
+      const x1 = r.left + r.width * 0.82;
+      const x2 = r.left + r.width * 0.18;
+      const base = { bubbles: true, cancelable: true, pointerId: 1, pointerType: "mouse", isPrimary: true, button: 0 };
+      sw.dispatchEvent(
+        new PointerEvent("pointerdown", { ...base, clientX: x1, clientY: y, buttons: 1 })
+      );
+      sw.dispatchEvent(
+        new PointerEvent("pointermove", { ...base, clientX: (x1 + x2) / 2, clientY: y, buttons: 1 })
+      );
+      sw.dispatchEvent(new PointerEvent("pointerup", { ...base, clientX: x2, clientY: y, buttons: 0 }));
+    });
+  }
   await page.waitForTimeout(120);
+
+  await expect(page).toHaveURL(/\/assistant\/?(\?.*)?$/);
 
   const afterFirstSwipe = await readHeroSlotHeight();
   expect(afterFirstSwipe).toBe(initialHeight);

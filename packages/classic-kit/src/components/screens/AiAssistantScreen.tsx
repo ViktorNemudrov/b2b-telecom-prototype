@@ -7,6 +7,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bot, ChevronRight, Loader2, Pause, PhoneOff, Play, Sparkles, X } from "lucide-react";
 import { InvoicesMarchWidget } from "@shared/components/ai/InvoicesMarchWidget";
+import { InvoicesSummaryInlineWidget } from "@shared/components/ai/InvoicesSummaryInlineWidget";
+import { MyNumbersInlineWidget } from "@shared/components/ai/MyNumbersInlineWidget";
+import { SubscriptionBalanceInlineWidget } from "@shared/components/ai/SubscriptionBalanceInlineWidget";
 import { WeeklyStatsWidget } from "@shared/components/ai/WeeklyStatsWidget";
 import { ActionCard } from "@shared/components/ActionCard";
 import { BottomInputBar } from "@shared/components/BottomInputBar";
@@ -20,6 +23,7 @@ import {
   getAppealsFiltered,
   chatHistoryPresets,
   defaultChat,
+  missedCallsCount,
   recentHistoryQuickPrompts,
   recentQueryChips,
   userProfile,
@@ -41,8 +45,10 @@ import {
 } from "@shared/lib/liveAiProviderRank";
 import { safeParseLiveUserPrompt } from "@shared/lib/liveUserPromptSchema";
 import {
+  buildNoLiveKeysFallbackResponse,
   buildSafeLiveFallbackResponse,
   isLiveResponseReliable,
+  LIVE_CHAIN_ALL_FAILED_FOOTER,
   resolveDeterministicResponse,
   resolveSessionMemoryResponse,
   resolveSpecialMockResponse
@@ -158,6 +164,8 @@ function getAiSourceLabel(intentUsed: string, liveProvider: LiveProvider) {
       return "live ошибка → fallback";
     case "fallback-no-live":
       return "без live (fallback)";
+    case "no-live-keys":
+      return "ИИ не настроен (нет ключей в сборке)";
     default:
       return intentUsed;
   }
@@ -168,10 +176,31 @@ function formatLiveErrorLabel(err: unknown, liveProvider: LiveProvider) {
   const msg = err instanceof Error ? err.message : typeof err === "string" ? err : "";
   const trimmed = msg.trim();
   if (trimmed.toLowerCase().includes("failed to fetch")) {
-    return `${base}: сеть недоступна или запрос заблокирован`;
+    return `${base}: сеть или CORS (браузер часто блокирует прямой вызов API; см. NEXT_PUBLIC_LLM_PROXY_URL)`;
   }
   if (!trimmed) return base;
   return `${base}: ${trimmed.slice(0, 90)}`;
+}
+
+function liveProviderShort(p: LiveProvider): string {
+  switch (p) {
+    case "gemini":
+      return "Gemini";
+    case "together":
+      return "Together";
+    case "openrouter":
+      return "OpenRouter";
+    case "grok":
+      return "Grok";
+    default:
+      return "Groq";
+  }
+}
+
+function compactLiveFailureLabels(labels: string[]): string {
+  if (labels.length === 0) return "";
+  const joined = labels.map((l) => l.slice(0, 100)).join(" · ");
+  return joined.length > 360 ? `${joined.slice(0, 357)}…` : joined;
 }
 
 function buildLiveCandidates(args: {
@@ -234,10 +263,13 @@ export function AiAssistantScreen() {
   const [showWeeklyCard, setShowWeeklyCard] = React.useState(true);
   const [showAiAssistCard] = React.useState(true);
   const [heroCard, setHeroCard] = React.useState(0);
-  const [heroTransitionDirection, setHeroTransitionDirection] = React.useState(0);
   const [weeklySpeaking, setWeeklySpeaking] = React.useState(false);
   const heroSwipeStartX = React.useRef<number | null>(null);
   const heroWheelLastAt = React.useRef(0);
+  const heroScrollRef = React.useRef<HTMLDivElement | null>(null);
+  const [heroSlidePx, setHeroSlidePx] = React.useState(0);
+  const heroCardRef = React.useRef(0);
+  heroCardRef.current = heroCard;
   const chatEndRef = React.useRef<HTMLDivElement | null>(null);
   const handledQueryRef = React.useRef<string>("");
   const sendSeqRef = React.useRef(0);
@@ -255,12 +287,12 @@ export function AiAssistantScreen() {
   const invoicesChipCustom = useUiCustomization("assistant.home.invoices");
   const unpaidChipCustom = useUiCustomization("assistant.home.unpaid");
   const unpaidInvoicesCount = runtimeInvoices.filter((inv) => inv.status === "pay").length;
-  const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-  const togetherApiKey = process.env.NEXT_PUBLIC_TOGETHER_API_KEY;
-  const openRouterApiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
-  const grokApiKey = process.env.NEXT_PUBLIC_GROK_API_KEY;
-  const groqApiKey = process.env.NEXT_PUBLIC_GROQ_API_KEY;
-  const liveProxyUrl = process.env.NEXT_PUBLIC_LLM_PROXY_URL;
+  const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY?.trim();
+  const togetherApiKey = process.env.NEXT_PUBLIC_TOGETHER_API_KEY?.trim();
+  const openRouterApiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY?.trim();
+  const grokApiKey = process.env.NEXT_PUBLIC_GROK_API_KEY?.trim();
+  const groqApiKey = process.env.NEXT_PUBLIC_GROQ_API_KEY?.trim();
+  const liveProxyUrl = process.env.NEXT_PUBLIC_LLM_PROXY_URL?.trim() || "/api/llm";
   const geminiModel = process.env.NEXT_PUBLIC_GEMINI_MODEL ?? "gemini-2.0-flash";
   const togetherModel = process.env.NEXT_PUBLIC_TOGETHER_MODEL ?? "meta-llama/Llama-3.3-70B-Instruct-Turbo";
   const openRouterModel = process.env.NEXT_PUBLIC_OPENROUTER_MODEL;
@@ -511,10 +543,10 @@ export function AiAssistantScreen() {
       }
 
       let resolved: ChatMessage = toAiMessage({
-        ...buildSafeLiveFallbackResponse(),
-        sourceLabel: getAiSourceLabel("fallback-no-live", primaryLiveProvider)
+        ...(isLiveEnabled ? buildSafeLiveFallbackResponse() : buildNoLiveKeysFallbackResponse()),
+        sourceLabel: getAiSourceLabel(isLiveEnabled ? "fallback-no-live" : "no-live-keys", primaryLiveProvider)
       });
-      let intentUsed = "fallback-no-live";
+      let intentUsed = isLiveEnabled ? "fallback-no-live" : "no-live-keys";
       let resolvedLiveProvider: LiveProvider = primaryLiveProvider;
 
       try {
@@ -532,6 +564,7 @@ export function AiAssistantScreen() {
               .map((m) => ({ role: m.role === "ai" ? "assistant" : "user", content: m.text }));
             let liveResolved = false;
             let lastErrorLabel: string | null = null;
+            const failureLabels: string[] = [];
             for (const candidate of liveCandidates) {
               resolvedLiveProvider = candidate.provider;
               try {
@@ -546,7 +579,12 @@ export function AiAssistantScreen() {
                   signal: controller.signal
                 });
                 if (mySeq !== sendSeqRef.current) return;
-                if (!liveText) continue;
+                if (!liveText) {
+                  failureLabels.push(
+                    `${liveProviderShort(candidate.provider)}: нет текста или ответ отклонён фильтром`
+                  );
+                  continue;
+                }
                 if (isLiveResponseReliable(v, liveText)) {
                   resolved = {
                     id: id(),
@@ -578,14 +616,22 @@ export function AiAssistantScreen() {
                   return;
                 }
                 lastErrorLabel = formatLiveErrorLabel(e, candidate.provider);
+                failureLabels.push(lastErrorLabel);
               }
             }
             if (!liveResolved) {
+              const baseFb = buildSafeLiveFallbackResponse();
+              const foot = failureLabels.length > 0 ? LIVE_CHAIN_ALL_FAILED_FOOTER : "";
+              const sourceCombined =
+                failureLabels.length > 0
+                  ? compactLiveFailureLabels(failureLabels)
+                  : lastErrorLabel ?? getAiSourceLabel("live-unavailable", resolvedLiveProvider);
               resolved = toAiMessage({
-                ...buildSafeLiveFallbackResponse(),
-                sourceLabel: lastErrorLabel ?? getAiSourceLabel("live-unavailable", resolvedLiveProvider)
+                ...baseFb,
+                text: baseFb.text + foot,
+                sourceLabel: sourceCombined
               });
-              intentUsed = lastErrorLabel ? "live-error" : "live-unavailable";
+              intentUsed = failureLabels.length > 0 || lastErrorLabel ? "live-error" : "live-unavailable";
             }
           } catch (e) {
             if (mySeq !== sendSeqRef.current) return;
@@ -626,14 +672,34 @@ export function AiAssistantScreen() {
   const hasChat = messages.length > 0;
   const visibleHeroCards = React.useMemo(() => {
     const cards: Array<"missed" | "weekly" | "assist"> = [];
-    if (showMissedCard) cards.push("missed");
     if (showWeeklyCard) cards.push("weekly");
+    if (showMissedCard) cards.push("missed");
     if (showAiAssistCard) cards.push("assist");
     return cards;
   }, [showAiAssistCard, showMissedCard, showWeeklyCard]);
-  const activeHeroCard = visibleHeroCards[heroCard] ?? null;
-  const enterHeroOffset = heroTransitionDirection >= 0 ? 20 : -20;
-  const exitHeroOffset = heroTransitionDirection >= 0 ? -20 : 20;
+
+  const heroStridePx = heroSlidePx + 12;
+
+  React.useLayoutEffect(() => {
+    if (hasChat) return;
+    const el = heroScrollRef.current;
+    if (!el) return;
+    const update = () => {
+      const w = el.clientWidth;
+      setHeroSlidePx(Math.max(0, Math.round(w * 0.88)));
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [hasChat]);
+
+  React.useLayoutEffect(() => {
+    if (hasChat) return;
+    const el = heroScrollRef.current;
+    if (!el || heroStridePx <= 0) return;
+    el.scrollLeft = heroCardRef.current * heroStridePx;
+  }, [hasChat, heroSlidePx, heroStridePx]);
 
   React.useEffect(() => {
     if (heroCard >= visibleHeroCards.length) {
@@ -641,16 +707,42 @@ export function AiAssistantScreen() {
     }
   }, [heroCard, visibleHeroCards.length]);
 
+  const goToHeroSlide = React.useCallback(
+    (idx: number, behavior: ScrollBehavior = "smooth") => {
+      const el = heroScrollRef.current;
+      const stride = heroSlidePx + 12;
+      const clamped = Math.max(0, Math.min(visibleHeroCards.length - 1, idx));
+      setHeroCard(clamped);
+      if (!el || stride <= 0) return;
+      el.scrollTo({ left: clamped * stride, behavior });
+    },
+    [heroSlidePx, visibleHeroCards.length]
+  );
+
   const moveHeroCard = (delta: number) => {
     if (visibleHeroCards.length < 2) return;
-    setHeroTransitionDirection(delta);
     setHeroCard((prev) => {
-      const next = prev + delta;
-      if (next < 0) return 0;
-      if (next >= visibleHeroCards.length) return visibleHeroCards.length - 1;
+      const next = Math.max(0, Math.min(visibleHeroCards.length - 1, prev + delta));
+      queueMicrotask(() => {
+        const el = heroScrollRef.current;
+        const stride = heroSlidePx + 12;
+        if (el && stride > 0) {
+          el.scrollTo({ left: next * stride, behavior: "smooth" });
+        }
+      });
       return next;
     });
   };
+
+  const handleHeroScroll = React.useCallback(() => {
+    const el = heroScrollRef.current;
+    if (!el) return;
+    const stride = heroSlidePx + 12;
+    if (stride <= 0) return;
+    const idx = Math.round(el.scrollLeft / stride);
+    const clamped = Math.max(0, Math.min(visibleHeroCards.length - 1, idx));
+    setHeroCard(clamped);
+  }, [heroSlidePx, visibleHeroCards.length]);
 
   const onHeroPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     heroSwipeStartX.current = e.clientX;
@@ -689,25 +781,33 @@ export function AiAssistantScreen() {
             onWheel={onHeroWheel}
             style={{ touchAction: "pan-y" }}
           >
-            <div className="relative h-[120px] overflow-hidden" data-testid="assistant-hero-slot">
-              <AnimatePresence initial={false} custom={heroTransitionDirection} mode="wait">
-                {activeHeroCard ? (
-                  <motion.div
-                    key={activeHeroCard}
-                    initial={{ opacity: 0, x: enterHeroOffset }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: exitHeroOffset }}
-                    transition={{ duration: 0.24, ease: "easeOut" }}
-                    className="h-full"
+            <div
+              ref={heroScrollRef}
+              data-testid="assistant-hero-slot"
+              className="relative h-[120px] overflow-x-auto overflow-y-hidden scroll-smooth snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              onScroll={handleHeroScroll}
+              style={{ touchAction: "pan-x pinch-zoom" }}
+            >
+              <div className="flex h-full gap-3">
+                {visibleHeroCards.map((slideKind) => (
+                  <div
+                    key={slideKind}
+                    className="h-full shrink-0 snap-center snap-always"
+                    style={
+                      heroSlidePx > 0
+                        ? { width: heroSlidePx, minWidth: heroSlidePx, maxWidth: heroSlidePx }
+                        : { minWidth: "min(360px, calc(100vw - 2rem))" }
+                    }
                   >
-                    {activeHeroCard === "missed" ? (
+                    {slideKind === "missed" ? (
                       <button
                         type="button"
                         className="block h-full w-full text-left"
                         onClick={() => {
                           markMissedCallsSeen();
                           setShowMissedCard(false);
-                          router.push("/missed-calls/");
+                          const firstMissed = standaloneCalls.find((c) => c.missed)?.id ?? "c1";
+                          router.push(`/call/${firstMissed}/`);
                         }}
                       >
                         <Card className="h-full rounded-[24px] border-[#E8EAED] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
@@ -717,7 +817,7 @@ export function AiAssistantScreen() {
                                 <PhoneOff className="h-6 w-6 text-[#E53935]" />
                               </span>
                               <span className="absolute -right-1 -top-1 flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#E53935] px-1 text-[11px] font-bold text-white">
-                                x2
+                                x1
                               </span>
                             </span>
                             <div className="min-w-0 flex-1">
@@ -737,7 +837,7 @@ export function AiAssistantScreen() {
                         </Card>
                       </button>
                     ) : null}
-                    {activeHeroCard === "weekly" ? (
+                    {slideKind === "weekly" ? (
                       <Card className="h-full rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
                         <CardContent className="flex h-full items-center gap-3 overflow-hidden pb-2 pt-2">
                           <button
@@ -757,7 +857,7 @@ export function AiAssistantScreen() {
                                 return;
                               }
                               const u = new SpeechSynthesisUtterance(
-                                "Еженедельный отчет: 126 звонков, 6 пропущенных, средняя длительность две минуты сорок секунд. Есть 4 клиента в риске по оплате."
+                                "Еженедельный отчет: 126 звонков, 1 пропущенный, средняя длительность две минуты сорок секунд. Есть 4 клиента в риске по оплате."
                               );
                               u.lang = "ru-RU";
                               u.onend = () => setWeeklySpeaking(false);
@@ -776,7 +876,7 @@ export function AiAssistantScreen() {
                             </div>
                             <div className="text-xs text-[#A2A8B8]">за 24 апреля</div>
                             <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[#6B7280] dark:text-slate-300">
-                              126 звонков, 6 пропущенных, средняя длительность 2:40. Есть 4 клиента в риске по оплате.
+                              126 звонков, 1 пропущенный, средняя длительность 2:40. Есть 4 клиента в риске по оплате.
                             </p>
                             <button
                               type="button"
@@ -799,7 +899,7 @@ export function AiAssistantScreen() {
                         </CardContent>
                       </Card>
                     ) : null}
-                    {activeHeroCard === "assist" ? (
+                    {slideKind === "assist" ? (
                       <Card className="h-full rounded-[20px] border-[#DDE4FF] bg-gradient-to-br from-[#F7F9FF] to-white shadow-none dark:border-slate-700 dark:from-slate-800 dark:to-slate-800">
                         <CardContent className="flex h-full items-center gap-3 pb-3 pt-3">
                           <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ECEAFD]">
@@ -824,9 +924,9 @@ export function AiAssistantScreen() {
                         </CardContent>
                       </Card>
                     ) : null}
-                  </motion.div>
-                ) : null}
-              </AnimatePresence>
+                  </div>
+                ))}
+              </div>
             </div>
             {visibleHeroCards.length > 1 ? (
               <div className="mt-2 flex justify-center gap-1.5">
@@ -835,10 +935,7 @@ export function AiAssistantScreen() {
                     key={`hero-dot-${idx}`}
                     type="button"
                     className={cn("h-1.5 w-5 rounded-full", heroCard === idx ? "bg-slate-900 dark:bg-slate-100" : "bg-slate-300 dark:bg-slate-600")}
-                    onClick={() => {
-                      setHeroTransitionDirection(idx > heroCard ? 1 : -1);
-                      setHeroCard(idx);
-                    }}
+                    onClick={() => goToHeroSlide(idx)}
                   />
                 ))}
               </div>
@@ -878,13 +975,13 @@ export function AiAssistantScreen() {
                   }
                   markMissedCallsSeen();
                   setShowMissedCard(false);
-                  router.push("/missed-calls/");
+                  window.setTimeout(() => send("Пропущенные звонки"), 60);
                 }}
               >
                 <span>Пропущенные звонки</span>
                 {!isMissedCallsSeen() ? (
                   <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#FF3B4E] px-1.5 text-[11px] font-bold text-white">
-                    6
+                    {missedCallsCount}
                   </span>
                 ) : null}
               </button>
@@ -915,7 +1012,7 @@ export function AiAssistantScreen() {
                     setToast("Мои счета (мок из кастомизации).");
                     return;
                   }
-                  router.push("/invoices/");
+                  window.setTimeout(() => send("Мои счета"), 60);
                 }}
               >
                 <span>Мои счета</span>
@@ -929,7 +1026,7 @@ export function AiAssistantScreen() {
                     setToast("Счета на оплату (мок из кастомизации).");
                     return;
                   }
-                  router.push("/invoices/");
+                  window.setTimeout(() => send("Счета на оплату"), 60);
                 }}
               >
                 <span>Счета на оплату</span>
@@ -1059,6 +1156,9 @@ export function AiAssistantScreen() {
                       </CardContent>
                     </Card>
                   ) : null}
+                  {m.role === "ai" && m.widget === "invoices-summary-inline" ? (
+                    <InvoicesSummaryInlineWidget invoices={runtimeInvoices} />
+                  ) : null}
                   {m.role === "ai" && m.widget === "missed-calls-inline" ? (
                     <Card className="border-slate-200 dark:border-slate-700">
                       <CardContent className="space-y-2 pb-3 pt-3">
@@ -1158,6 +1258,11 @@ export function AiAssistantScreen() {
                       </CardContent>
                     </Card>
                   ) : null}
+
+                  {m.role === "ai" && m.widget === "subscription-balance-inline" ? (
+                    <SubscriptionBalanceInlineWidget onToast={setToast} />
+                  ) : null}
+                  {m.role === "ai" && m.widget === "my-numbers-inline" ? <MyNumbersInlineWidget onToast={setToast} /> : null}
 
                   {m.role === "ai" && m.actions?.length
                     ? m.actions.map((a, idx) => (

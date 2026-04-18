@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { invoicesMarch2026 } from "./mockData";
 import {
+  buildNoLiveKeysFallbackResponse,
   buildSafeLiveFallbackResponse,
   isLiveResponseReliable,
   resolveDeterministicResponse,
@@ -165,6 +166,7 @@ describe("assistantResponse routing", () => {
 
     const openAppeals = resolveDeterministicResponse("Открытые обращения", invoicesMarch2026);
     expect(openAppeals?.widget).toBe("appeals-summary");
+    expect(openAppeals?.navigateTo).toBeUndefined();
 
     const createPayment = resolveDeterministicResponse("Создать платеж", invoicesMarch2026);
     expect(createPayment?.navigateTo).toBe("/invoices/");
@@ -190,8 +192,11 @@ describe("assistantResponse routing", () => {
   it("handles exact quick chips/history prompts deterministically", () => {
     expect(resolveDeterministicResponse("Мои сервисы", invoicesMarch2026)?.text).toContain("Ваши подключенные продукты");
     expect(resolveDeterministicResponse("Обращения", invoicesMarch2026)?.widget).toBe("appeals-summary");
+    expect(resolveDeterministicResponse("Обращения", invoicesMarch2026)?.navigateTo).toBeUndefined();
     expect(resolveDeterministicResponse("Счета на оплату", invoicesMarch2026)?.navigateTo).toBe("/invoices/");
     expect(resolveDeterministicResponse("Записи звонков", invoicesMarch2026)?.widget).toBe("missed-calls-inline");
+    expect(resolveDeterministicResponse("Баланс", invoicesMarch2026)?.widget).toBe("subscription-balance-inline");
+    expect(resolveDeterministicResponse("Мои номера", invoicesMarch2026)?.widget).toBe("my-numbers-inline");
   });
 
   it("returns null for query that should go to live AI", () => {
@@ -216,6 +221,13 @@ describe("assistantResponse routing", () => {
     const fallback = buildSafeLiveFallbackResponse();
     expect(fallback.text).toContain("не удалось получить надежный live-ответ");
     expect(fallback.suggested?.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("builds no-live-keys fallback when NEXT_PUBLIC keys are absent from bundle", () => {
+    const noKeys = buildNoLiveKeysFallbackResponse();
+    expect(noKeys.text).toContain("нет ключей API");
+    expect(noKeys.text).toContain("NEXT_PUBLIC");
+    expect(noKeys.suggested?.length).toBeGreaterThanOrEqual(3);
   });
 
   it("answers from session memory without hardcoded query", () => {

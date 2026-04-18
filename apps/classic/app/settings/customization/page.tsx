@@ -7,7 +7,7 @@ export default function CustomizationPage() {
     <>
       <AppHeader />
       <AppShell>
-        <AppCustomizationScreen backHref="/settings/" appVariant="ai" />
+        <AppCustomizationScreen backHref="/settings/" appVariant="classic" />
       </AppShell>
     </>
   );

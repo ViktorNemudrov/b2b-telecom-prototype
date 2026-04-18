@@ -41,13 +41,21 @@ export function ChatInterface() {
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
+                data-testid="chat-message-bubble"
                 className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm ${
                   msg.role === "user"
                     ? "bg-blue-600 text-white"
                     : "bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-gray-100"
                 }`}
               >
-                {msg.content || <span className="italic text-gray-400">печатает...</span>}
+                {msg.role === "assistant" &&
+                !msg.content &&
+                isLoading &&
+                i === messages.length - 1 ? (
+                  <span className="italic text-gray-400">печатает...</span>
+                ) : (
+                  msg.content
+                )}
               </div>
             </motion.div>
           ))}

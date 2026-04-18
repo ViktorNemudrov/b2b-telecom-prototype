@@ -9,7 +9,7 @@ export function MissedCallSummaryCard({
   title = "Доставка офисной техники",
   subtitle = "Пропущенный",
   time = "12:42",
-  missedBadge = "x2",
+  missedBadge = "x1",
   href = "/missed-calls/",
   onDismiss
 }: {

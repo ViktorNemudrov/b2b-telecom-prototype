@@ -76,7 +76,9 @@ async function assertScenario(page: Page, scenario: ScenarioCase, options?: { li
     // Primary: safe fallback text. If live succeeds without fallback, accept an "ответ от …" line instead.
     // Use .first() so we never hit strict-mode issues when fallback and source footer both mention providers.
     const fallbackLoc = page.getByText(scenario.expectedText, { exact: false }).first();
-    const liveLoc = page.getByText(/ответ от (Grok\/xAI|OpenRouter|Groq)(?!.*ошибка)/).first();
+    const liveLoc = page
+      .getByText(/ответ от (Google Gemini|Together AI|Grok\/xAI|OpenRouter|Groq)(?!.*ошибка)/)
+      .first();
     await expect(fallbackLoc.or(liveLoc).first()).toBeVisible({ timeout: 15_000 });
   } else {
     // User bubble can contain the same substring as the assistant reply (case/words); target the last match.
@@ -96,6 +98,9 @@ async function assertScenario(page: Page, scenario: ScenarioCase, options?: { li
 }
 
 test.describe("chat release gate scenarios", () => {
+  // Dev server + Next compile can stall when many workers hit /assistant/ at once; serial is stable and still ~40s.
+  test.describe.configure({ mode: "serial" });
+
   for (const scenario of specialScenarios) {
     test(`special: ${scenario.prompt}`, async ({ page }) => {
       await openAssistant(page);

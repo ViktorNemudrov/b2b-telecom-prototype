@@ -1,16 +1,17 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Pause, PhoneCall, PhoneOff, Play, Sparkles, X } from "lucide-react";
 import { RecordingPlayer } from "@shared/components/RecordingPlayer";
 import { Card, CardContent } from "@shared/components/ui/card";
+import { cn } from "@shared/components/ui/cn";
+import { isBlockVisibleForFilter, type EventsFeedFilter } from "@shared/lib/eventsFeedFilter";
 import { getAppealsFiltered, getCallById } from "@shared/lib/mockData";
 import { isMissedCallsSeen, markMissedCallsSeen } from "@shared/lib/runtimeFlags";
 
 const dailyReportText =
-  "Вчера пропущено 2 звонка, выручка по кассам +10%, баланс на 112 дней. Хорошего дня!";
+  "Вчера пропущен 1 звонок, выручка по кассам +10%, баланс на 112 дней. Хорошего дня!";
 
 const chipScroll =
   "-mx-1 w-[calc(100%+8px)] overflow-x-auto overflow-y-hidden pb-1 pl-1 pr-1 [scrollbar-width:none] touch-pan-x [&::-webkit-scrollbar]:hidden";
@@ -97,8 +98,29 @@ function FeedCallCard({
   );
 }
 
+function useFeedHasVisibleContent(
+  feedFilter: EventsFeedFilter,
+  dismissDaily: boolean,
+  c1: ReturnType<typeof getCallById>,
+  c2: ReturnType<typeof getCallById>
+) {
+  return React.useMemo(() => {
+    if (feedFilter === "all") return true;
+    const v = isBlockVisibleForFilter;
+    if (v(feedFilter, "dailyReport") && !dismissDaily) return true;
+    if (v(feedFilter, "callRegular") && c2) return true;
+    if (v(feedFilter, "callMissed") && c1) return true;
+    if (v(feedFilter, "assistantAdvice")) return true;
+    if (v(feedFilter, "tariffBalance")) return true;
+    if (v(feedFilter, "appealsPanel")) return true;
+    if (v(feedFilter, "appealsQuickLinks")) return true;
+    return false;
+  }, [feedFilter, dismissDaily, c1, c2]);
+}
+
 export function EventsFeedScreen() {
   const router = useRouter();
+  const [feedFilter, setFeedFilter] = React.useState<EventsFeedFilter>("all");
   const [dismissDaily, setDismissDaily] = React.useState(false);
   const [speaking, setSpeaking] = React.useState(false);
   const [missedSeen, setMissedSeen] = React.useState(() => isMissedCallsSeen());
@@ -111,6 +133,16 @@ export function EventsFeedScreen() {
   const c1 = getCallById("c1");
   const c2 = getCallById("c2");
 
+  const selectFilter = React.useCallback((next: Exclude<EventsFeedFilter, "all">) => {
+    setFeedFilter((prev) => (prev === next ? "all" : next));
+    if (next === "missed") {
+      markMissedCallsSeen();
+      setMissedSeen(true);
+    }
+  }, []);
+
+  const hasVisibleContent = useFeedHasVisibleContent(feedFilter, dismissDaily, c1, c2);
+
   React.useEffect(() => {
     return () => {
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
@@ -119,14 +151,80 @@ export function EventsFeedScreen() {
     };
   }, []);
 
+  const v = isBlockVisibleForFilter;
+
   return (
     <div className="space-y-3 pb-6">
-      {!dismissDaily ? (
-        <Card className="rounded-[20px] border-[#E5E7EE] bg-white shadow-none">
+      <h1 className="px-2 text-center text-lg font-semibold leading-snug tracking-tight text-[#1F2430] dark:text-slate-100">
+        Лента событий
+      </h1>
+
+      <div>
+        <div className={chipScroll} role="toolbar" aria-label="Фильтры ленты">
+          <div className={chipTrack}>
+            <button
+              type="button"
+              onClick={() => selectFilter("missed")}
+              className={cn(
+                "snap-start shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-medium transition",
+                feedFilter === "missed"
+                  ? "border-[#2B6CE0] bg-[#F0F6FF] text-[#1d4ed8] dark:border-sky-500 dark:bg-sky-950/40 dark:text-sky-100"
+                  : "border-[#E5E7EE] bg-white text-[#343A4A] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              )}
+              aria-pressed={feedFilter === "missed"}
+              aria-label="Фильтр: пропущенные звонки"
+            >
+              Пропущенные{" "}
+              {!missedSeen ? (
+                <span className="ml-1 rounded-full bg-[#EB4A4A] px-1.5 text-[10px] text-white">6</span>
+              ) : null}
+            </button>
+            <button
+              type="button"
+              onClick={() => selectFilter("tips")}
+              className={cn(
+                "snap-start shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-medium transition",
+                feedFilter === "tips"
+                  ? "border-violet-500 bg-violet-50 text-violet-950 dark:border-violet-500 dark:bg-violet-950/50 dark:text-violet-100"
+                  : "border-[#E5E7EE] bg-gradient-to-r from-[#EFE9FF] to-[#F4F0FF] text-[#343A4A] dark:border-slate-600 dark:from-violet-900/40 dark:to-slate-800 dark:text-slate-100"
+              )}
+              aria-pressed={feedFilter === "tips"}
+              aria-label="Фильтр: советы от ассистента"
+            >
+              ✨ Советы от Ассистента
+            </button>
+            <button
+              type="button"
+              onClick={() => selectFilter("invoices")}
+              className={cn(
+                "snap-start shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-medium transition",
+                feedFilter === "invoices"
+                  ? "border-emerald-600 bg-emerald-50 text-emerald-950 dark:border-emerald-500 dark:bg-emerald-950/40 dark:text-emerald-100"
+                  : "border-[#E5E7EE] bg-white text-[#343A4A] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              )}
+              aria-pressed={feedFilter === "invoices"}
+              aria-label="Фильтр: счета на оплату"
+            >
+              Счет на оплату
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto w-fit rounded-full bg-[#EEF0F4] px-3 py-1 text-xs text-[#A2A8B8]">сегодня</div>
+
+      {!hasVisibleContent && feedFilter !== "all" ? (
+        <p className="px-2 text-center text-sm text-[#9AA0AF] dark:text-slate-400">
+          Нет событий по выбранному фильтру. Выберите другой фильтр или сбросьте, нажав активный чип ещё раз.
+        </p>
+      ) : null}
+
+      {v(feedFilter, "dailyReport") && !dismissDaily ? (
+        <Card className="rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
           <CardContent className="flex items-center gap-3 pb-3 pt-3">
             <button
               type="button"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ECEAFD]"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ECEAFD] dark:bg-violet-900/30"
               aria-label="Показать аудиозапись отчёта"
               onClick={() => {
                 if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
@@ -151,16 +249,16 @@ export function EventsFeedScreen() {
               )}
             </button>
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1 text-sm font-semibold text-[#343A4A]">
+              <div className="flex items-center gap-1 text-sm font-semibold text-[#343A4A] dark:text-slate-100">
                 <Sparkles className="h-4 w-4 text-[#9C8AF2]" />
                 Ежедневный отчет
               </div>
-              <div className="text-xs text-[#A2A8B8]">за 24 апреля</div>
-              <p className="mt-1 text-xs leading-relaxed text-[#6B7280]">{dailyReportText}</p>
+              <div className="text-xs text-[#A2A8B8] dark:text-slate-400">за 24 апреля</div>
+              <p className="mt-1 text-xs leading-relaxed text-[#6B7280] dark:text-slate-300">{dailyReportText}</p>
             </div>
             <button
               type="button"
-              className="shrink-0 rounded-full p-1 text-[#C7CBD6] hover:bg-slate-100"
+              className="shrink-0 rounded-full p-1 text-[#C7CBD6] hover:bg-slate-100 dark:hover:bg-slate-700"
               aria-label="Закрыть"
               onClick={() => setDismissDaily(true)}
             >
@@ -170,41 +268,7 @@ export function EventsFeedScreen() {
         </Card>
       ) : null}
 
-      <div>
-        <div className={chipScroll}>
-          <div className={chipTrack}>
-            <Link
-              href="/missed-calls/"
-              onClick={() => {
-                markMissedCallsSeen();
-                setMissedSeen(true);
-              }}
-              className="snap-start shrink-0 whitespace-nowrap rounded-full border border-[#E5E7EE] bg-white px-3 py-1.5 text-sm font-medium text-[#343A4A] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-            >
-              Пропущенные{" "}
-              {!missedSeen ? (
-                <span className="ml-1 rounded-full bg-[#EB4A4A] px-1.5 text-[10px] text-white">6</span>
-              ) : null}
-            </Link>
-            <Link
-              href="/assistant/?q=%D0%94%D0%B0%D0%B9%20%D1%81%D0%BE%D0%B2%D0%B5%D1%82%D1%8B%20%D0%BE%D1%82%20%D0%B0%D1%81%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BD%D1%82%D0%B0"
-              className="snap-start shrink-0 whitespace-nowrap rounded-full border border-[#E5E7EE] bg-gradient-to-r from-[#EFE9FF] to-[#F4F0FF] px-3 py-1.5 text-sm font-medium text-[#343A4A] dark:border-slate-600 dark:from-violet-900/40 dark:to-slate-800 dark:text-slate-100"
-            >
-              ✨ Советы от Ассистента
-            </Link>
-            <Link
-              href="/invoices/"
-              className="snap-start shrink-0 whitespace-nowrap rounded-full border border-[#E5E7EE] bg-white px-3 py-1.5 text-sm font-medium text-[#343A4A] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-            >
-              Счет на оплату
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="mx-auto w-fit rounded-full bg-[#EEF0F4] px-3 py-1 text-xs text-[#A2A8B8]">сегодня</div>
-
-      {c2 ? (
+      {v(feedFilter, "callRegular") && c2 ? (
         <FeedCallCard
           title={c2.title ?? "Цветы"}
           subtitle="Ответственный: Филатов"
@@ -217,7 +281,7 @@ export function EventsFeedScreen() {
           }
         />
       ) : null}
-      {c1 ? (
+      {v(feedFilter, "callMissed") && c1 ? (
         <FeedCallCard
           title={c1.title ?? "Доставка офисной техники"}
           subtitle="Пропущенный"
@@ -232,148 +296,157 @@ export function EventsFeedScreen() {
         />
       ) : null}
 
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => router.push("/assistant/?q=Дай советы от ассистента по пакету минут")}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            router.push("/assistant/?q=Дай советы от ассистента по пакету минут");
-          }
-        }}
-        className="block w-full cursor-pointer text-left"
-      >
-      <Card className="rounded-[22px] border-[#E5E7EE] bg-gradient-to-r from-[#FFECD9] via-[#EFE6FF] to-[#E8EDFF] shadow-none">
-        <CardContent className="space-y-3 pb-4 pt-4">
-          <div className="flex items-center gap-2 text-2xl font-semibold text-[#343A4A]">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/75">
-              ✦
-            </span>
-            Совет от Ассистента
-          </div>
-          <div className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 dark:bg-slate-800">
-            <div>
-              <div className="text-xl font-semibold text-[#303646] dark:text-slate-100">Пополните пакет минут</div>
-              <div className="text-sm text-[#9AA0AF] dark:text-slate-400">Осталось 25 минут</div>
-            </div>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                router.push("/assistant/?q=Как пополнить пакет минут");
-              }}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F1F3F7] text-xl text-[#2D3342] dark:bg-slate-700 dark:text-slate-100"
-            >
-              +
-            </button>
-          </div>
-        </CardContent>
-      </Card>
-      </div>
-
-      <Card className="rounded-[22px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
-        <CardContent className="space-y-2 pb-4 pt-4">
-          <div className="text-2xl font-semibold text-[#343A4A] dark:text-slate-100">Остаток по тарифу</div>
-          <div className="text-sm text-[#9AA0AF] dark:text-slate-400">на 24 апреля</div>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-2 rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3 dark:border-slate-600 dark:bg-slate-700">
-              <div className="text-xl font-semibold text-[#303646] dark:text-slate-100">298 гб</div>
-            </div>
-            <div className="rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3 dark:border-slate-600 dark:bg-slate-700">
-              <div className="text-xl font-semibold text-[#303646] dark:text-slate-100">1 545 мин</div>
-            </div>
-            <div className="col-span-2 rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3 dark:border-slate-600 dark:bg-slate-700">
-              <div className="text-xl font-semibold text-[#303646] dark:text-slate-100">100 sms</div>
-            </div>
-            <button
-              type="button"
-              onClick={() => router.push("/assistant/?q=%D0%9A%D0%B0%D0%BA%20%D0%BE%D0%BF%D1%82%D0%B8%D0%BC%D0%B8%D0%B7%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D1%82%D1%8C%20%D0%BE%D1%81%D1%82%D0%B0%D1%82%D0%BE%D0%BA%20%D0%BF%D0%B0%D0%BA%D0%B5%D1%82%D0%B0")}
-              className="rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] text-[#8E76F5] dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
-            >
-              💬
-            </button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="rounded-[22px] border-[#E5E7EE] bg-[#F7F7FF] shadow-none dark:border-slate-700 dark:bg-slate-800/80">
-        <CardContent className="space-y-3 pb-4 pt-4">
-          <div className="text-2xl font-semibold text-[#343A4A] dark:text-slate-100">Активные обращения</div>
-          <p className="text-sm leading-relaxed text-[#4B5563] dark:text-slate-300">
-            На данный момент у вас: <span className="font-semibold">{activeAppeals.length} активных обращения</span>
-            <br />- В работе: {inWorkAppealsCount} штуки
-            <br />- Ожидает подписания: {signPendingAppealsCount} штука
-          </p>
-          <button
-            type="button"
-            onClick={() => router.push("/appeals/")}
-            className="rounded-2xl bg-[#16181D] px-5 py-3 text-sm font-semibold text-white dark:bg-slate-100 dark:text-slate-900"
-          >
-            Создать обращение
-          </button>
-
-          <Card className="rounded-[18px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-600 dark:bg-slate-900">
-            <CardContent className="space-y-3 pb-3 pt-3">
-              {activeAppeals.slice(0, 3).map((appeal) => (
+      {v(feedFilter, "assistantAdvice") ? (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => router.push("/assistant/?q=Дай советы от ассистента по пакету минут")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              router.push("/assistant/?q=Дай советы от ассистента по пакету минут");
+            }
+          }}
+          className="block w-full cursor-pointer text-left"
+        >
+          <Card className="rounded-[22px] border-[#E5E7EE] bg-gradient-to-r from-[#FFECD9] via-[#EFE6FF] to-[#E8EDFF] shadow-none">
+            <CardContent className="space-y-3 pb-4 pt-4">
+              <div className="flex items-center gap-2 text-2xl font-semibold text-[#343A4A]">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/75">✦</span>
+                Совет от Ассистента
+              </div>
+              <div className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 dark:bg-slate-800">
+                <div>
+                  <div className="text-xl font-semibold text-[#303646] dark:text-slate-100">Пополните пакет минут</div>
+                  <div className="text-sm text-[#9AA0AF] dark:text-slate-400">Осталось 25 минут</div>
+                </div>
                 <button
-                  key={appeal.id}
                   type="button"
-                  onClick={() => router.push("/appeals/")}
-                  className="flex w-full items-center justify-between gap-2 text-left"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push("/assistant/?q=Как пополнить пакет минут");
+                  }}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F1F3F7] text-xl text-[#2D3342] dark:bg-slate-700 dark:text-slate-100"
                 >
-                  <div className="min-w-0">
-                    <div className="truncate text-base font-medium text-[#1F2430] dark:text-slate-100">{appeal.title}</div>
-                    <div className="truncate text-sm text-[#9CA3B5] dark:text-slate-400">
-                      {appeal.category} — {appeal.id}
-                    </div>
-                  </div>
-                  <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-                      appeal.badgeLabel.includes("работе")
-                        ? "bg-[#E8F1FF] text-[#2B6CE0] dark:bg-sky-900/40 dark:text-sky-200"
-                        : "bg-[#FFF2DC] text-[#D97706] dark:bg-amber-900/40 dark:text-amber-200"
-                    }`}
-                  >
-                    {appeal.badgeLabel}
-                  </span>
+                  +
                 </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => router.push("/appeals/")}
-                className="flex items-center justify-center gap-1 text-sm font-medium text-[#343A4A] dark:text-slate-200"
-              >
-                Все обращения
-              </button>
+              </div>
             </CardContent>
           </Card>
+        </div>
+      ) : null}
 
-          <p className="text-sm leading-relaxed text-[#4B5563] dark:text-slate-300">
-            Для поиска конкретного обращения укажите:
-            <br />- Дату создания: точная дата, месяц или интервал
-            <br />- Номер договора
-            <br />- Контекст обращения
-          </p>
-        </CardContent>
-      </Card>
+      {v(feedFilter, "tariffBalance") ? (
+        <Card className="rounded-[22px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
+          <CardContent className="space-y-2 pb-4 pt-4">
+            <div className="text-2xl font-semibold text-[#343A4A] dark:text-slate-100">Остаток по тарифу</div>
+            <div className="text-sm text-[#9AA0AF] dark:text-slate-400">на 24 апреля</div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="col-span-2 rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3 dark:border-slate-600 dark:bg-slate-700">
+                <div className="text-xl font-semibold text-[#303646] dark:text-slate-100">298 гб</div>
+              </div>
+              <div className="rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3 dark:border-slate-600 dark:bg-slate-700">
+                <div className="text-xl font-semibold text-[#303646] dark:text-slate-100">1 545 мин</div>
+              </div>
+              <div className="col-span-2 rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3 dark:border-slate-600 dark:bg-slate-700">
+                <div className="text-xl font-semibold text-[#303646] dark:text-slate-100">100 sms</div>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  router.push(
+                    "/assistant/?q=%D0%9A%D0%B0%D0%BA%20%D0%BE%D0%BF%D1%82%D0%B8%D0%BC%D0%B8%D0%B7%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D1%82%D1%8C%20%D0%BE%D1%81%D1%82%D0%B0%D1%82%D0%BE%D0%BA%20%D0%BF%D0%B0%D0%BA%D0%B5%D1%82%D0%B0"
+                  )
+                }
+                className="rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] text-[#8E76F5] dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
+              >
+                💬
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
-      <Card className="rounded-[22px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
-        <CardContent className="space-y-2 pb-2 pt-2">
-          {["Создать обращение", "Список обращений", "Выполненные", "Отклонённые"].map((item) => (
+      {v(feedFilter, "appealsPanel") ? (
+        <Card className="rounded-[22px] border-[#E5E7EE] bg-[#F7F7FF] shadow-none dark:border-slate-700 dark:bg-slate-800/80">
+          <CardContent className="space-y-3 pb-4 pt-4">
+            <div className="text-2xl font-semibold text-[#343A4A] dark:text-slate-100">Активные обращения</div>
+            <p className="text-sm leading-relaxed text-[#4B5563] dark:text-slate-300">
+              На данный момент у вас: <span className="font-semibold">{activeAppeals.length} активных обращения</span>
+              <br />- В работе: {inWorkAppealsCount} штуки
+              <br />- Ожидает подписания: {signPendingAppealsCount} штука
+            </p>
             <button
-              key={item}
               type="button"
               onClick={() => router.push("/appeals/")}
-              className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-base text-[#1F2430] hover:bg-[#F7F8FB] dark:text-slate-100 dark:hover:bg-slate-700/40"
+              className="rounded-2xl bg-[#16181D] px-5 py-3 text-sm font-semibold text-white dark:bg-slate-100 dark:text-slate-900"
             >
-              {item}
-              <span className="text-[#9CA3B5] dark:text-slate-400">›</span>
+              Создать обращение
             </button>
-          ))}
-        </CardContent>
-      </Card>
 
+            <Card className="rounded-[18px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-600 dark:bg-slate-900">
+              <CardContent className="space-y-3 pb-3 pt-3">
+                {activeAppeals.slice(0, 3).map((appeal) => (
+                  <button
+                    key={appeal.id}
+                    type="button"
+                    onClick={() => router.push("/appeals/")}
+                    className="flex w-full items-center justify-between gap-2 text-left"
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate text-base font-medium text-[#1F2430] dark:text-slate-100">{appeal.title}</div>
+                      <div className="truncate text-sm text-[#9CA3B5] dark:text-slate-400">
+                        {appeal.category} — {appeal.id}
+                      </div>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                        appeal.badgeLabel.includes("работе")
+                          ? "bg-[#E8F1FF] text-[#2B6CE0] dark:bg-sky-900/40 dark:text-sky-200"
+                          : "bg-[#FFF2DC] text-[#D97706] dark:bg-amber-900/40 dark:text-amber-200"
+                      }`}
+                    >
+                      {appeal.badgeLabel}
+                    </span>
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => router.push("/appeals/")}
+                  className="flex items-center justify-center gap-1 text-sm font-medium text-[#343A4A] dark:text-slate-200"
+                >
+                  Все обращения
+                </button>
+              </CardContent>
+            </Card>
+
+            <p className="text-sm leading-relaxed text-[#4B5563] dark:text-slate-300">
+              Для поиска конкретного обращения укажите:
+              <br />- Дату создания: точная дата, месяц или интервал
+              <br />- Номер договора
+              <br />- Контекст обращения
+            </p>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {v(feedFilter, "appealsQuickLinks") ? (
+        <Card className="rounded-[22px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
+          <CardContent className="space-y-2 pb-2 pt-2">
+            {["Создать обращение", "Список обращений", "Выполненные", "Отклонённые"].map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => router.push("/appeals/")}
+                className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-base text-[#1F2430] hover:bg-[#F7F8FB] dark:text-slate-100 dark:hover:bg-slate-700/40"
+              >
+                {item}
+                <span className="text-[#9CA3B5] dark:text-slate-400">›</span>
+              </button>
+            ))}
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   );
 }

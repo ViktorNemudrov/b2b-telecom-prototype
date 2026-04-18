@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { appealTopicOptions, subscriptionProductsMock } from "./mockData";
+import { appealTopicOptions, myNumbersChatMock, subscriptionBalanceChatMock, subscriptionProductsMock } from "./mockData";
 
 describe("mock data contracts", () => {
   it("keeps subscription management products aligned with UX scenario", () => {
@@ -27,5 +27,12 @@ describe("mock data contracts", () => {
       ])
     );
     expect(topics.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("keeps chat subscription and numbers demo payloads stable", () => {
+    expect(subscriptionBalanceChatMock.productName).toBe("Связь для бизнеса");
+    expect(subscriptionBalanceChatMock.priceRub).toBe(1999);
+    expect(myNumbersChatMock).toHaveLength(3);
+    expect(myNumbersChatMock[0]?.phone).toMatch(/^\+79/);
   });
 });

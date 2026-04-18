@@ -91,6 +91,31 @@ describe("getLiveAiText provider routing", () => {
     );
   });
 
+  it("uses app /api/llm base → /api/llm/chat with X-LLM-Provider", async () => {
+    const fetchSpy = mockFetchOk();
+    vi.stubGlobal("fetch", fetchSpy as unknown as typeof fetch);
+
+    await getLiveAiText({
+      provider: "groq",
+      proxyUrl: "/api/llm",
+      apiKey: "secret-key-should-not-be-sent",
+      model: "llama-3.1-8b-instant",
+      prompt: "Тест",
+      history: []
+    });
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("/api/llm/chat");
+    expect(init.headers).toEqual(
+      expect.objectContaining({
+        "Content-Type": "application/json",
+        "X-LLM-Provider": "groq"
+      })
+    );
+    expect(JSON.stringify(init.headers)).not.toContain("Authorization");
+  });
+
   it("uses proxy endpoint without Authorization header", async () => {
     const fetchSpy = mockFetchOk();
     vi.stubGlobal("fetch", fetchSpy as unknown as typeof fetch);
@@ -144,7 +169,7 @@ describe("getLiveAiText provider routing", () => {
     expect(JSON.stringify(init.headers)).not.toContain("Authorization");
   });
 
-  it("Gemini ignores proxy URL and calls Google directly", async () => {
+  it("Gemini uses external proxy URL when proxyUrl is set", async () => {
     const fetchSpy = mockGeminiOk();
     vi.stubGlobal("fetch", fetchSpy as unknown as typeof fetch);
 
@@ -154,11 +179,28 @@ describe("getLiveAiText provider routing", () => {
       model: "gemini-2.0-flash",
       prompt: "Тест",
       history: [],
-      proxyUrl: "https://proxy.example.com/chat"
+      proxyUrl: "https://proxy.example.com/gemini"
     });
 
     const [url] = fetchSpy.mock.calls[0] as [string, RequestInit];
-    expect(url).toContain("generativelanguage.googleapis.com");
+    expect(url).toBe("https://proxy.example.com/gemini");
+  });
+
+  it("Gemini uses /api/llm/gemini when proxy is app base", async () => {
+    const fetchSpy = mockGeminiOk();
+    vi.stubGlobal("fetch", fetchSpy as unknown as typeof fetch);
+
+    await getLiveAiText({
+      provider: "gemini",
+      apiKey: "k",
+      model: "gemini-2.0-flash",
+      prompt: "Тест",
+      history: [],
+      proxyUrl: "/api/llm"
+    });
+
+    const [url] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("/api/llm/gemini");
   });
 
   it("uses Together endpoint when provider=together", async () => {
@@ -182,6 +224,44 @@ describe("getLiveAiText provider routing", () => {
         "Content-Type": "application/json"
       })
     );
+  });
+
+  it("throws on HTTP error for OpenAI-compatible providers (visible in live chain)", async () => {
+    const fetchSpy = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      text: async () => '{"error":"invalid"}'
+    } as unknown as Response);
+    vi.stubGlobal("fetch", fetchSpy as unknown as typeof fetch);
+
+    await expect(
+      getLiveAiText({
+        provider: "groq",
+        apiKey: "bad",
+        model: "llama-3.1-8b-instant",
+        prompt: "Тест",
+        history: []
+      })
+    ).rejects.toThrow(/HTTP 401/);
+  });
+
+  it("throws on HTTP error for Gemini", async () => {
+    const fetchSpy = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 403,
+      text: async () => "Forbidden"
+    } as unknown as Response);
+    vi.stubGlobal("fetch", fetchSpy as unknown as typeof fetch);
+
+    await expect(
+      getLiveAiText({
+        provider: "gemini",
+        apiKey: "bad",
+        model: "gemini-2.0-flash",
+        prompt: "Тест",
+        history: []
+      })
+    ).rejects.toThrow(/HTTP 403/);
   });
 });
 

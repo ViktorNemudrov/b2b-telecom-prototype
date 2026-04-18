@@ -16,7 +16,9 @@ export type ChatWidget =
   | "appeals-summary"
   | "invoices-month"
   | "missed-calls-inline"
-  | "invoices-unpaid-inline";
+  | "invoices-unpaid-inline"
+  | "subscription-balance-inline"
+  | "my-numbers-inline";
 
 /** После ответа ассистента — клиентский переход (демо-навигация по ТЗ). */
 export type ChatNavigateTo = "/missed-calls/" | "/appeals/" | "/invoices/" | "/home/";
@@ -97,6 +99,29 @@ export const userProfile = {
   legalName: "ИП Балашов Владислав"
 };
 
+/** Детерминированный сценарий чата «Баланс / подписка». */
+export const subscriptionBalanceChatMock = {
+  productName: "Связь для бизнеса",
+  priceRub: 1999,
+  validUntilLabel: "25.04.2026",
+  renewalNote: "Напомним о продлении за 3 дня до окончания"
+} as const;
+
+export type MyNumberLine = {
+  holder: string;
+  phone: string;
+  tariff: string;
+  remainData: string;
+  remainMinutes: string;
+};
+
+/** Детерминированный сценарий чата «Мои номера». */
+export const myNumbersChatMock: MyNumberLine[] = [
+  { holder: "Иванов Алексей", phone: "+79011234567", tariff: "Лайт", remainData: "120 Гб", remainMinutes: "200 мин" },
+  { holder: "Петрова Мария", phone: "+79122345678", tariff: "Бизнес+", remainData: "520 Гб", remainMinutes: "700 мин" },
+  { holder: "Сидоров Дмитрий", phone: "+792534567889", tariff: "Лайт", remainData: "20 Гб", remainMinutes: "100 мин" }
+];
+
 /** Последние запросы — чипсы над поиском (ТЗ). */
 export const recentQueryChips = [
   "Мои сервисы",
@@ -118,6 +143,7 @@ export const recentHistoryQuickPrompts = [
   "Инсайты",
   "Открытые обращения",
   "Баланс",
+  "Мои номера",
   "Изменить настройки секретаря",
   "Настроить запись звонков"
 ] as const;
@@ -500,7 +526,7 @@ export function getAppealById(id: string): AppealItem | undefined {
   return appealsMock.find((a) => a.id === id);
 }
 
-/** Навигация из чата (ТЗ: «мои обращения», «пропущенные звонки», «мои счета» / «счета за …»). */
+/** Демо-навигация из чата (например пропущенные звонки). Список обращений в AI-first — в чате, без перехода по интенту «обращения». */
 export function getDemoNavigationIntent(
   prompt: string
 ): { to: ChatNavigateTo; ack: string } | undefined {
@@ -509,10 +535,6 @@ export function getDemoNavigationIntent(
 
   if (q.includes("пропущенные") && (q.includes("звон") || q.includes("вызов"))) {
     return { to: "/missed-calls/", ack: "Открываю список пропущенных звонков." };
-  }
-
-  if (q === "обращения" || q.includes("мои обращения") || q.includes("активные обращения")) {
-    return { to: "/appeals/", ack: "Открываю раздел обращений." };
   }
 
   return undefined;
