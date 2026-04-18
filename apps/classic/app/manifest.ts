@@ -2,12 +2,12 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "B2B Telecom — Классика",
-    short_name: "Telecom+",
+    name: "Билайн.One",
+    short_name: "Билайн.One",
     start_url: "/",
     display: "standalone",
-    background_color: "#FAFCFF",
-    theme_color: "#1F2035",
+    background_color: "#F7F8FA",
+    theme_color: "#F7F8FA",
     icons: [
       {
         src: "/icons/icon-192.png",
@@ -30,3 +30,4 @@ export default function manifest(): MetadataRoute.Manifest {
     ]
   };
 }
+

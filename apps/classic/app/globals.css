@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 :root {
+  /* Макет 1722 / 966 — холст #F7F8FA */
   --bg: 247 248 250;
   --card: 255 255 255;
   --text: 39 40 57;
@@ -35,6 +36,7 @@ body {
   padding-right: max(16px, env(safe-area-inset-right));
 }
 
+/* Пульсация шара на экране запуска (888) */
 @keyframes launch-sphere-pulse {
   0%,
   100% {

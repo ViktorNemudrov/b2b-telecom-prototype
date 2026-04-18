@@ -1,3 +1,3 @@
 "use client";
 
-export { GlobalAppHeader as AppHeader } from "@shared/components/GlobalAppHeader";
+export { BeelineAssistantHeader as AppHeader } from "@shared/components/BeelineAssistantHeader";

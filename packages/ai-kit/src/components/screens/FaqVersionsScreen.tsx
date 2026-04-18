@@ -6,6 +6,13 @@ import { Card, CardContent } from "@shared/components/ui/card";
 
 const versions = [
   {
+    tag: "v.0.2.26",
+    items: [
+      "Зафиксирована текущая линия AI-first; вариант Classic выведен на полную копию кода и экранов для независимой разработки в `@b2b/classic-kit`",
+      "Исправлены неточности работы продукта"
+    ]
+  },
+  {
     tag: "v.0.2.25",
     items: [
       "Архитектура: AI-first подключает только `@b2b/ai-kit`, Classic — только `@b2b/classic-kit` (два независимых кода; правки в одном варианте не обязаны затрагивать другой)",

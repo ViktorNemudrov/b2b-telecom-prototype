@@ -13,7 +13,7 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
       <AppHeader />
       <AppShell>
         <div className="safe-px pt-2">
-          <CallDetailClient id={params.id} backHref="/communication" />
+          <CallDetailClient id={params.id} backHref="/assistant/" />
         </div>
       </AppShell>
     </>

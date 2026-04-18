@@ -31,6 +31,7 @@ export function PwaInstallPrompt() {
       window.localStorage.getItem(LEGACY_PWA_INSTALL_DISMISSED_KEY) === "1";
     const completed = window.localStorage.getItem(PWA_INSTALL_COMPLETED_KEY) === "1";
     if (dismissed || completed) {
+      // Keep backward compatibility with old key naming used in previous builds.
       if (dismissed) {
         window.localStorage.setItem(PWA_INSTALL_DISMISSED_KEY, "1");
       }

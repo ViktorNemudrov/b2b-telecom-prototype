@@ -46,8 +46,8 @@ test.describe("Classic user actions", () => {
     const invoiceLinks = page.locator('a[href^="/invoices/"]');
     const firstBefore = await invoiceLinks.first().innerText();
 
-    await page.locator("#invoice-sort-classic").selectOption("amount_asc");
-    await expect(page.locator("#invoice-sort-classic")).toHaveValue("amount_asc");
+    await page.locator("#invoice-sort-ai").selectOption("amount_asc");
+    await expect(page.locator("#invoice-sort-ai")).toHaveValue("amount_asc");
 
     const firstAfter = await invoiceLinks.first().innerText();
     expect(firstAfter).not.toBe(firstBefore);

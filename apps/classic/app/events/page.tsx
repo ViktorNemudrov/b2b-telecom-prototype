@@ -1,16 +1,16 @@
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageBackLink } from "@shared/components/PageBackLink";
-import { HomeDashboardScreen } from "@shared/components/screens/HomeDashboardScreen";
+import { EventsFeedScreen } from "@shared/components/screens/EventsFeedScreen";
 
-export default function ServicesHomePage() {
+export default function EventsPage() {
   return (
     <>
       <AppHeader />
       <AppShell>
         <div className="safe-px pt-2">
-          <PageBackLink />
-          <HomeDashboardScreen />
+          <PageBackLink label="Назад" />
+          <EventsFeedScreen />
         </div>
       </AppShell>
     </>

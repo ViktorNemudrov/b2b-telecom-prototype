@@ -7,7 +7,7 @@ export default function QaPage() {
     <>
       <AppHeader />
       <AppShell>
-        <QaDiagnosticsScreen backHref="/settings/" />
+        <QaDiagnosticsScreen />
       </AppShell>
     </>
   );

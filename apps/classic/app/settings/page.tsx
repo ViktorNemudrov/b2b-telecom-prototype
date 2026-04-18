@@ -7,7 +7,7 @@ export default function SettingsPage() {
     <>
       <AppHeader />
       <AppShell>
-        <SettingsScreen appealsHref="/appeals" backHref="/" />
+        <SettingsScreen appealsHref="/appeals/" backHref="/assistant/" />
       </AppShell>
     </>
   );

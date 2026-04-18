@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
+import { PageBackLink } from "@shared/components/PageBackLink";
 import { cn } from "@shared/components/ui/cn";
 import { useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
 
@@ -33,18 +34,20 @@ export default function InvoicesListPage() {
       return parsePeriod(b.periodLabel) - parsePeriod(a.periodLabel) || parseDue(b.dueLabel) - parseDue(a.dueLabel);
     });
   }, [invoices, sortBy]);
+
   return (
     <>
       <AppHeader />
       <AppShell>
         <div className="safe-px space-y-4 pb-6 pt-2">
+          <PageBackLink />
           <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Счета 2026</h1>
           <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2">
-            <label htmlFor="invoice-sort-classic" className="text-sm text-slate-600 dark:text-slate-300">
+            <label htmlFor="invoice-sort-ai" className="text-sm text-slate-600 dark:text-slate-300">
               Сортировка:
             </label>
             <select
-              id="invoice-sort-classic"
+              id="invoice-sort-ai"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
               className="w-full max-w-[260px] rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"

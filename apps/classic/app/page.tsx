@@ -1,10 +1,26 @@
-import { Suspense } from "react";
-import { ClassicHomeClient } from "@/components/ClassicHomeClient";
+"use client";
 
-export default function ClassicHomePage() {
-  return (
-    <Suspense fallback={<div className="min-h-dvh bg-[rgb(var(--bg))]" aria-hidden />}>
-      <ClassicHomeClient />
-    </Suspense>
-  );
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { LaunchScreen } from "@shared/components/screens/LaunchScreen";
+
+export default function HomePage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      router.replace("/assistant/");
+    }, 3000);
+    const hardFallback = window.setTimeout(() => {
+      if (window.location.pathname === "/") {
+        window.location.replace("/assistant/");
+      }
+    }, 5200);
+    return () => {
+      window.clearTimeout(t);
+      window.clearTimeout(hardFallback);
+    };
+  }, [router]);
+
+  return <LaunchScreen />;
 }

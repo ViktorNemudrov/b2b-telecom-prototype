@@ -15,8 +15,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "B2B Telecom — Классика",
-  description: "Классический мобильный прототип: главный экран — кабинет, AI отдельной вкладкой",
+  title: "Билайн.One",
+  description: "Билайн.One — AI ассистент для бизнеса",
   icons: {
     icon: [
       { url: "/icons/icon-16.png", sizes: "16x16", type: "image/png" },
@@ -51,3 +51,4 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+

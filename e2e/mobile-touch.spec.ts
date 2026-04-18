@@ -16,10 +16,10 @@ test("mobile touch: assistant send and open invoice detail", async ({ page }) =>
   await expect(page).toHaveURL(/\/invoices\/.+\/?$/);
 });
 
-test("mobile touch: classic sorting and pwa assets", async ({ page, request }) => {
+test("mobile touch: classic app invoices and pwa assets", async ({ page, request }) => {
   await page.goto("http://127.0.0.1:3001/invoices/");
-  await page.locator("#invoice-sort-classic").selectOption("amount_asc");
-  await expect(page.locator("#invoice-sort-classic")).toHaveValue("amount_asc");
+  await page.locator("#invoice-sort-ai").selectOption("amount_asc");
+  await expect(page.locator("#invoice-sort-ai")).toHaveValue("amount_asc");
 
   const manifest = await request.get("http://127.0.0.1:3001/manifest.webmanifest");
   const sw = await request.get("http://127.0.0.1:3001/sw.js");

@@ -5,7 +5,7 @@ export default function CommunicationPage() {
   return (
     <AppShell>
       <div className="safe-px pt-2">
-        <FeedScreen leadingBack={{ href: "/" }} />
+        <FeedScreen leadingBack={{ href: "/home" }} />
       </div>
     </AppShell>
   );
