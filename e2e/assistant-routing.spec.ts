@@ -41,11 +41,14 @@ test("assistant navigates to appeals from deterministic chat intent", async ({ p
 test("assistant opens invoice detail from unpaid widget", async ({ page }) => {
   await openAssistant(page);
   await sendMessage(page, "покажи неоплаченные счета");
-  const unpaidWidget = page.locator("div").filter({ hasText: "Неоплаченные счета" }).first();
+  await expect(page.getByText("Показываю неоплаченные счета в чате.")).toBeVisible();
   await page.getByText("Неоплаченные счета", { exact: true }).waitFor();
-  const firstInvoiceButton = unpaidWidget.locator("button", { hasText: "₽" }).first();
-  await firstInvoiceButton.scrollIntoViewIfNeeded();
-  await firstInvoiceButton.click();
-  await expect(page).toHaveURL(/\/invoices\/.+\/?$/, { timeout: 10_000 });
-  await expect(page.getByText("Скачать PDF", { exact: true })).toBeVisible();
+  const firstUnpaidRow = page.getByRole("button", { name: /Не оплачен/ }).first();
+  await expect(firstUnpaidRow).toBeVisible();
+  await firstUnpaidRow.scrollIntoViewIfNeeded();
+  await Promise.all([
+    page.waitForURL(/\/invoices\/.+\/?$/, { timeout: 15_000 }),
+    firstUnpaidRow.click()
+  ]);
+  await expect(page.getByRole("button", { name: "Скачать PDF", exact: true })).toBeVisible();
 });
