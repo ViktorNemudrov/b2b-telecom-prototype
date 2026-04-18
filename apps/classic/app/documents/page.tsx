@@ -2,32 +2,21 @@
 
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
+import { ClassicBottomTabBar } from "@shared/components/ClassicBottomTabBar";
 import { PageBackLink } from "@shared/components/PageBackLink";
-import { Button } from "@shared/components/ui/button";
-import { Card, CardContent } from "@shared/components/ui/card";
-import { openDevelopmentStub } from "@shared/lib/developmentStub";
+import { ClassicDocumentsScreen } from "@shared/components/screens/ClassicDocumentsScreen";
 
 export default function DocumentsPage() {
   return (
     <>
       <AppHeader />
       <AppShell>
-        <div className="safe-px pt-4">
+        <div className="safe-px pb-24 pt-4">
           <PageBackLink />
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Документы</h1>
-          <Card className="mt-4">
-            <CardContent className="space-y-4 py-10 text-center text-sm text-slate-600">
-              <p>Раздел в разработке (демо-прототип).</p>
-              <Button
-                className="rounded-full"
-                onClick={() => openDevelopmentStub("Список документов и примеры файлов.")}
-              >
-                Показать примеры
-              </Button>
-            </CardContent>
-          </Card>
+          <ClassicDocumentsScreen />
         </div>
       </AppShell>
+      <ClassicBottomTabBar />
     </>
   );
 }

@@ -10,6 +10,9 @@ export type CustomizableElementId =
   | "classic.profile"
   | "classic.search"
   | "classic.notifications"
+  | "classic.switch.assistant"
+  | "classic.switch.events"
+  | "classic.switch.widgets"
   | "assistant.home.missed"
   | "assistant.home.appeals"
   | "assistant.home.invoices"
@@ -31,7 +34,15 @@ export type CustomizableElementId =
   | "invoice.download"
   | "invoice.pay.qr"
   | "invoice.pay.card"
-  | "invoice.pay.requisites";
+  | "invoice.pay.requisites"
+  | "classic.widgets.addProduct"
+  | "classic.widgets.assistant"
+  | "classic.widgets.recordings"
+  | "classic.widgets.bottom.home"
+  | "classic.widgets.bottom.services"
+  | "classic.widgets.bottom.documents"
+  | "classic.widgets.bottom.sphere"
+  | "classic.widgets.bottom.support";
 
 export type ElementCustomization = {
   useMock: boolean;
@@ -208,7 +219,25 @@ export const customizableElements: CustomizableElementMeta[] = [
     id: "classic.profile",
     label: "Classic шапка: Профиль",
     app: "classic",
-    description: "Левая кнопка профиля в верхней шапке Classic-версии."
+    description: "Левая кнопка профиля в верхней шапке Classic-версии (настройки)."
+  },
+  {
+    id: "classic.switch.events",
+    label: "Classic навбар: иконка Фид",
+    app: "classic",
+    description: "Иконка фида (полоски) в навбаре. Открывает ленту событий."
+  },
+  {
+    id: "classic.switch.widgets",
+    label: "Classic навбар: иконка Виджеты",
+    app: "classic",
+    description: "Иконка виджетов (сетка) в навбаре. Открывает экран виджетов."
+  },
+  {
+    id: "classic.switch.assistant",
+    label: "Classic навбар: Главный экран (лупа + шар)",
+    app: "classic",
+    description: "Центральный сегмент навбара. Ведёт на главный экран ассистента."
   },
   {
     id: "classic.search",
@@ -220,7 +249,55 @@ export const customizableElements: CustomizableElementMeta[] = [
     id: "classic.notifications",
     label: "Classic шапка: Уведомления",
     app: "classic",
-    description: "Колокольчик справа в верхней шапке Classic-версии, ведет в уведомления."
+    description: "Колокольчик справа в верхней шапке Classic-версии, ведёт в уведомления."
+  },
+  {
+    id: "classic.widgets.addProduct",
+    label: "Виджеты: кнопка «Добавить новый продукт»",
+    app: "classic",
+    description: "Кнопка над сеткой продуктов. В обычном режиме открывает демо-действие."
+  },
+  {
+    id: "classic.widgets.assistant",
+    label: "Виджеты: кнопка «Помощник»",
+    app: "classic",
+    description: "Кнопка над сеткой продуктов. В обычном режиме открывает демо-действие."
+  },
+  {
+    id: "classic.widgets.recordings",
+    label: "Виджеты: карточка «Запись разговоров»",
+    app: "classic",
+    description: "Карточка продукта. В обычном режиме открывает экран записей разговоров."
+  },
+  {
+    id: "classic.widgets.bottom.home",
+    label: "Виджеты: нижнее меню «Главная»",
+    app: "classic",
+    description: "Первый пункт нижней панели на экранах с виджетами. Ведёт на экран виджетов."
+  },
+  {
+    id: "classic.widgets.bottom.services",
+    label: "Виджеты: нижнее меню «Сервисы»",
+    app: "classic",
+    description: "Второй пункт нижней панели. В обычном режиме открывает демо-действие."
+  },
+  {
+    id: "classic.widgets.bottom.documents",
+    label: "Виджеты: нижнее меню «Документы»",
+    app: "classic",
+    description: "Третий пункт нижней панели. Ведёт в раздел документов."
+  },
+  {
+    id: "classic.widgets.bottom.sphere",
+    label: "Виджеты: нижнее меню «Сфера»",
+    app: "classic",
+    description: "Четвёртый пункт нижней панели. В обычном режиме открывает демо-действие."
+  },
+  {
+    id: "classic.widgets.bottom.support",
+    label: "Виджеты: нижнее меню «Поддержка»",
+    app: "classic",
+    description: "Пятый пункт нижней панели. Ведёт в раздел поддержки."
   }
 ];
 

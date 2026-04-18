@@ -28,4 +28,11 @@ describe("uiCustomization", () => {
     expect(getCustomizationButtonClasses(true)).toContain("pointer-events-none");
     expect(getCustomizationButtonClasses(false)).toContain("opacity-100");
   });
+
+  it("includes Classic widgets customization entries", () => {
+    const ids = customizableElements.map((e) => e.id);
+    expect(ids).toContain("classic.widgets.recordings");
+    expect(ids).toContain("classic.widgets.bottom.documents");
+    expect(ids).toContain("classic.widgets.addProduct");
+  });
 });
