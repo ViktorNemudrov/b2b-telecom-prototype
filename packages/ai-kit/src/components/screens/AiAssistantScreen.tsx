@@ -30,6 +30,15 @@ import {
 import { LIVE_FETCH_TIMEOUT_MS } from "@shared/lib/aiLiveConfig";
 import { emitAiMetric } from "@shared/lib/aiClientMetrics";
 import { getLiveAiText, type LiveAiMessage } from "@shared/lib/liveAi";
+import {
+  benchmarkAndOrderLiveProviders,
+  fingerprintLiveProviders,
+  LIVE_PROVIDER_RANK_TTL_MS,
+  orderCandidatesFromStored,
+  readStoredRank,
+  shouldSkipLiveProviderBenchmark,
+  writeStoredRank
+} from "@shared/lib/liveAiProviderRank";
 import { safeParseLiveUserPrompt } from "@shared/lib/liveUserPromptSchema";
 import {
   buildSafeLiveFallbackResponse,
@@ -43,7 +52,7 @@ import { isMissedCallsSeen, markMissedCallsSeen } from "@shared/lib/runtimeFlags
 import { getCustomizationButtonClasses, useUiCustomization } from "@shared/lib/uiCustomization";
 
 const sphereSrc = "/mockups/%D0%A8%D0%B0%D1%80.png";
-type LiveProvider = "openrouter" | "groq" | "grok";
+type LiveProvider = "gemini" | "together" | "openrouter" | "groq" | "grok";
 type LiveCandidate = { provider: LiveProvider; apiKey: string; model: string };
 
 function id() {
@@ -124,6 +133,8 @@ function traceAiSource(sourceLabel: string, prompt: string): void {
 }
 
 function getLiveProviderLabel(provider: LiveProvider) {
+  if (provider === "gemini") return "ответ от Google Gemini";
+  if (provider === "together") return "ответ от Together AI";
   if (provider === "openrouter") return "ответ от OpenRouter";
   if (provider === "grok") return "ответ от Grok/xAI";
   return "ответ от Groq";
@@ -164,6 +175,10 @@ function formatLiveErrorLabel(err: unknown, liveProvider: LiveProvider) {
 }
 
 function buildLiveCandidates(args: {
+  geminiApiKey?: string;
+  geminiModel: string;
+  togetherApiKey?: string;
+  togetherModel: string;
   openRouterApiKey?: string;
   openRouterModel?: string;
   grokApiKey?: string;
@@ -172,6 +187,12 @@ function buildLiveCandidates(args: {
   groqModel: string;
 }): LiveCandidate[] {
   const candidates: LiveCandidate[] = [];
+  if (args.geminiApiKey) {
+    candidates.push({ provider: "gemini", apiKey: args.geminiApiKey, model: args.geminiModel });
+  }
+  if (args.togetherApiKey) {
+    candidates.push({ provider: "together", apiKey: args.togetherApiKey, model: args.togetherModel });
+  }
   if (args.openRouterApiKey) {
     candidates.push({
       provider: "openrouter",
@@ -234,24 +255,110 @@ export function AiAssistantScreen() {
   const invoicesChipCustom = useUiCustomization("assistant.home.invoices");
   const unpaidChipCustom = useUiCustomization("assistant.home.unpaid");
   const unpaidInvoicesCount = runtimeInvoices.filter((inv) => inv.status === "pay").length;
+  const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  const togetherApiKey = process.env.NEXT_PUBLIC_TOGETHER_API_KEY;
   const openRouterApiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
   const grokApiKey = process.env.NEXT_PUBLIC_GROK_API_KEY;
   const groqApiKey = process.env.NEXT_PUBLIC_GROQ_API_KEY;
   const liveProxyUrl = process.env.NEXT_PUBLIC_LLM_PROXY_URL;
+  const geminiModel = process.env.NEXT_PUBLIC_GEMINI_MODEL ?? "gemini-2.0-flash";
+  const togetherModel = process.env.NEXT_PUBLIC_TOGETHER_MODEL ?? "meta-llama/Llama-3.3-70B-Instruct-Turbo";
   const openRouterModel = process.env.NEXT_PUBLIC_OPENROUTER_MODEL;
   const grokModel = process.env.NEXT_PUBLIC_GROK_MODEL ?? "grok-3-mini";
   const groqModel = process.env.NEXT_PUBLIC_GROQ_MODEL ?? "llama-3.1-8b-instant";
 
-  const liveCandidates = buildLiveCandidates({
-    openRouterApiKey,
-    openRouterModel,
-    grokApiKey,
-    grokModel,
-    groqApiKey,
-    groqModel
-  });
+  const baseLiveCandidates = React.useMemo(
+    () =>
+      buildLiveCandidates({
+        geminiApiKey,
+        geminiModel,
+        togetherApiKey,
+        togetherModel,
+        openRouterApiKey,
+        openRouterModel,
+        grokApiKey,
+        grokModel,
+        groqApiKey,
+        groqModel
+      }),
+    [
+      geminiApiKey,
+      geminiModel,
+      togetherApiKey,
+      togetherModel,
+      openRouterApiKey,
+      openRouterModel,
+      grokApiKey,
+      grokModel,
+      groqApiKey,
+      groqModel
+    ]
+  );
+
+  const [rankedLiveCandidates, setRankedLiveCandidates] = React.useState<LiveCandidate[] | null>(null);
+  const liveCandidates = rankedLiveCandidates ?? baseLiveCandidates;
   const isLiveEnabled = liveCandidates.length > 0;
   const primaryLiveProvider: LiveProvider = liveCandidates[0]?.provider ?? "groq";
+
+  React.useEffect(() => {
+    if (baseLiveCandidates.length <= 1) {
+      setRankedLiveCandidates(baseLiveCandidates.length === 1 ? baseLiveCandidates : null);
+      return;
+    }
+    if (shouldSkipLiveProviderBenchmark()) {
+      setRankedLiveCandidates(null);
+      return;
+    }
+
+    const fp = fingerprintLiveProviders(baseLiveCandidates);
+    const stored = readStoredRank();
+    if (
+      stored &&
+      stored.fingerprint === fp &&
+      Date.now() - stored.measuredAt < LIVE_PROVIDER_RANK_TTL_MS
+    ) {
+      const fromCache = orderCandidatesFromStored(baseLiveCandidates, stored);
+      if (fromCache) {
+        setRankedLiveCandidates(fromCache);
+        if (typeof process !== "undefined" && process.env.NODE_ENV === "development") {
+          console.info("[live-ai] порядок провайдеров из кэша (мс)", stored.ms);
+        }
+        return;
+      }
+    }
+
+    const ac = new AbortController();
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const { ordered, ms } = await benchmarkAndOrderLiveProviders({
+          candidates: baseLiveCandidates,
+          proxyUrl: liveProxyUrl,
+          signal: ac.signal
+        });
+        if (cancelled) return;
+        setRankedLiveCandidates(ordered);
+        writeStoredRank({
+          v: 1,
+          fingerprint: fp,
+          measuredAt: Date.now(),
+          order: ordered.map((c) => c.provider),
+          ms
+        });
+        if (typeof process !== "undefined" && process.env.NODE_ENV === "development") {
+          console.info("[live-ai] замер скорости (мс, быстрее → выше в списке)", ms);
+        }
+      } catch {
+        if (!cancelled) setRankedLiveCandidates(null);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      ac.abort();
+    };
+  }, [baseLiveCandidates, liveProxyUrl]);
 
   React.useEffect(() => {
     setShowMissedCard(!isMissedCallsSeen());

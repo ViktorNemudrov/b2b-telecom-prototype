@@ -1,5 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
+// Один dev-сервер на порт 3000: параллельные страницы дают гонки навигации в чате.
+test.describe.configure({ mode: "serial" });
+
 async function openAssistant(page: Page) {
   await page.addInitScript(() => {
     window.localStorage.setItem("b2b_pwa_install_dismissed_v1", "1");
@@ -26,7 +29,14 @@ test("assistant routing smoke: special -> deterministic -> live/fallback", async
   await expect(page.getByText("Неоплаченные счета", { exact: true })).toBeVisible();
 
   await sendMessage(page, "расскажи что-нибудь про квантовый отжиг");
-  await expect(page.getByText("Сейчас не удалось получить надежный live-ответ.", { exact: false })).toBeVisible();
+  // При настроенных ключах live ответ может пройти; иначе — запасной сценарий.
+  // .first() — избегаем strict mode, если видны и текст ответа, и подпись «ответ от …».
+  await expect(
+    page
+      .getByText("Сейчас не удалось получить надежный live-ответ.", { exact: false })
+      .or(page.getByText(/ответ от /))
+      .first()
+  ).toBeVisible({ timeout: 25_000 });
 });
 
 test("assistant navigates to appeals from deterministic chat intent", async ({ page }) => {

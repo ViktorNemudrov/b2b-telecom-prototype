@@ -4,6 +4,9 @@ import { shouldRejectModelOutput } from "./liveAiGuards";
 
 export type LiveAiMessage = { role: "user" | "assistant" | "system"; content: string };
 
+/** Провайдеры live-ответа в порядке перебора (см. `AiAssistantScreen`). */
+export type LiveAiProviderId = "gemini" | "together" | "openrouter" | "groq" | "grok";
+
 type OpenRouterChoice = {
   message?: {
     content?: string | Array<{ type?: string; text?: string }>;
@@ -12,6 +15,10 @@ type OpenRouterChoice = {
 
 type OpenRouterResponse = {
   choices?: OpenRouterChoice[];
+};
+
+type GeminiResponse = {
+  candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
 };
 
 export function extractAssistantText(payload: OpenRouterResponse): string | null {
@@ -25,6 +32,13 @@ export function extractAssistantText(payload: OpenRouterResponse): string | null
   return text || null;
 }
 
+export function extractGeminiText(payload: GeminiResponse): string | null {
+  const parts = payload.candidates?.[0]?.content?.parts;
+  if (!parts?.length) return null;
+  const text = parts.map((p) => (typeof p.text === "string" ? p.text : "")).join("").trim();
+  return text || null;
+}
+
 export function buildLiveAiMessages(prompt: string, history: LiveAiMessage[]): LiveAiMessage[] {
   const preface: LiveAiMessage = {
     role: "system",
@@ -34,6 +48,54 @@ export function buildLiveAiMessages(prompt: string, history: LiveAiMessage[]): L
   return [preface, ...safeHistory, { role: "user", content: prompt.trim() }];
 }
 
+function geminiMessagesToRequest(messages: LiveAiMessage[]): {
+  systemInstruction?: { parts: { text: string }[] };
+  contents: Array<{ role: "user" | "model"; parts: { text: string }[] }>;
+} {
+  const systemChunks: string[] = [];
+  const contents: Array<{ role: "user" | "model"; parts: { text: string }[] }> = [];
+  for (const m of messages) {
+    if (m.role === "system") {
+      systemChunks.push(m.content);
+      continue;
+    }
+    const role = m.role === "assistant" ? "model" : "user";
+    contents.push({ role, parts: [{ text: m.content }] });
+  }
+  const out: {
+    systemInstruction?: { parts: { text: string }[] };
+    contents: Array<{ role: "user" | "model"; parts: { text: string }[] }>;
+  } = { contents };
+  if (systemChunks.length) {
+    out.systemInstruction = { parts: [{ text: systemChunks.join("\n\n") }] };
+  }
+  return out;
+}
+
+function resolveModel(provider: LiveAiProviderId, explicit?: string): string {
+  const m = explicit?.trim();
+  if (m) return m;
+  switch (provider) {
+    case "gemini":
+      return "gemini-2.0-flash";
+    case "together":
+      return "meta-llama/Llama-3.3-70B-Instruct-Turbo";
+    case "groq":
+      return "llama-3.1-8b-instant";
+    case "grok":
+      return "grok-3-mini";
+    default:
+      return "mistralai/mistral-small-3.2-24b-instruct:free";
+  }
+}
+
+function openAiCompatibleEndpoint(provider: Exclude<LiveAiProviderId, "gemini">): string {
+  if (provider === "groq") return "https://api.groq.com/openai/v1/chat/completions";
+  if (provider === "grok") return "https://api.x.ai/v1/chat/completions";
+  if (provider === "together") return "https://api.together.xyz/v1/chat/completions";
+  return "https://openrouter.ai/api/v1/chat/completions";
+}
+
 export async function getLiveAiText(args: {
   prompt: string;
   history: LiveAiMessage[];
@@ -41,11 +103,12 @@ export async function getLiveAiText(args: {
   model?: string;
   contextSummary?: string;
   signal?: AbortSignal;
-  provider?: "openrouter" | "groq" | "grok";
+  provider?: LiveAiProviderId;
   proxyUrl?: string;
 }): Promise<string | null> {
-  const { prompt, history, apiKey, signal, contextSummary, provider = "openrouter", proxyUrl } = args;
-  const model = args.model || "mistralai/mistral-small-3.2-24b-instruct:free";
+  const { prompt, history, apiKey, signal, contextSummary, proxyUrl } = args;
+  const provider = args.provider ?? "openrouter";
+  const model = resolveModel(provider, args.model);
   const t0 = typeof performance !== "undefined" ? performance.now() : Date.now();
   emitAiMetric({ type: "live_fetch_start", at: Date.now() });
   const messages = buildLiveAiMessages(prompt, history);
@@ -55,19 +118,67 @@ export async function getLiveAiText(args: {
       content: `Контекст данных приложения:\n${contextSummary}`
     });
   }
+
+  if (provider === "gemini") {
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+    const { systemInstruction, contents } = geminiMessagesToRequest(messages);
+    const body: Record<string, unknown> = {
+      contents,
+      generationConfig: {
+        temperature: OPENROUTER_COMPLETION_DEFAULTS.temperature,
+        topP: OPENROUTER_COMPLETION_DEFAULTS.top_p,
+        maxOutputTokens: OPENROUTER_COMPLETION_DEFAULTS.max_tokens
+      }
+    };
+    if (systemInstruction) body.systemInstruction = systemInstruction;
+
+    let res: Response;
+    try {
+      res = await fetch(geminiUrl, {
+        method: "POST",
+        cache: "no-store",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal
+      });
+    } catch (e) {
+      const ms = typeof performance !== "undefined" ? performance.now() - t0 : 0;
+      emitAiMetric({ type: "live_fetch_end", at: Date.now(), ok: false, ms });
+      throw e;
+    }
+    if (!res.ok) {
+      const ms = typeof performance !== "undefined" ? performance.now() - t0 : 0;
+      emitAiMetric({ type: "live_fetch_end", at: Date.now(), ok: false, ms });
+      return null;
+    }
+    const data = (await res.json()) as GeminiResponse;
+    const raw = extractGeminiText(data);
+    if (!raw) {
+      emitAiMetric({ type: "live_output_rejected", reason: "empty" });
+      const ms = typeof performance !== "undefined" ? performance.now() - t0 : 0;
+      emitAiMetric({ type: "live_fetch_end", at: Date.now(), ok: false, ms });
+      return null;
+    }
+    if (shouldRejectModelOutput(raw)) {
+      emitAiMetric({ type: "live_output_rejected", reason: "repetition" });
+      const ms = typeof performance !== "undefined" ? performance.now() - t0 : 0;
+      emitAiMetric({ type: "live_fetch_end", at: Date.now(), ok: false, ms });
+      return null;
+    }
+    const ms = typeof performance !== "undefined" ? performance.now() - t0 : 0;
+    emitAiMetric({ type: "live_fetch_end", at: Date.now(), ok: true, ms, intent: "live" });
+    return raw;
+  }
+
+  const useProxy = Boolean(proxyUrl?.trim());
+  const endpoint = useProxy ? proxyUrl!.trim() : openAiCompatibleEndpoint(provider);
+
   let res: Response;
-  const endpoint = proxyUrl?.trim()
-    ? proxyUrl.trim()
-    : provider === "groq"
-      ? "https://api.groq.com/openai/v1/chat/completions"
-      : provider === "grok"
-        ? "https://api.x.ai/v1/chat/completions"
-        : "https://openrouter.ai/api/v1/chat/completions";
   try {
     res = await fetch(endpoint, {
       method: "POST",
       cache: "no-store",
-      headers: proxyUrl?.trim()
+      headers: useProxy
         ? {
             "Content-Type": "application/json"
           }

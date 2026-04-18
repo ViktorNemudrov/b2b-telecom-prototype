@@ -1,5 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { buildLiveAiMessages, extractAssistantText } from "./liveAi";
+import { buildLiveAiMessages, extractAssistantText, extractGeminiText } from "./liveAi";
+
+describe("extractGeminiText", () => {
+  it("reads first candidate text parts", () => {
+    expect(
+      extractGeminiText({
+        candidates: [{ content: { parts: [{ text: "Привет" }] } }]
+      })
+    ).toBe("Привет");
+  });
+
+  it("returns null when no candidates", () => {
+    expect(extractGeminiText({ candidates: [] })).toBeNull();
+  });
+});
 
 describe("extractAssistantText", () => {
   it("reads string content", () => {

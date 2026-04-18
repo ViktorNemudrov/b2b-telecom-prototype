@@ -114,5 +114,74 @@ describe("getLiveAiText provider routing", () => {
     );
     expect(JSON.stringify(init.headers)).not.toContain("Authorization");
   });
+
+  const mockGeminiOk = () =>
+    vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        candidates: [{ content: { parts: [{ text: okAnswer }] } }]
+      })
+    } as unknown as Response);
+
+  it("uses Gemini endpoint when provider=gemini", async () => {
+    const fetchSpy = mockGeminiOk();
+    vi.stubGlobal("fetch", fetchSpy as unknown as typeof fetch);
+
+    await getLiveAiText({
+      provider: "gemini",
+      apiKey: "AIza-test",
+      model: "gemini-2.0-flash",
+      prompt: "Тест",
+      history: []
+    });
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(url).toContain("generativelanguage.googleapis.com");
+    expect(url).toContain("models/gemini-2.0-flash:generateContent");
+    expect(url).toContain("key=AIza-test");
+    expect(init.headers).toEqual({ "Content-Type": "application/json" });
+    expect(JSON.stringify(init.headers)).not.toContain("Authorization");
+  });
+
+  it("Gemini ignores proxy URL and calls Google directly", async () => {
+    const fetchSpy = mockGeminiOk();
+    vi.stubGlobal("fetch", fetchSpy as unknown as typeof fetch);
+
+    await getLiveAiText({
+      provider: "gemini",
+      apiKey: "k",
+      model: "gemini-2.0-flash",
+      prompt: "Тест",
+      history: [],
+      proxyUrl: "https://proxy.example.com/chat"
+    });
+
+    const [url] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(url).toContain("generativelanguage.googleapis.com");
+  });
+
+  it("uses Together endpoint when provider=together", async () => {
+    const fetchSpy = mockFetchOk();
+    vi.stubGlobal("fetch", fetchSpy as unknown as typeof fetch);
+
+    await getLiveAiText({
+      provider: "together",
+      apiKey: "together-key",
+      model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+      prompt: "Тест",
+      history: []
+    });
+
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("https://api.together.xyz/v1/chat/completions");
+    expect(init.headers).toEqual(
+      expect.objectContaining({
+        Authorization: "Bearer together-key",
+        "Content-Type": "application/json"
+      })
+    );
+  });
 });
 

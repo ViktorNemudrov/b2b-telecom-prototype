@@ -1,7 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const hasLiveKeys = Boolean(
-  process.env.NEXT_PUBLIC_OPENROUTER_API_KEY ||
+  process.env.NEXT_PUBLIC_GEMINI_API_KEY ||
+    process.env.NEXT_PUBLIC_TOGETHER_API_KEY ||
+    process.env.NEXT_PUBLIC_OPENROUTER_API_KEY ||
     process.env.NEXT_PUBLIC_GROK_API_KEY ||
     process.env.NEXT_PUBLIC_GROQ_API_KEY
 );
@@ -130,7 +132,9 @@ test.describe("assistant AI UX", () => {
     await sendWithEnter(page, "расскажи короткий анекдот про программиста");
 
     await expect(
-      page.getByText(/ответ от (Grok\/xAI|OpenRouter|Groq)( \(без строгой верификации\))?/)
+      page.getByText(
+        /ответ от (Google Gemini|Together AI|Grok\/xAI|OpenRouter|Groq)( \(без строгой верификации\))?/
+      )
     ).toBeVisible({ timeout: 20_000 });
   });
 });

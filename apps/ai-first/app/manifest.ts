@@ -2,9 +2,11 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: "/",
     name: "Билайн.One",
     short_name: "Билайн.One",
     start_url: "/",
+    scope: "/",
     display: "standalone",
     background_color: "#F7F8FA",
     theme_color: "#F7F8FA",

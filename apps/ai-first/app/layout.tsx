@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { DemoSessionProvider } from "@shared/components/DemoSessionProvider";
 import { DevelopmentStubHost } from "@shared/components/DevelopmentStubHost";
@@ -13,6 +13,11 @@ const inter = Inter({
   display: "swap",
   variable: "--font-inter"
 });
+
+export const viewport: Viewport = {
+  themeColor: "#F7F8FA",
+  viewportFit: "cover"
+};
 
 export const metadata: Metadata = {
   title: "Билайн.One",
