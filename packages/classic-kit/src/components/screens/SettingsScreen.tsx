@@ -36,16 +36,18 @@ export function SettingsScreen({
   };
 
   return (
-    <div className="safe-px mx-auto max-w-[430px] space-y-4 pb-10 pt-1">
-      <PageBackLink href={backHref} className="mb-1.5" />
-
-      <div className="flex flex-col items-center gap-0.5 text-center">
-        <div className="text-lg font-bold text-slate-900 dark:text-slate-100">
-          Билайн <span className="text-accent-yellow">One</span>
+    <div className="safe-px mx-auto max-w-[430px] pb-10 pt-0">
+      <div className="flex flex-col gap-1.5">
+        <PageBackLink href={backHref} className="mb-0" />
+        <div className="flex flex-col items-center gap-0.5 text-center">
+          <div className="text-lg font-bold text-slate-900 dark:text-slate-100">
+            Билайн <span className="text-accent-yellow">One</span>
+          </div>
+          <div className="text-sm text-slate-600 dark:text-slate-400">{userProfile.legalName}</div>
         </div>
-        <div className="text-sm text-slate-600 dark:text-slate-400">{userProfile.legalName}</div>
       </div>
 
+      <div className="mt-4 space-y-4">
       <Card className="border-violet-200/50 bg-gradient-to-br from-violet-50 to-white dark:border-violet-800/50 dark:from-violet-950/40 dark:to-slate-900">
         <CardContent className="space-y-3 pb-5 pt-5">
           <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white dark:bg-slate-200 dark:text-slate-900">
@@ -160,6 +162,7 @@ export function SettingsScreen({
       >
         Выход
       </button>
+      </div>
     </div>
   );
 }
