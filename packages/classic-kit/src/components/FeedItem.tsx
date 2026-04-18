@@ -1,0 +1,155 @@
+"use client";
+
+import { openDevelopmentStub } from "@shared/lib/developmentStub";
+import type { FeedItem as FeedItemT } from "@shared/lib/mockData";
+import { Card, CardContent } from "@shared/components/ui/card";
+import { Button } from "@shared/components/ui/button";
+import { AlertTriangle, Calendar, Sparkles } from "lucide-react";
+import { TariffSubscriptionCard } from "@shared/components/TariffSubscriptionCard";
+import { RecordingPlayer } from "@shared/components/RecordingPlayer";
+import { CallSummaryCard } from "@shared/components/CallSummaryCard";
+import { useUiCustomization } from "@shared/lib/uiCustomization";
+
+export function FeedItem({
+  item,
+  expandedTranscript,
+  onToggleTranscript,
+  onAction
+}: {
+  item: FeedItemT;
+  expandedTranscript: boolean;
+  onToggleTranscript: (id: string) => void;
+  onAction: (action: { type: "pay" | "report" }) => void;
+}) {
+  const alertCtaCustom = useUiCustomization("feed.cta.alert");
+  const summaryCtaCustom = useUiCustomization("feed.cta.summary");
+  const toolCtaCustom = useUiCustomization("feed.cta.tool");
+
+  if (item.kind === "call") {
+    const c = item.call;
+    return (
+      <Card>
+        <CardContent className="pb-4 pt-4">
+          <CallSummaryCard
+            call={c}
+            expanded={expandedTranscript}
+            onToggleTranscript={() => onToggleTranscript(item.id)}
+            detailHref={`/call/${c.id}`}
+          />
+
+          {c.recordingUrl ? (
+            <div className="mt-4">
+              <RecordingPlayer src={c.recordingUrl} fileName={`${c.id}.wav`} />
+            </div>
+          ) : null}
+
+          {expandedTranscript ? (
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm whitespace-pre-wrap text-slate-800">
+              {c.transcript}
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (item.kind === "tariff") {
+    return <TariffSubscriptionCard stats={item.stats} />;
+  }
+
+  if (item.kind === "alert") {
+    return (
+      <Card>
+        <CardContent className="pb-4 pt-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-900/30">
+              <AlertTriangle className="h-5 w-5 text-amber-700" />
+            </div>
+            <div className="flex-1">
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{item.title}</div>
+              <div className="mt-1 text-sm text-slate-700 dark:text-slate-300">{item.description}</div>
+            </div>
+          </div>
+          <div className="mt-4">
+            <Button
+              className="w-full"
+              onClick={() => {
+                if (alertCtaCustom.useMock) {
+                  openDevelopmentStub("CTA предупреждения (мок из кастомизации).");
+                  return;
+                }
+                onAction({ type: "pay" });
+              }}
+              disabled={alertCtaCustom.dimmedDisabled}
+            >
+              {item.cta}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (item.kind === "summary") {
+    return (
+      <Card>
+        <CardContent className="pb-4 pt-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 dark:bg-slate-700">
+              <Calendar className="h-5 w-5 text-slate-700" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{item.title}</div>
+              <div className="mt-1 text-sm text-slate-700 dark:text-slate-300">{item.description}</div>
+            </div>
+          </div>
+          <Button
+            variant="secondary"
+            className="mt-4 w-full rounded-full"
+            onClick={() =>
+              openDevelopmentStub(
+                summaryCtaCustom.useMock ? "Экспорт сводки в PDF (мок из кастомизации)." : "Экспорт сводки в PDF."
+              )
+            }
+            disabled={summaryCtaCustom.dimmedDisabled}
+          >
+            Открыть сводку
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // tool
+  return (
+    <Card>
+      <CardContent className="pb-4 pt-4">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EFEAFF]">
+            <Sparkles className="h-5 w-5 text-accent-violet" />
+          </div>
+          <div className="flex-1">
+            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{item.title}</div>
+            <div className="mt-1 text-sm text-slate-700 dark:text-slate-300">{item.description}</div>
+          </div>
+        </div>
+        <div className="mt-4">
+          <Button
+            className="w-full"
+            onClick={() => {
+              if (toolCtaCustom.useMock) {
+                openDevelopmentStub("CTA AI-инструмента (мок из кастомизации).");
+                return;
+              }
+              onAction({ type: "report" });
+            }}
+            disabled={toolCtaCustom.dimmedDisabled}
+          >
+            {item.cta}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+

@@ -1,5 +1,5 @@
 {
-  "name": "@b2b/shared",
+  "name": "@b2b/classic-kit",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

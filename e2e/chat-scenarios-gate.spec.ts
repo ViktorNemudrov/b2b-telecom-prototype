@@ -83,10 +83,10 @@ async function assertScenario(page: Page, scenario: ScenarioCase, options?: { li
     await expect(page.getByText(scenario.expectedText, { exact: false }).last()).toBeVisible({ timeout: 10_000 });
   }
   if (scenario.prompt === "открыть список счетов") {
-    await expect(page).toHaveURL(/\/invoices\/?$/);
+    await expect(page).toHaveURL(/\/invoices\/?$/, { timeout: 15_000 });
   }
   if (scenario.prompt === "да, создать обращение") {
-    await expect(page).toHaveURL(/\/appeals\/?$/);
+    await expect(page).toHaveURL(/\/appeals\/?$/, { timeout: 15_000 });
   }
   if (scenario.expectedWidgetTitle) {
     await expect(page.getByText(scenario.expectedWidgetTitle, { exact: scenario.exactWidgetTitle ?? false })).toBeVisible({

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { safeParseLiveUserPrompt } from "../../packages/shared/src/lib/liveUserPromptSchema";
+import { safeParseLiveUserPrompt } from "../../packages/ai-kit/src/lib/liveUserPromptSchema";
 
 describe("regression: zod validation", () => {
   it("accepts valid prompt", () => {

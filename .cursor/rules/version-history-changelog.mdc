@@ -9,7 +9,7 @@ alwaysApply: true
 
 ## Где править
 
-- Источник правды: `packages/shared/src/components/screens/FaqVersionsScreen.tsx` — массив `versions`.
+- Источник правды для FAQ: два файла (правьте тот вариант, который затронут): `packages/ai-kit/src/components/screens/FaqVersionsScreen.tsx` (AI-first), `packages/classic-kit/src/components/screens/FaqVersionsScreen.tsx` (Classic) — массив `versions`.
 
 ## Формат
 

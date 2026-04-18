@@ -5,7 +5,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@shared/*": ["../../packages/shared/src/*"]
+      "@shared/*": ["../../packages/ai-kit/src/*"]
     },
     "incremental": true
   },
@@ -14,7 +14,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "../../packages/shared/src/types/**/*.d.ts"
+    "../../packages/ai-kit/src/types/**/*.d.ts"
   ],
   "exclude": ["node_modules"]
 }

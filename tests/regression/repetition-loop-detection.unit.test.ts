@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { shouldRejectModelOutput } from "../../packages/shared/src/lib/liveAiGuards";
+import { shouldRejectModelOutput } from "../../packages/ai-kit/src/lib/liveAiGuards";
 
 describe("regression: repetition loop detection", () => {
   it("rejects loop-like repetitive output", () => {

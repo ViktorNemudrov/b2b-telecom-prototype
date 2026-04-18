@@ -1,6 +1,6 @@
 # AI Assistant (client-side OpenRouter) — аудит A–F
 
-Контекст: `output: "export"`, запросы только с клиента (`packages/shared/src/lib/liveAi.ts`). Стриминг SSE не используется — JSON `chat/completions` + `cache: "no-store"`.
+Контекст: `output: "export"`, запросы только с клиента (`packages/ai-kit/src/lib/liveAi.ts`). Стриминг SSE не используется — JSON `chat/completions` + `cache: "no-store"`.
 
 ---
 
@@ -41,14 +41,14 @@
 
 | Файл | Что покрывает |
 |------|----------------|
-| `packages/shared/src/lib/liveAi.test.ts` | `extractAssistantText`, `buildLiveAiMessages` |
-| `packages/shared/src/lib/liveAiGuards.test.ts` | repetition / reject |
-| `packages/shared/src/lib/liveUserPromptSchema.test.ts` | Zod + injection refine |
-| `packages/shared/src/lib/assistantResponse.test.ts` | детерминированные ответы |
-| `packages/shared/src/lib/aiClientMetrics.test.ts` | буфер метрик, `setAiMetricSink` |
+| `packages/ai-kit/src/lib/liveAi.test.ts` | `extractAssistantText`, `buildLiveAiMessages` |
+| `packages/ai-kit/src/lib/liveAiGuards.test.ts` | repetition / reject |
+| `packages/ai-kit/src/lib/liveUserPromptSchema.test.ts` | Zod + injection refine |
+| `packages/ai-kit/src/lib/assistantResponse.test.ts` | детерминированные ответы |
+| `packages/ai-kit/src/lib/aiClientMetrics.test.ts` | буфер метрик, `setAiMetricSink` |
 
-- **Куда класть:** новые unit-тесты рядом с `*.ts` в `packages/shared/src/lib/`.
-- **Как запускать:** `npm run test:chat:unit` или `npx vitest run --config vitest.config.ts packages/shared/src/lib/liveAiGuards.test.ts`.
+- **Куда класть:** новые unit-тесты рядом с `*.ts` в `packages/ai-kit/src/lib/`.
+- **Как запускать:** `npm run test:chat:unit` или `npx vitest run --config vitest.config.ts packages/ai-kit/src/lib/liveAiGuards.test.ts`.
 - **Что мокать:** `fetch` — в тестах `liveAi` при необходимости через `vi.stubGlobal("fetch", ...)` (сейчас не требуется для чистых функций).
 
 ### Playwright
@@ -66,7 +66,7 @@
 
 ## D. System Prompt & Guardrails
 
-- **Текст:** `LIVE_AI_SYSTEM_PROMPT` в `packages/shared/src/lib/aiLiveConfig.ts`.
+- **Текст:** `LIVE_AI_SYSTEM_PROMPT` в `packages/ai-kit/src/lib/aiLiveConfig.ts`.
 - **Параметры API:** `OPENROUTER_COMPLETION_DEFAULTS` — `temperature`, `top_p`, `max_tokens`, `frequency_penalty`, `presence_penalty`.
 - **Клиент:** `fetch` + `cache: "no-store"`; тело включает `...OPENROUTER_COMPLETION_DEFAULTS`.
 - **Пост-гейт:** `shouldRejectModelOutput` → `null` → экран даёт `buildSafeLiveFallbackResponse()`.
@@ -77,17 +77,17 @@
 
 | Область | Путь |
 |---------|------|
-| Запрос OpenRouter, метрики, гейт вывода | `packages/shared/src/lib/liveAi.ts` |
-| System prompt + таймаут + defaults | `packages/shared/src/lib/aiLiveConfig.ts` |
-| Валидация ввода | `packages/shared/src/lib/liveUserPromptSchema.ts` |
-| Детектор повторов | `packages/shared/src/lib/liveAiGuards.ts` |
-| Метрики (ring buffer) | `packages/shared/src/lib/aiClientMetrics.ts` |
-| UI: seq, abort, валидация, `appendChatLog`, таймаут, pending + «Отмена» | `packages/shared/src/components/screens/AiAssistantScreen.tsx` |
+| Запрос OpenRouter, метрики, гейт вывода | `packages/ai-kit/src/lib/liveAi.ts` |
+| System prompt + таймаут + defaults | `packages/ai-kit/src/lib/aiLiveConfig.ts` |
+| Валидация ввода | `packages/ai-kit/src/lib/liveUserPromptSchema.ts` |
+| Детектор повторов | `packages/ai-kit/src/lib/liveAiGuards.ts` |
+| Метрики (ring buffer) | `packages/ai-kit/src/lib/aiClientMetrics.ts` |
+| UI: seq, abort, валидация, `appendChatLog`, таймаут, pending + «Отмена» | `packages/ai-kit/src/components/screens/AiAssistantScreen.tsx` |
 | Пассивный PWA-баннер скрывается после «Понятно» | `apps/ai-first/app/PwaInstallPrompt.tsx` |
 
 Псевдо-хуки (логика уже встроена в экран + lib):
 
-- **useAIStream** — не выделен; non-stream JSON; при переходе на SSE — вынести в `packages/shared/src/lib/useAIStream.ts`.
+- **useAIStream** — не выделен; non-stream JSON; при переходе на SSE — вынести в `packages/ai-kit/src/lib/useAIStream.ts`.
 - **repetitionDetector** — `liveAiGuards.ts`.
 - **historyManager** — `buildLiveAiMessages` + `.slice(-6)`; контекст данных — `buildDataContextSummary` в экране.
 - **sw-bypass** — для текущего JSON: `cache: "no-store"`; для будущего стрима — исключить `openrouter.ai` в `public/sw.js`.

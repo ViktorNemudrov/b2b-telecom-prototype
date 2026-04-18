@@ -16,8 +16,8 @@ This matrix documents how assistant routing works after the refactor.
 - Greeting / salutation small-talk
 - "Как дела" small-talk
 
-Intent phrases are controlled by `SPECIAL_MOCK_INTENTS` in `packages/shared/src/lib/assistantResponse.ts`
-and protected by a snapshot test in `packages/shared/src/lib/assistantResponse.test.ts`.
+Intent phrases are controlled by `SPECIAL_MOCK_INTENTS` in `packages/ai-kit/src/lib/assistantResponse.ts`
+and protected by a snapshot test in `packages/ai-kit/src/lib/assistantResponse.test.ts`.
 
 ## Deterministic Responses
 
@@ -65,6 +65,6 @@ If no live key is configured and no deterministic/special route matches, user ge
 ## Anti-Nonsense Guard
 
 - Live AI answers are validated by `isLiveResponseReliable(prompt, response)` in
-  `packages/shared/src/lib/assistantResponse.ts`.
+  `packages/ai-kit/src/lib/assistantResponse.ts`.
 - If a live answer is not relevant to the prompt domain, chat shows a safe fallback response
   instead of untrusted text.

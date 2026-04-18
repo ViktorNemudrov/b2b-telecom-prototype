@@ -7,7 +7,7 @@
 - [ ] Обновлены тесты?
 - [ ] Прогнан `npm run ci:check`?
 - [ ] Прогнан `npm run ci:e2e`?
-- [ ] Проверен `packages/shared` на регрессию?
+- [ ] Если меняется AI-first: затронуты только `packages/ai-kit` / `apps/ai-first`. Если Classic — только `packages/classic-kit` / `apps/classic`.
 - [ ] Прогнан `npm run predeploy:chat`?
 - [ ] Проверена установка PWA (install prompt / offline fallback)?
 
