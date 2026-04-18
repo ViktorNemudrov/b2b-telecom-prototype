@@ -1,5 +1,7 @@
 "use client";
 
+import { ClassicAssistantNavSwipeContainer } from "@shared/components/ClassicAssistantNavSwipe";
+
 export function AppShell({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-dvh">{children}</div>;
+  return <ClassicAssistantNavSwipeContainer>{children}</ClassicAssistantNavSwipeContainer>;
 }

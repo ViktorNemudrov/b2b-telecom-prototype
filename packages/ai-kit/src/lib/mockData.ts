@@ -315,6 +315,9 @@ export const standaloneCalls: CallItem[] = [
 
 export const allCallIds = standaloneCalls.map((c) => c.id);
 
+/** Число пропущенных в моке (для бейджей и сводок). */
+export const missedCallsCount = standaloneCalls.filter((c) => c.missed).length;
+
 export const weeklyCallStatsMock = {
   total: 126,
   incoming: 82,
@@ -322,6 +325,7 @@ export const weeklyCallStatsMock = {
   botIncoming: 57,
   botClosed: 41,
   botWaitingManager: 16,
+  missed: missedCallsCount,
   avgDuration: "2 минуты 40 секунд",
   peakNote: "пиковая активность была во вторник днём",
   storageDays: 60,
@@ -545,9 +549,17 @@ export function getTariffFromFeed(): TariffStats | null {
   return t && t.kind === "tariff" ? t.stats : null;
 }
 
-export function getAppealsFiltered(filter: "all" | "done" | "rejected"): AppealItem[] {
+/** Фильтр списка обращений (экран обращений). */
+export type AppealsListFilter = "all" | "in_work" | "done" | "rejected";
+
+export function getAppealsFiltered(filter: AppealsListFilter): AppealItem[] {
   if (filter === "done") return appealsMock.filter((a) => a.status === "done");
   if (filter === "rejected") return appealsMock.filter((a) => a.status === "rejected");
+  if (filter === "in_work") {
+    return appealsMock.filter(
+      (a) => a.status === "active" && (a.badgeLabel === "В работе" || a.badgeLabel.includes("работе"))
+    );
+  }
   return appealsMock;
 }
 

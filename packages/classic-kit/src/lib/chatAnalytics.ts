@@ -146,7 +146,7 @@ export function resolveAnalyticsResponse(
 
   if (month && (q.includes("счет") || q.includes("счёт"))) {
     return {
-      text: `Показываю счета за ${month} в чате.`,
+      text: "",
       widget: "invoices-month",
       invoiceMonth: month,
       suggested: ["Сколько неоплаченных?", "Общая сумма", "Сравни с мартом"]
@@ -164,10 +164,8 @@ export function resolveAnalyticsResponse(
   }
 
   if ((q.includes("пропущ") || q.includes("пропуст")) && q.includes("звон")) {
-    const missed = calls.filter((c) => c.missed).length;
-    const total = calls.length;
     return {
-      text: `По текущим данным: всего звонков ${total}, из них пропущенных ${missed}. Показываю детали в чате.`,
+      text: "",
       widget: "missed-calls-inline",
       suggested: ["Покажи звонки за неделю", "Причины пропусков", "Кто чаще звонит"]
     };

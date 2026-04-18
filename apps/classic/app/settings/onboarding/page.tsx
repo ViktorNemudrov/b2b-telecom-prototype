@@ -1,5 +1,6 @@
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
+import { ClassicBottomTabBar } from "@shared/components/ClassicBottomTabBar";
 import { OnboardingScreen } from "@shared/components/screens/OnboardingScreen";
 
 export default function OnboardingPage() {
@@ -7,8 +8,11 @@ export default function OnboardingPage() {
     <>
       <AppHeader />
       <AppShell>
-        <OnboardingScreen backHref="/settings/" />
+        <div className="pb-24">
+          <OnboardingScreen backHref="/settings/" />
+        </div>
       </AppShell>
+      <ClassicBottomTabBar />
     </>
   );
 }

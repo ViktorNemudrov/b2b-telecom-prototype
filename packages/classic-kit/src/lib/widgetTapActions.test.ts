@@ -4,8 +4,8 @@ import { resolveProductTap } from "./widgetTapActions";
 describe("resolveProductTap", () => {
   const off = { useMock: false, dimmedDisabled: false };
 
-  it("navigates to recordings when customization allows", () => {
-    expect(resolveProductTap("Запись разговоров", off)).toEqual({ kind: "navigate-recordings" });
+  it("navigates to communication when customization allows", () => {
+    expect(resolveProductTap("Запись разговоров", off)).toEqual({ kind: "navigate-communication" });
   });
 
   it("stubs recordings when useMock", () => {

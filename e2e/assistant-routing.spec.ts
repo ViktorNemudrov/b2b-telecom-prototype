@@ -25,7 +25,6 @@ test("assistant routing smoke: special -> deterministic -> live/fallback", async
   await expect(page.getByText("И вам здравствуйте, желаю вам хорошего дня")).toBeVisible();
 
   await sendMessage(page, "покажи неоплаченные счета");
-  await expect(page.getByText("Показываю неоплаченные счета в чате.")).toBeVisible();
   await expect(page.getByText("Неоплаченные счета", { exact: true })).toBeVisible();
 
   await sendMessage(page, "расскажи что-нибудь про квантовый отжиг");
@@ -68,7 +67,6 @@ test("assistant opens appeal detail from chat widget via open query", async ({ p
 test("assistant opens invoice detail from unpaid widget", async ({ page }) => {
   await openAssistant(page);
   await sendMessage(page, "покажи неоплаченные счета");
-  await expect(page.getByText("Показываю неоплаченные счета в чате.")).toBeVisible();
   await page.getByText("Неоплаченные счета", { exact: true }).waitFor();
   const firstUnpaidRow = page.getByRole("button", { name: /Не оплачен/ }).first();
   await expect(firstUnpaidRow).toBeVisible();

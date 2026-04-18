@@ -16,11 +16,11 @@ const specialScenarios: ScenarioCase[] = [
 ];
 
 const deterministicScenarios: ScenarioCase[] = [
-  { prompt: "покажи неоплаченные счета", expectedText: "Показываю неоплаченные счета в чате.", expectedWidgetTitle: "Неоплаченные счета", exactWidgetTitle: true },
-  { prompt: "счета за март", expectedText: "Показываю счета за март в чате.", expectedWidgetTitle: "Счета за март", exactWidgetTitle: true },
-  { prompt: "счета за февраль", expectedText: "Показываю счета за февраль в чате.", expectedWidgetTitle: "Счета за февраль", exactWidgetTitle: true },
-  { prompt: "какие у меня счета", expectedText: "Открываю счета и оплату" },
-  { prompt: "сколько пропущенных звонков", expectedText: "По текущим данным: всего звонков", expectedWidgetTitle: "Пропущенные в чате", exactWidgetTitle: true },
+  { prompt: "покажи неоплаченные счета", expectedText: "Неоплаченные счета", expectedWidgetTitle: "Неоплаченные счета", exactWidgetTitle: true },
+  { prompt: "счета за март", expectedText: "Счета за март", expectedWidgetTitle: "Счета за март", exactWidgetTitle: true },
+  { prompt: "счета за февраль", expectedText: "Счета за февраль", expectedWidgetTitle: "Счета за февраль", exactWidgetTitle: true },
+  { prompt: "какие у меня счета", expectedText: "По счетам: всего" },
+  { prompt: "сколько пропущенных звонков", expectedText: "Пропущенные в чате", expectedWidgetTitle: "Пропущенные в чате", exactWidgetTitle: true },
   { prompt: "звонки за неделю", expectedText: "Открываю дашборд со сводкой звонков за неделю" },
   { prompt: "Секретарь", expectedText: "Открываю сценарий «Секретарь»" },
   { prompt: "Увеличить срок хранения звонков", expectedText: "увеличение срока хранения" },
@@ -32,7 +32,7 @@ const deterministicScenarios: ScenarioCase[] = [
   { prompt: "Причины пропусков звонков", expectedText: "Открываю дашборд со сводкой звонков за неделю" },
   { prompt: "Сравнение звонков с предыдущей неделей", expectedText: "Открываю дашборд со сводкой звонков за неделю" },
   { prompt: "Средняя конвертация в лид", expectedText: "Открываю дашборд со сводкой звонков за неделю" },
-  { prompt: "обращения", expectedText: "На данный момент у вас 3 активных обращения", expectedWidgetTitle: "Активные обращения", exactWidgetTitle: true },
+  { prompt: "обращения", expectedText: "Активные обращения", expectedWidgetTitle: "Активные обращения", exactWidgetTitle: true },
   { prompt: "какая разница между суммой счетов в феврале и марте", expectedText: "Сравнение счетов" },
   { prompt: "какая доля неоплаченных счетов", expectedText: "Доля неоплаченных счетов" },
   { prompt: "дай динамику счетов февраль к марту", expectedText: "Динамика" },

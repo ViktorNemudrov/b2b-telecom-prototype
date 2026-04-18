@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Pause, PhoneCall, PhoneOff, Play, Sparkles, X } from "lucide-react";
 import { RecordingPlayer } from "@shared/components/RecordingPlayer";
 import { Card, CardContent } from "@shared/components/ui/card";
-import { getAppealsFiltered, getCallById } from "@shared/lib/mockData";
+import { getAppealsFiltered, getCallById, missedCallsCount } from "@shared/lib/mockData";
 import { isMissedCallsSeen, markMissedCallsSeen } from "@shared/lib/runtimeFlags";
 
 const dailyReportText =
@@ -182,8 +182,10 @@ export function EventsFeedScreen() {
               className="snap-start shrink-0 whitespace-nowrap rounded-full border border-[#E5E7EE] bg-white px-3 py-1.5 text-sm font-medium text-[#343A4A] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
             >
               Пропущенные{" "}
-              {!missedSeen ? (
-                <span className="ml-1 rounded-full bg-[#EB4A4A] px-1.5 text-[10px] text-white">6</span>
+              {!missedSeen && missedCallsCount > 0 ? (
+                <span className="ml-1 rounded-full bg-[#EB4A4A] px-1.5 text-[10px] text-white tabular-nums">
+                  {missedCallsCount}
+                </span>
               ) : null}
             </Link>
             <Link

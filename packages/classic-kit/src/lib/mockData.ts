@@ -550,9 +550,17 @@ export function getTariffFromFeed(): TariffStats | null {
   return t && t.kind === "tariff" ? t.stats : null;
 }
 
-export function getAppealsFiltered(filter: "all" | "done" | "rejected"): AppealItem[] {
+/** Фильтр списка обращений (экран обращений). */
+export type AppealsListFilter = "all" | "in_work" | "done" | "rejected";
+
+export function getAppealsFiltered(filter: AppealsListFilter): AppealItem[] {
   if (filter === "done") return appealsMock.filter((a) => a.status === "done");
   if (filter === "rejected") return appealsMock.filter((a) => a.status === "rejected");
+  if (filter === "in_work") {
+    return appealsMock.filter(
+      (a) => a.status === "active" && (a.badgeLabel === "В работе" || a.badgeLabel.includes("работе"))
+    );
+  }
   return appealsMock;
 }
 
@@ -560,6 +568,8 @@ export function filterAppealsBySearch(list: AppealItem[], query: string): Appeal
   const q = query.trim().toLowerCase();
   if (!q) return list;
   return list.filter((a) =>
-    `${a.title} ${a.category} ${a.dateLabel} ${a.badgeLabel}`.toLowerCase().includes(q)
+    `${a.title} ${a.category} ${a.dateLabel} ${a.badgeLabel} ${a.description}`
+      .toLowerCase()
+      .includes(q)
   );
 }

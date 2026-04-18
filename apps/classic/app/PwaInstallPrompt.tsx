@@ -122,7 +122,7 @@ export function PwaInstallPrompt() {
   return (
     <div
       className="pointer-events-none fixed inset-x-0 z-[100] mx-auto w-full max-w-[430px] px-4"
-      style={{ bottom: "max(1.25rem, env(safe-area-inset-bottom, 0px))" }}
+      style={{ bottom: "calc(4.5rem + env(safe-area-inset-bottom, 0px))" }}
     >
       <div className="pointer-events-auto rounded-2xl border border-[#E8EAED] bg-white/95 p-3 shadow-soft backdrop-blur dark:border-slate-600 dark:bg-slate-900/95">
         <div className="text-sm font-semibold text-[#212529] dark:text-slate-100">Установить Билайн.One</div>

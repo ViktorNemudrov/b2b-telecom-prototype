@@ -7,7 +7,10 @@ export type DeterministicScenarioCase = {
   prompt: string;
   expectWidget?: string;
   expectNavigateTo?: string;
-  contains: string;
+  /** When true, assistant reply text must be empty (widget/chips only). */
+  expectEmptyText?: boolean;
+  /** Substring that must appear in payload.text (ignored when expectEmptyText is true). */
+  contains?: string;
 };
 
 export const specialScenarioCases: SpecialScenarioCase[] = [
@@ -19,25 +22,25 @@ export const specialScenarioCases: SpecialScenarioCase[] = [
 ];
 
 export const deterministicScenarioCases: DeterministicScenarioCase[] = [
-  { prompt: "покажи неоплаченные счета", expectWidget: "invoices-unpaid-inline", contains: "Показываю неоплаченные счета" },
+  { prompt: "покажи неоплаченные счета", expectWidget: "invoices-unpaid-inline", expectEmptyText: true },
   { prompt: "Мои сервисы", contains: "По сервисам могу показать" },
   { prompt: "Мои продукты", contains: "Ваши подключенные продукты" },
   { prompt: "Покажи мои продукты", contains: "Ваши подключенные продукты" },
   { prompt: "Инсайты", contains: "Ключевые инсайты" },
-  { prompt: "Открытые обращения", expectWidget: "appeals-summary", contains: "На данный момент у вас 3 активных обращения" },
+  { prompt: "Открытые обращения", expectWidget: "appeals-summary", expectEmptyText: true },
   { prompt: "Создать платеж", expectNavigateTo: "/invoices/", contains: "Открываю счета и оплату" },
   { prompt: "Запустить смс рассылку", contains: "Подготовил черновик SMS-рассылки" },
-  { prompt: "Записи звонков", expectWidget: "missed-calls-inline", contains: "Показываю записи и сводку" },
-  { prompt: "Баланс", expectWidget: "subscription-balance-inline", contains: "Связь для бизнеса" },
-  { prompt: "Мои номера", expectWidget: "my-numbers-inline", contains: "3 номера" },
+  { prompt: "Записи звонков", expectWidget: "missed-calls-inline", expectEmptyText: true },
+  { prompt: "Баланс", expectWidget: "subscription-balance-inline", expectEmptyText: true },
+  { prompt: "Мои номера", expectWidget: "my-numbers-inline", expectEmptyText: true },
   { prompt: "Изменить настройки секретаря", contains: "пока в разработке" },
   { prompt: "Настроить запись звонков", contains: "пока в разработке" },
-  { prompt: "счета за март", expectWidget: "invoices-month", contains: "Показываю счета за март" },
-  { prompt: "счета за февраль", expectWidget: "invoices-month", contains: "Показываю счета за февраль" },
+  { prompt: "счета за март", expectWidget: "invoices-month", expectEmptyText: true },
+  { prompt: "счета за февраль", expectWidget: "invoices-month", expectEmptyText: true },
   { prompt: "Мои счета", contains: "Открываю счета и оплату" },
   { prompt: "какие у меня счета", contains: "По счетам: всего" },
-  { prompt: "Счета за март 2026", expectWidget: "invoices-month", contains: "Показываю счета за март" },
-  { prompt: "сколько пропущенных звонков", expectWidget: "missed-calls-inline", contains: "пропущенных" },
+  { prompt: "Счета за март 2026", expectWidget: "invoices-month", expectEmptyText: true },
+  { prompt: "сколько пропущенных звонков", expectWidget: "missed-calls-inline", expectEmptyText: true },
   { prompt: "Список звонков", expectNavigateTo: "/home/", contains: "Открываю дашборд" },
   { prompt: "Причины пропусков звонков", expectNavigateTo: "/home/", contains: "Открываю дашборд" },
   { prompt: "Статистика по времени суток", expectNavigateTo: "/home/", contains: "Открываю дашборд" },
@@ -53,8 +56,8 @@ export const deterministicScenarioCases: DeterministicScenarioCase[] = [
   { prompt: "позови оператора", contains: "Я в демо режиме и не могу звать людей" },
   { prompt: "Сводка дня", contains: "Сводка дня:" },
   { prompt: "Запусти рассылку", contains: "Подготовил сценарий рассылки" },
-  { prompt: "обращения", expectWidget: "appeals-summary", contains: "На данный момент у вас 3 активных обращения" },
-  { prompt: "активные обращения", expectWidget: "appeals-summary", contains: "На данный момент у вас 3 активных обращения" },
+  { prompt: "обращения", expectWidget: "appeals-summary", expectEmptyText: true },
+  { prompt: "активные обращения", expectWidget: "appeals-summary", expectEmptyText: true },
   { prompt: "какая разница между суммой счетов в феврале и марте", contains: "Сравнение счетов" },
   { prompt: "какая доля неоплаченных счетов", contains: "Доля неоплаченных счетов" },
   { prompt: "дай динамику счетов февраль к марту", contains: "Динамика" },

@@ -1,5 +1,6 @@
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
+import { ClassicBottomTabBar } from "@shared/components/ClassicBottomTabBar";
 import { CallDetailClient } from "@shared/components/screens/CallDetailClient";
 import { allCallIds } from "@shared/lib/mockData";
 
@@ -12,10 +13,11 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
     <>
       <AppHeader />
       <AppShell>
-        <div className="safe-px pt-2">
-          <CallDetailClient id={params.id} backHref="/assistant/" />
+        <div className="safe-px pb-24 pt-2">
+          <CallDetailClient id={params.id} backHref="/communication/" />
         </div>
       </AppShell>
+      <ClassicBottomTabBar />
     </>
   );
 }

@@ -19,6 +19,35 @@ export function ChatBubble({
   onSuggestedClick?: (text: string) => void;
 }) {
   const isUser = message.role === "user";
+  const widgetOnlyAssistant = !isUser && Boolean(message.widget) && !message.text?.trim();
+  const hasSuggested = !isUser && Boolean(message.suggested?.length);
+  const hasSource = !isUser && Boolean(message.sourceLabel);
+
+  if (widgetOnlyAssistant) {
+    if (!hasSuggested && !hasSource) return null;
+    return (
+      <div className={cn("flex w-full", "justify-start")}>
+        <div className="max-w-[86%] w-full space-y-2 text-sm">
+          {hasSource ? (
+            <div className="text-right text-[11px] text-slate-400 dark:text-slate-500">{message.sourceLabel}</div>
+          ) : null}
+          {hasSuggested ? (
+            <div className="flex flex-wrap gap-2">
+              {message.suggested!.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => onSuggestedClick?.(s)}
+                  className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 active:translate-y-[1px] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("flex w-full", isUser ? "justify-end" : "justify-start")}>

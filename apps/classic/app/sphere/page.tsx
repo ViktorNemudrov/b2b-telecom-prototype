@@ -2,6 +2,7 @@
 
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
+import { ClassicBottomTabBar } from "@shared/components/ClassicBottomTabBar";
 import { PageBackLink } from "@shared/components/PageBackLink";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
@@ -12,7 +13,7 @@ export default function SpherePage() {
     <>
       <AppHeader />
       <AppShell>
-        <div className="safe-px pt-4">
+        <div className="safe-px pb-24 pt-4">
           <PageBackLink />
           <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Сфера</h1>
           <p className="mt-1 text-xs text-slate-500">PRO · демо</p>
@@ -29,6 +30,7 @@ export default function SpherePage() {
           </Card>
         </div>
       </AppShell>
+      <ClassicBottomTabBar />
     </>
   );
 }

@@ -7,7 +7,7 @@ import { RecordingPlayer } from "@shared/components/RecordingPlayer";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { cn } from "@shared/components/ui/cn";
 import { isBlockVisibleForFilter, type EventsFeedFilter } from "@shared/lib/eventsFeedFilter";
-import { getAppealsFiltered, getCallById } from "@shared/lib/mockData";
+import { getAppealsFiltered, getCallById, missedCallsCount } from "@shared/lib/mockData";
 import { isMissedCallsSeen, markMissedCallsSeen } from "@shared/lib/runtimeFlags";
 
 const dailyReportText =
@@ -160,7 +160,7 @@ export function EventsFeedScreen() {
       </h1>
 
       <div>
-        <div className={chipScroll} role="toolbar" aria-label="Фильтры ленты">
+        <div className={chipScroll} data-no-assistant-nav-swipe role="toolbar" aria-label="Фильтры ленты">
           <div className={chipTrack}>
             <button
               type="button"
@@ -175,8 +175,10 @@ export function EventsFeedScreen() {
               aria-label="Фильтр: пропущенные звонки"
             >
               Пропущенные{" "}
-              {!missedSeen ? (
-                <span className="ml-1 rounded-full bg-[#EB4A4A] px-1.5 text-[10px] text-white">6</span>
+              {!missedSeen && missedCallsCount > 0 ? (
+                <span className="ml-1 rounded-full bg-[#EB4A4A] px-1.5 text-[10px] text-white tabular-nums">
+                  {missedCallsCount}
+                </span>
               ) : null}
             </button>
             <button

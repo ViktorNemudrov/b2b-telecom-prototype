@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Calendar, ChevronLeft, Search, Settings } from "lucide-react";
 import { CommunicationLogRow } from "@shared/components/CommunicationLogRow";
@@ -20,7 +19,14 @@ import { getCustomizationButtonClasses, useUiCustomization } from "@shared/lib/u
 type CommTab = "records" | "secretary";
 type FilterKey = "all" | "missed" | "incoming" | "reports" | "team";
 
-export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) {
+export function FeedScreen({
+  leadingBack,
+  /** Classic: скрыть ленту под карточкой звонков (инструменты, отчёты и т.п.). */
+  omitFeedBelowCalls = false
+}: {
+  leadingBack?: { href: string };
+  omitFeedBelowCalls?: boolean;
+}) {
   const router = useRouter();
   const [commTab, setCommTab] = React.useState<CommTab>("records");
   const [filter, setFilter] = React.useState<FilterKey>("all");
@@ -58,12 +64,13 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
   }, [filteredComm]);
 
   const feedRest = React.useMemo(() => {
+    if (omitFeedBelowCalls) return [];
     if (commTab !== "records") return [];
     let list = feedItems.filter((i) => i.kind !== "call");
     if (filter === "missed" || filter === "incoming" || filter === "team") return list;
     if (filter === "reports") return list.filter((i) => i.kind === "tool" || i.kind === "summary");
     return list;
-  }, [commTab, filter]);
+  }, [commTab, filter, omitFeedBelowCalls]);
 
   const commTabs = React.useMemo(
     () => [
@@ -254,22 +261,24 @@ export function FeedScreen({ leadingBack }: { leadingBack?: { href: string } }) 
             </Card>
           ) : null}
 
-          <div className="space-y-3">
-            {feedRest.map((item) => (
-              <FeedItem
-                key={item.id}
-                item={item}
-                expandedTranscript={!!expandedTranscriptById[item.id]}
-                onToggleTranscript={(id) =>
-                  setExpandedTranscriptById((p) => ({ ...p, [id]: !p[id] }))
-                }
-                onAction={(a) => {
-                  if (a.type === "pay") router.push("/assistant/?q=Покажи неоплаченные счета и варианты оплаты");
-                  if (a.type === "report") router.push("/assistant/?q=Дай советы от ассистента");
-                }}
-              />
-            ))}
-          </div>
+          {!omitFeedBelowCalls ? (
+            <div className="space-y-3">
+              {feedRest.map((item) => (
+                <FeedItem
+                  key={item.id}
+                  item={item}
+                  expandedTranscript={!!expandedTranscriptById[item.id]}
+                  onToggleTranscript={(id) =>
+                    setExpandedTranscriptById((p) => ({ ...p, [id]: !p[id] }))
+                  }
+                  onAction={(a) => {
+                    if (a.type === "pay") router.push("/assistant/?q=Покажи неоплаченные счета и варианты оплаты");
+                    if (a.type === "report") router.push("/assistant/?q=Дай советы от ассистента");
+                  }}
+                />
+              ))}
+            </div>
+          ) : null}
         </>
       ) : (
         <Card>

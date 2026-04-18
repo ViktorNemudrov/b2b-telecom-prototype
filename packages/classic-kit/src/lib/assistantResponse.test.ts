@@ -106,17 +106,19 @@ describe("assistantResponse routing", () => {
     const res = resolveDeterministicResponse("покажи счета за март", invoicesMarch2026);
     expect(res?.widget).toBe("invoices-month");
     expect(res?.invoiceMonth).toBe("март");
+    expect(res?.text?.trim()).toBe("");
   });
 
   it("returns deterministic calls widget", () => {
     const res = resolveDeterministicResponse("сколько пропущенных звонков", invoicesMarch2026);
     expect(res?.widget).toBe("missed-calls-inline");
+    expect(res?.text?.trim()).toBe("");
   });
 
-  it("routes missed calls chip phrase to analytics missed widget in chat", () => {
+  it("routes missed calls chip phrase to missed widget in chat", () => {
     const res = resolveDeterministicResponse("Пропущенные звонки", invoicesMarch2026);
     expect(res?.widget).toBe("missed-calls-inline");
-    expect(res?.text).toContain("По текущим данным");
+    expect(res?.text?.trim()).toBe("");
   });
 
   it("routes secretary prompt to deterministic path", () => {
@@ -135,14 +137,14 @@ describe("assistantResponse routing", () => {
     const res = resolveDeterministicResponse("звонки за неделю", invoicesMarch2026);
     expect(res).not.toBeNull();
     expect(res?.widget).toBe("weekly-stats");
-    expect(res?.text).toContain("Детали и график ниже");
+    expect(res?.text?.trim()).toBe("");
   });
 
   it("routes explicit weekly call statistics prompt to in-chat weekly stats widget", () => {
     const res = resolveDeterministicResponse("Статистика звонков за неделю", invoicesMarch2026);
     expect(res).not.toBeNull();
     expect(res?.widget).toBe("weekly-stats");
-    expect(res?.text).toContain("126 звонков");
+    expect(res?.text?.trim()).toBe("");
   });
 
   it("routes assistant advice prompt without live", () => {
@@ -160,7 +162,7 @@ describe("assistantResponse routing", () => {
   it("routes open invoices list to summary widget in chat", () => {
     const res = resolveDeterministicResponse("открыть список счетов", invoicesMarch2026);
     expect(res?.widget).toBe("invoices-summary-inline");
-    expect(res?.text).toContain("Полный список счетов");
+    expect(res?.text?.trim()).toBe("");
   });
 
   it("routes operator request to deterministic response", () => {

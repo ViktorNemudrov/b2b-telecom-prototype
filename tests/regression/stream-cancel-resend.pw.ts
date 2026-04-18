@@ -17,5 +17,5 @@ test("regression: cancel stream and resend works", async ({ page }) => {
 
   await input.fill("покажи неоплаченные счета");
   await input.press("Enter");
-  await expect(page.getByText("Показываю неоплаченные счета в чате.")).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText("Неоплаченные счета", { exact: true })).toBeVisible({ timeout: 15_000 });
 });

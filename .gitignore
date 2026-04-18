@@ -28,4 +28,7 @@ pnpm-debug.log*
 Thumbs.db
 .vscode/
 
+# TS incremental build caches (не коммитить)
+**/tsconfig.tsbuildinfo
+
 node_modules

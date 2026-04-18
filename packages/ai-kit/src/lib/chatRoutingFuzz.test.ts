@@ -50,7 +50,11 @@ describe("chat routing fuzz (variants)", () => {
 
         const deterministic = resolveDeterministicResponse(variant, runtimeInvoices);
         expect(deterministic, `deterministic fuzz: "${variant}"`).not.toBeNull();
-        expect(deterministic?.text).toContain(c.contains);
+        if (c.expectEmptyText) {
+          expect(deterministic?.text?.trim()).toBe("");
+        } else {
+          expect(deterministic?.text).toContain(c.contains!);
+        }
         if (c.expectWidget) expect(deterministic?.widget).toBe(c.expectWidget);
         if (c.expectNavigateTo) expect(deterministic?.navigateTo).toBe(c.expectNavigateTo);
       }

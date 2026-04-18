@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, ChevronRight, Paperclip } from "lucide-react";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
@@ -9,9 +10,43 @@ import { cn } from "@shared/components/ui/cn";
 import {
   appealTopicOptions,
   filterAppealsBySearch,
+  getAppealById,
   getAppealsFiltered,
-  type AppealItem
+  type AppealItem,
+  type AppealsListFilter
 } from "@shared/lib/mockData";
+import { appendRuntimeUserAppeal, useRuntimeUserAppeals } from "@shared/lib/runtimeAppeals";
+
+const APPEALS_UI_SESSION_KEY = "b2b-classic.appealsUi.v1";
+
+function loadAppealsUiFromSession(): Partial<{
+  filter: AppealsListFilter;
+  search: string;
+  expandedAll: boolean;
+}> | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(APPEALS_UI_SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    return parsed as Partial<{ filter: AppealsListFilter; search: string; expandedAll: boolean }>;
+  } catch {
+    return null;
+  }
+}
+
+function saveAppealsUiSession(state: {
+  filter: AppealsListFilter;
+  search: string;
+  expandedAll: boolean;
+}) {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(APPEALS_UI_SESSION_KEY, JSON.stringify(state));
+  } catch {
+    /* ignore */
+  }
+}
 
 function AppealRow({ a, onOpen }: { a: AppealItem; onOpen: () => void }) {
   return (
@@ -42,7 +77,11 @@ function AppealRow({ a, onOpen }: { a: AppealItem; onOpen: () => void }) {
 }
 
 export function AppealsScreen() {
-  const [filter, setFilter] = React.useState<"all" | "done" | "rejected">("all");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const createdAppeals = useRuntimeUserAppeals();
+
+  const [filter, setFilter] = React.useState<AppealsListFilter>("all");
   const [expandedAll, setExpandedAll] = React.useState(false);
   const [createOpen, setCreateOpen] = React.useState(false);
   const [topic, setTopic] = React.useState<string>(appealTopicOptions[0]?.title ?? "");
@@ -50,13 +89,39 @@ export function AppealsScreen() {
   const [search, setSearch] = React.useState("");
   const [attachedName, setAttachedName] = React.useState<string | null>(null);
   const [detail, setDetail] = React.useState<AppealItem | null>(null);
-  const [createdAppeals, setCreatedAppeals] = React.useState<AppealItem[]>([]);
   const [submitNotice, setSubmitNotice] = React.useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const fileRef = React.useRef<HTMLInputElement>(null);
+  const [sessionUiReady, setSessionUiReady] = React.useState(false);
+
+  React.useEffect(() => {
+    const saved = loadAppealsUiFromSession();
+    if (
+      saved?.filter === "all" ||
+      saved?.filter === "in_work" ||
+      saved?.filter === "done" ||
+      saved?.filter === "rejected"
+    ) {
+      setFilter(saved.filter);
+      setExpandedAll(saved.filter !== "all");
+    }
+    if (typeof saved?.search === "string") setSearch(saved.search);
+    if (typeof saved?.expandedAll === "boolean") setExpandedAll(saved.expandedAll);
+    setSessionUiReady(true);
+  }, []);
+
+  React.useEffect(() => {
+    if (!sessionUiReady) return;
+    saveAppealsUiSession({ filter, search, expandedAll });
+  }, [sessionUiReady, filter, search, expandedAll]);
 
   const createdByFilter = React.useMemo(() => {
     if (filter === "done") return createdAppeals.filter((a) => a.status === "done");
     if (filter === "rejected") return createdAppeals.filter((a) => a.status === "rejected");
+    if (filter === "in_work") {
+      return createdAppeals.filter(
+        (a) => a.status === "active" && (a.badgeLabel === "В работе" || a.badgeLabel.includes("работе"))
+      );
+    }
     return createdAppeals;
   }, [createdAppeals, filter]);
   const baseList = [...createdByFilter, ...getAppealsFiltered(filter)];
@@ -69,6 +134,18 @@ export function AppealsScreen() {
     () => activeAppeals.filter((a) => a.badgeLabel.includes("подпис")).length,
     [activeAppeals]
   );
+
+  React.useEffect(() => {
+    const openId = searchParams.get("open");
+    if (!openId) return;
+    const fromCreated = createdAppeals.find((a) => a.id === openId);
+    const fromMock = getAppealById(openId);
+    const found = fromCreated ?? fromMock;
+    if (found) {
+      setDetail(found);
+      router.replace("/appeals/", { scroll: false });
+    }
+  }, [searchParams, createdAppeals, router]);
 
   const onSubmitAppeal = () => {
     if (!body.trim()) {
@@ -85,7 +162,7 @@ export function AppealsScreen() {
       description: body.trim(),
       history: [{ at: new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }), text: "Обращение отправлено." }]
     };
-    setCreatedAppeals((prev) => [newAppeal, ...prev]);
+    appendRuntimeUserAppeal(newAppeal);
     setSubmitNotice({ kind: "ok", text: `Обращение отправлено. Тема: «${topic}».` });
     setBody("");
     setAttachedName(null);
@@ -171,7 +248,9 @@ export function AppealsScreen() {
                 Отправить
               </Button>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">Демо: данные не сохраняются.</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Созданные обращения сохраняются в этом браузере (демо).
+            </p>
           </CardContent>
         </Card>
       ) : null}
@@ -225,6 +304,7 @@ export function AppealsScreen() {
           {(
             [
               ["Все обращения", "all" as const],
+              ["В работе", "in_work" as const],
               ["Выполненные", "done" as const],
               ["Отклонённые", "rejected" as const]
             ] as const

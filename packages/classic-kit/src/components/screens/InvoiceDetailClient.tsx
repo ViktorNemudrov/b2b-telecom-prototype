@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronLeft } from "lucide-react";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { Modal } from "@shared/components/ui/modal";
@@ -40,13 +40,14 @@ export function InvoiceDetailClient({
   if (!inv) {
     return (
       <div className="safe-px py-8 text-center text-sm text-slate-500">
-        Счёт не найден.
+        <p>Счёт не найден.</p>
         <button
           type="button"
-          className="mt-4 block w-full font-semibold text-accent-dark"
+          aria-label="Назад"
+          className="mx-auto mt-4 flex h-8 w-8 items-center justify-center rounded-full bg-[#F2F2F7] font-semibold text-accent-dark dark:bg-slate-700"
           onClick={() => goSmartBack(router, backHref)}
         >
-          Назад
+          <ChevronLeft className="h-4 w-4" aria-hidden />
         </button>
       </div>
     );

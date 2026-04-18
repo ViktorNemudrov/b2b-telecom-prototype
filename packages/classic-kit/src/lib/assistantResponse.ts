@@ -21,16 +21,8 @@ const invoicesSummarySuggested = [
   "Доля неоплаченных счетов"
 ] as const;
 
-function buildInvoicesSummaryPayload(runtimeInvoices: InvoiceItem[], intro?: string): AssistantPayload {
-  const total = runtimeInvoices.length;
-  const paid = runtimeInvoices.filter((i) => i.status === "paid").length;
-  const pending = runtimeInvoices.filter((i) => i.status === "pending").length;
-  const unpaid = runtimeInvoices.filter((i) => i.status === "pay").length;
-  const sumUnpaid = runtimeInvoices.filter((i) => i.status === "pay").reduce((s, i) => s + i.amountRub, 0);
-  const sumTotal = runtimeInvoices.reduce((s, i) => s + i.amountRub, 0);
-  const text =
-    intro ??
-    `Сводка по счетам: всего ${total}, оплачено ${paid}, в оплате ${pending}, к оплате ${unpaid}. Общая сумма по всем счетам ${sumTotal.toLocaleString("ru-RU")} ₽, к оплате неоплаченных ${sumUnpaid.toLocaleString("ru-RU")} ₽. Список ниже — выберите счёт, чтобы открыть карточку.`;
+function buildInvoicesSummaryPayload(_runtimeInvoices: InvoiceItem[], intro?: string): AssistantPayload {
+  const text = intro ?? "";
   return {
     text,
     widget: "invoices-summary-inline",
@@ -287,14 +279,14 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
 
   if (asksMyNumbersIntent(clean, compact)) {
     return {
-      text: "У вас 3 номера на тарифах Лайт и Бизнес+. Сводка по каждому номеру ниже.",
+      text: "",
       widget: "my-numbers-inline",
       suggested: ["Купить номер", "Сменить тариф"]
     };
   }
   if (asksSubscriptionBalanceIntent(clean, compact)) {
     return {
-      text: `У вас подключена подписка «${subscriptionBalanceChatMock.productName}». Стоимость ${subscriptionBalanceChatMock.priceRub.toLocaleString("ru-RU")} руб. Активна до ${subscriptionBalanceChatMock.validUntilLabel}. ${subscriptionBalanceChatMock.renewalNote}`,
+      text: "",
       widget: "subscription-balance-inline",
       suggested: ["Продлить сейчас", "Состав Подписки"]
     };
@@ -312,11 +304,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
     }
     if (hasAny(clean, compact, ["обращения", "открытые обращения"])) {
       return {
-        text:
-          "На данный момент у вас 3 активных обращения:\n" +
-          "- В работе: 2 штуки\n" +
-          "- Ожидает подписания: 1 штука\n" +
-          "Хотите создать новое обращение?",
+        text: "",
         widget: "appeals-summary",
         suggested: ["Создать обращение", "Список обращений", "Выполненные", "Отклонённые"]
       };
@@ -325,22 +313,18 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
       return buildInvoicesSummaryPayload(runtimeInvoices);
     }
     if (hasAny(clean, compact, ["создать платеж", "создать платёж"])) {
-      return buildInvoicesSummaryPayload(
-        runtimeInvoices,
-        "Можно выбрать счёт и провести платеж удобным способом. Сводка и список счетов ниже."
-      );
+      return buildInvoicesSummaryPayload(runtimeInvoices);
     }
     if (hasAny(clean, compact, ["звонки за неделю", "сводка звонков", "недельный отчет", "статистика звонков за неделю", "статистика звонков"])) {
-      const missed = standaloneCalls.filter((c) => c.missed).length;
       return {
-        text: `За неделю 126 звонков, ${missed} пропущенных, средняя длительность 2:40. Детали и график ниже.`,
+        text: "",
         widget: "weekly-stats",
         suggested: ["Пропущенные звонки", "Статистика по времени суток", "Кого перезвонить в первую очередь"]
       };
     }
     if (hasAny(clean, compact, ["звонки", "записи звонков", "записи разговоров"])) {
       return {
-        text: "Показываю записи и сводку по звонкам прямо в чате.",
+        text: "",
         widget: "missed-calls-inline",
         suggested: ["Список звонков", "Причины пропусков звонков", "Увеличить срок хранения звонков"]
       };
@@ -355,9 +339,8 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
   const asksWeeklyCallStatsInChat =
     hasAny(clean, compact, ["звонки за неделю", "сводка звонков", "недельный отчет", "статистика звонков за неделю", "статистика звонков"]);
   if (asksWeeklyCallStatsInChat && !hasAny(clean, compact, ["пропущенные звонки", "пропущенных звонков", "покажи пропущенные", "сколько пропущенных"])) {
-    const missed = standaloneCalls.filter((c) => c.missed).length;
     return {
-      text: `За неделю 126 звонков, ${missed} пропущенных, средняя длительность 2:40. Детали и график ниже.`,
+      text: "",
       widget: "weekly-stats",
       suggested: ["Пропущенные звонки", "Статистика по времени суток", "Кого перезвонить в первую очередь"]
     };
@@ -366,7 +349,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
   const asksUnpaid = hasAny(clean, compact, ["покажи неоплаченные", "неоплаченные счета", "счета в статусе неоплачен", "долги по счетам"]);
   if (asksUnpaid) {
     return {
-      text: "Показываю неоплаченные счета в чате.",
+      text: "",
       widget: "invoices-unpaid-inline",
       suggested: ["Оплатить по QR", "Сравнить с прошлым месяцем", "Открыть список счетов"]
     };
@@ -440,11 +423,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
   const asksOpenAppeals = hasAny(clean, compact, ["открытые обращения", "покажи открытые обращения", "мои открытые обращения"]);
   if (asksOpenAppeals) {
     return {
-      text:
-        "На данный момент у вас 3 активных обращения:\n" +
-        "- В работе: 2 штуки\n" +
-        "- Ожидает подписания: 1 штука\n" +
-        "Хотите создать новое обращение?",
+      text: "",
       widget: "appeals-summary",
       suggested: ["Создать обращение", "Список обращений", "Выполненные", "Отклонённые"]
     };
@@ -452,10 +431,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
 
   const asksCreatePayment = hasAny(clean, compact, ["создать платеж", "создай платеж", "новый платеж", "сформировать платеж"]);
   if (asksCreatePayment) {
-    return buildInvoicesSummaryPayload(
-      runtimeInvoices,
-      "Можно выбрать счёт и провести платеж удобным способом. Сводка и список счетов ниже."
-    );
+    return buildInvoicesSummaryPayload(runtimeInvoices);
   }
 
   const asksSmsCampaign = hasAny(clean, compact, [
@@ -490,7 +466,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
   const asksCallRecords = hasAny(clean, compact, ["записи звонков", "покажи записи звонков", "журнал записей", "записи разговоров"]);
   if (asksCallRecords) {
     return {
-      text: "Показываю записи и сводку по звонкам прямо в чате.",
+      text: "",
       widget: "missed-calls-inline",
       suggested: ["Список звонков", "Причины пропусков звонков", "Увеличить срок хранения звонков"]
     };
@@ -556,7 +532,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
   if (asksWeeklyCallsFollowUp) {
     if (hasAny(clean, compact, ["список звонков"])) {
       return {
-        text: "Развёрнутая сводка: за неделю 126 звонков, пик в середине недели. Динамика ниже.",
+        text: "",
         widget: "weekly-stats-expanded",
         suggested: ["Пропущенные звонки", "Статистика по времени суток", "Кого перезвонить в первую очередь"]
       };
@@ -587,7 +563,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
       };
     }
     return {
-      text: "Сводка звонков за неделю — см. карточку ниже.",
+      text: "",
       widget: "weekly-stats",
       suggested: ["Пропущенные звонки", "Статистика по времени суток", "Кого перезвонить в первую очередь"]
     };
@@ -596,22 +572,18 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
   const asksInvoicesDomain = hasAny(clean, compact, ["счета", "счет", "счёт", "оплата", "неоплаченные", "долг"]);
   const asksOpenInvoicesList = hasAny(clean, compact, ["открыть список счетов", "открой список счетов", "открыть счета", "открой счета"]);
   if (asksOpenInvoicesList) {
-    return buildInvoicesSummaryPayload(runtimeInvoices, "Полный список счетов в чате ниже — нажмите строку, чтобы открыть карточку счёта.");
+    return buildInvoicesSummaryPayload(runtimeInvoices);
   }
   if (asksInvoicesDomain && monthDetected) {
     return {
-      text: `Показываю счета за ${monthDetected} в чате.`,
+      text: "",
       widget: "invoices-month",
       invoiceMonth: monthDetected,
       suggested: ["Сравни с мартом", "Покажи неоплаченные", "Открыть список счетов"]
     };
   }
   if (asksInvoicesDomain) {
-    const unpaid = runtimeInvoices.filter((inv) => inv.status === "pay").length;
-    return buildInvoicesSummaryPayload(
-      runtimeInvoices,
-      `По счетам: всего ${runtimeInvoices.length}, неоплаченных ${unpaid}. Сводка и список всех статусов ниже — выберите счёт для деталей.`
-    );
+    return buildInvoicesSummaryPayload(runtimeInvoices);
   }
 
   const asksCallsDomain = hasAny(clean, compact, ["звонки", "звонок", "звонков", "пропущенные", "пропущенный", "перезвон", "журнал звонков", "телефон"]);
@@ -623,9 +595,8 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
         suggested: ["Да, создать обращение", "Открыть обращения", "Какие условия хранения сейчас"]
       };
     }
-    const missed = standaloneCalls.filter((c) => c.missed).length;
     return {
-      text: `По звонкам: всего ${standaloneCalls.length}, пропущенных ${missed}. Показываю детали прямо в чате.`,
+      text: "",
       widget: "missed-calls-inline",
       suggested: ["Звонки за неделю", "Открыть журнал звонков", "Кто чаще звонит"]
     };
@@ -647,22 +618,14 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
   const asksActiveAppeals = hasAny(clean, compact, ["активные обращения", "активные заявки", "открой активные обращения"]);
   if (asksActiveAppeals) {
     return {
-      text:
-        "На данный момент у вас 3 активных обращения:\n" +
-        "- В работе: 2 штуки\n" +
-        "- Ожидает подписания: 1 штука\n" +
-        "Хотите создать новое обращение?",
+      text: "",
       widget: "appeals-summary",
       suggested: ["Создать обращение", "Список обращений", "Выполненные", "Отклонённые"]
     };
   }
   if (asksAppealsDomain) {
     return {
-      text:
-        "На данный момент у вас 3 активных обращения:\n" +
-        "- В работе: 2 штуки\n" +
-        "- Ожидает подписания: 1 штука\n" +
-        "Хотите создать новое обращение?",
+      text: "",
       widget: "appeals-summary",
       suggested: ["Создать обращение", "Список обращений", "Выполненные", "Отклонённые"]
     };

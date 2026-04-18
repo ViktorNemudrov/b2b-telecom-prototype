@@ -12,7 +12,8 @@ import {
   filterAppealsBySearch,
   getAppealById,
   getAppealsFiltered,
-  type AppealItem
+  type AppealItem,
+  type AppealsListFilter
 } from "@shared/lib/mockData";
 
 function AppealRow({ a, onOpen }: { a: AppealItem; onOpen: () => void }) {
@@ -46,7 +47,7 @@ function AppealRow({ a, onOpen }: { a: AppealItem; onOpen: () => void }) {
 export function AppealsScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [filter, setFilter] = React.useState<"all" | "done" | "rejected">("all");
+  const [filter, setFilter] = React.useState<AppealsListFilter>("all");
   const [expandedAll, setExpandedAll] = React.useState(false);
   const [createOpen, setCreateOpen] = React.useState(false);
   const [topic, setTopic] = React.useState<string>(appealTopicOptions[0]?.title ?? "");
@@ -61,6 +62,11 @@ export function AppealsScreen() {
   const createdByFilter = React.useMemo(() => {
     if (filter === "done") return createdAppeals.filter((a) => a.status === "done");
     if (filter === "rejected") return createdAppeals.filter((a) => a.status === "rejected");
+    if (filter === "in_work") {
+      return createdAppeals.filter(
+        (a) => a.status === "active" && (a.badgeLabel === "В работе" || a.badgeLabel.includes("работе"))
+      );
+    }
     return createdAppeals;
   }, [createdAppeals, filter]);
   const baseList = [...createdByFilter, ...getAppealsFiltered(filter)];
@@ -241,6 +247,7 @@ export function AppealsScreen() {
           {(
             [
               ["Все обращения", "all" as const],
+              ["В работе", "in_work" as const],
               ["Выполненные", "done" as const],
               ["Отклонённые", "rejected" as const]
             ] as const

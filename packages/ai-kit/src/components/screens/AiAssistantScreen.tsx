@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bot, ChevronRight, Loader2, Pause, PhoneOff, Play, Sparkles, X } from "lucide-react";
+import { Bot, ChevronLeft, ChevronRight, Loader2, Pause, PhoneOff, Play, Sparkles, X } from "lucide-react";
 import { InvoicesMarchWidget } from "@shared/components/ai/InvoicesMarchWidget";
 import { MyNumbersInlineWidget } from "@shared/components/ai/MyNumbersInlineWidget";
 import { SubscriptionBalanceInlineWidget } from "@shared/components/ai/SubscriptionBalanceInlineWidget";
@@ -12,7 +12,6 @@ import { WeeklyStatsWidget } from "@shared/components/ai/WeeklyStatsWidget";
 import { ActionCard } from "@shared/components/ActionCard";
 import { BottomInputBar } from "@shared/components/BottomInputBar";
 import { ChatBubble } from "@shared/components/ChatBubble";
-import { PageBackLink } from "@shared/components/PageBackLink";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { Button } from "@shared/components/ui/button";
 import { Modal } from "@shared/components/ui/modal";
@@ -986,7 +985,10 @@ export function AiAssistantScreen() {
 
       <div className="space-y-3">
         {hasChat ? (
-          <div
+          <button
+            type="button"
+            aria-label="Назад"
+            className="mb-3 inline-flex items-center text-sm font-semibold text-[#3C4858] transition hover:text-[#212529] dark:text-slate-200 dark:hover:text-white"
             onClick={() => {
               setMessages(defaultChat);
               setInput("");
@@ -994,8 +996,10 @@ export function AiAssistantScreen() {
               setChipTags([...recentQueryChips]);
             }}
           >
-            <PageBackLink href="/assistant/" />
-          </div>
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F2F2F7] dark:bg-slate-700">
+              <ChevronLeft className="h-4 w-4" aria-hidden />
+            </span>
+          </button>
         ) : null}
         <AnimatePresence initial={false}>
           {hasChat ? (

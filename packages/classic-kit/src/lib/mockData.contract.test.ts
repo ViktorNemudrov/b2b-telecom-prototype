@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { appealTopicOptions, myNumbersChatMock, subscriptionBalanceChatMock, subscriptionProductsMock } from "./mockData";
+import {
+  appealTopicOptions,
+  getAppealsFiltered,
+  missedCallsCount,
+  myNumbersChatMock,
+  subscriptionBalanceChatMock,
+  subscriptionProductsMock
+} from "./mockData";
 
 describe("mock data contracts", () => {
   it("keeps subscription management products aligned with UX scenario", () => {
@@ -34,5 +41,13 @@ describe("mock data contracts", () => {
     expect(subscriptionBalanceChatMock.priceRub).toBe(1999);
     expect(myNumbersChatMock).toHaveLength(3);
     expect(myNumbersChatMock[0]?.phone).toMatch(/^\+79/);
+  });
+
+  it("filters appeals «В работе» separately from signed-pending active appeals", () => {
+    const inWork = getAppealsFiltered("in_work");
+    expect(inWork.every((a) => a.status === "active")).toBe(true);
+    expect(inWork.every((a) => a.badgeLabel.includes("работе"))).toBe(true);
+    expect(inWork.some((a) => a.badgeLabel.includes("подпис"))).toBe(false);
+    expect(missedCallsCount).toBeGreaterThanOrEqual(1);
   });
 });

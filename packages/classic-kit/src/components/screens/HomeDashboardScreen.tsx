@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Sparkles } from "lucide-react";
 import { TariffSubscriptionCard } from "@shared/components/TariffSubscriptionCard";
@@ -11,6 +10,7 @@ import { Card, CardContent } from "@shared/components/ui/card";
 import { dashboardLines } from "@shared/lib/dashboardMock";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { getTariffFromFeed } from "@shared/lib/mockData";
+import { resolveProductTap } from "@shared/lib/widgetTapActions";
 
 const aiAvatars = ["AI", "GPT", "Claude", "CRM", "Отчёты"];
 
@@ -29,10 +29,28 @@ function CallHeatmap() {
   );
 }
 
-export function HomeDashboardScreen() {
+export type HomeDashboardRecordingsTap = { useMock: boolean; dimmedDisabled: boolean };
+
+export function HomeDashboardScreen({
+  recordingsTap
+}: {
+  /** Для экрана «Виджеты»: кастомизация карточки «Запись разговоров». */
+  recordingsTap?: HomeDashboardRecordingsTap;
+} = {}) {
   const router = useRouter();
   const [mailingOpen, setMailingOpen] = React.useState(false);
   const tariff = getTariffFromFeed();
+
+  const onRecordingsNavigate = () => {
+    const cfg = recordingsTap ?? { useMock: false, dimmedDisabled: false };
+    const r = resolveProductTap("Запись разговоров", cfg);
+    if (r.kind === "none") return;
+    if (r.kind === "stub") {
+      openDevelopmentStub(r.message);
+      return;
+    }
+    router.push("/communication/");
+  };
 
   return (
     <div className="space-y-4 pb-2">
@@ -107,38 +125,54 @@ export function HomeDashboardScreen() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card
+        data-testid="widgets-recordings-card"
+        className={
+          recordingsTap?.dimmedDisabled
+            ? "pointer-events-none opacity-35 saturate-0"
+            : undefined
+        }
+      >
         <CardContent className="pb-4 pt-4">
           <div className="flex items-start justify-between gap-2">
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Записи разговоров</h2>
-                <span className="text-xs font-medium text-slate-400 dark:text-slate-500">24.05</span>
-                <span className="h-2 w-2 rounded-full bg-rose-500" />
+            <button
+              type="button"
+              className="min-w-0 flex-1 text-left"
+              onClick={onRecordingsNavigate}
+            >
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Записи разговоров</h2>
+                  <span className="text-xs font-medium text-slate-400 dark:text-slate-500">24.05</span>
+                  <span className="h-2 w-2 rounded-full bg-rose-500" />
+                </div>
+                <div className="mt-2 flex flex-wrap gap-3 text-xs">
+                  <span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-100">245</span>{" "}
+                    <span className="text-slate-500 dark:text-slate-400">принято</span>
+                  </span>
+                  <span>
+                    <span className="font-semibold text-amber-600">12</span>{" "}
+                    <span className="text-slate-500 dark:text-slate-400">ждут ответа</span>
+                  </span>
+                  <span>
+                    <span className="font-semibold text-rose-600">16</span>{" "}
+                    <span className="text-slate-500 dark:text-slate-400">секретарь</span>
+                  </span>
+                </div>
               </div>
-              <div className="mt-2 flex flex-wrap gap-3 text-xs">
-                <span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-100">245</span>{" "}
-                  <span className="text-slate-500 dark:text-slate-400">принято</span>
-                </span>
-                <span>
-                  <span className="font-semibold text-amber-600">12</span>{" "}
-                  <span className="text-slate-500 dark:text-slate-400">ждут ответа</span>
-                </span>
-                <span>
-                  <span className="font-semibold text-rose-600">16</span>{" "}
-                  <span className="text-slate-500 dark:text-slate-400">секретарь</span>
-                </span>
-              </div>
-            </div>
-            <Link
-              href="/communication"
+            </button>
+            <button
+              type="button"
+              onClick={onRecordingsNavigate}
               className="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
             >
               Все
-            </Link>
+            </button>
           </div>
-          <CallHeatmap />
+          <button type="button" className="mt-1 w-full text-left" onClick={onRecordingsNavigate}>
+            <CallHeatmap />
+          </button>
           <div className="mt-2 flex justify-between px-0.5 text-[10px] font-medium text-slate-400 dark:text-slate-500">
             {["8", "10", "12", "14", "16", "18"].map((t) => (
               <span key={t}>{t}</span>

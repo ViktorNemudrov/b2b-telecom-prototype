@@ -29,6 +29,7 @@ export function MissedCallSummaryCard({
     <div
       role="button"
       tabIndex={0}
+      data-no-assistant-nav-swipe
       className="flex items-start gap-3 rounded-[22px] border border-[#E8EAED] bg-white p-[14px] shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition hover:brightness-[1.01] active:scale-[0.99] dark:border-slate-700 dark:bg-slate-800"
       style={{ transform: dragOffset ? `translateX(${dragOffset}px)` : undefined }}
       onClick={() => {

@@ -106,11 +106,13 @@ describe("assistantResponse routing", () => {
     const res = resolveDeterministicResponse("покажи счета за март", invoicesMarch2026);
     expect(res?.widget).toBe("invoices-month");
     expect(res?.invoiceMonth).toBe("март");
+    expect(res?.text?.trim()).toBe("");
   });
 
   it("returns deterministic calls widget", () => {
     const res = resolveDeterministicResponse("сколько пропущенных звонков", invoicesMarch2026);
     expect(res?.widget).toBe("missed-calls-inline");
+    expect(res?.text?.trim()).toBe("");
   });
 
   it("routes secretary prompt to deterministic path", () => {
@@ -167,6 +169,7 @@ describe("assistantResponse routing", () => {
     const openAppeals = resolveDeterministicResponse("Открытые обращения", invoicesMarch2026);
     expect(openAppeals?.widget).toBe("appeals-summary");
     expect(openAppeals?.navigateTo).toBeUndefined();
+    expect(openAppeals?.text?.trim()).toBe("");
 
     const createPayment = resolveDeterministicResponse("Создать платеж", invoicesMarch2026);
     expect(createPayment?.navigateTo).toBe("/invoices/");
@@ -176,6 +179,7 @@ describe("assistantResponse routing", () => {
 
     const callRecords = resolveDeterministicResponse("Записи звонков", invoicesMarch2026);
     expect(callRecords?.widget).toBe("missed-calls-inline");
+    expect(callRecords?.text?.trim()).toBe("");
   });
 
   it("keeps sms hyphen variant deterministic", () => {
@@ -193,10 +197,14 @@ describe("assistantResponse routing", () => {
     expect(resolveDeterministicResponse("Мои сервисы", invoicesMarch2026)?.text).toContain("Ваши подключенные продукты");
     expect(resolveDeterministicResponse("Обращения", invoicesMarch2026)?.widget).toBe("appeals-summary");
     expect(resolveDeterministicResponse("Обращения", invoicesMarch2026)?.navigateTo).toBeUndefined();
+    expect(resolveDeterministicResponse("Обращения", invoicesMarch2026)?.text?.trim()).toBe("");
     expect(resolveDeterministicResponse("Счета на оплату", invoicesMarch2026)?.navigateTo).toBe("/invoices/");
     expect(resolveDeterministicResponse("Записи звонков", invoicesMarch2026)?.widget).toBe("missed-calls-inline");
+    expect(resolveDeterministicResponse("Записи звонков", invoicesMarch2026)?.text?.trim()).toBe("");
     expect(resolveDeterministicResponse("Баланс", invoicesMarch2026)?.widget).toBe("subscription-balance-inline");
+    expect(resolveDeterministicResponse("Баланс", invoicesMarch2026)?.text?.trim()).toBe("");
     expect(resolveDeterministicResponse("Мои номера", invoicesMarch2026)?.widget).toBe("my-numbers-inline");
+    expect(resolveDeterministicResponse("Мои номера", invoicesMarch2026)?.text?.trim()).toBe("");
   });
 
   it("returns null for query that should go to live AI", () => {

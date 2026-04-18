@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { ClassicShellProviders } from "../components/ClassicShellProviders";
 import { DemoSessionProvider } from "@shared/components/DemoSessionProvider";
 import { DevelopmentStubHost } from "@shared/components/DevelopmentStubHost";
 import { SessionGate } from "@shared/components/SessionGate";
@@ -44,7 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <DemoSessionProvider>
               <UiCustomizationProvider>
                 <SessionGate publicPaths={["/"]} unauthenticatedRedirect="/">
-                  {children}
+                  <ClassicShellProviders>{children}</ClassicShellProviders>
                 </SessionGate>
                 <PwaInstallPrompt />
                 <DevelopmentStubHost />

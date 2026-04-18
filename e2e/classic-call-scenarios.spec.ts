@@ -24,23 +24,21 @@ async function openClassicAssistant(page: Page) {
 test("Classic: chip «Пропущенные звонки» открывает ответ в чате", async ({ page }) => {
   await openClassicAssistant(page);
   await page.locator("button").filter({ hasText: /^Пропущенные звонки/ }).click();
-  await expect(page.getByText("По текущим данным", { exact: false })).toBeVisible({ timeout: 25_000 });
-  await expect(page.getByText("Пропущенные в чате", { exact: true })).toBeVisible();
+  await expect(page.getByText("Пропущенные в чате", { exact: true })).toBeVisible({ timeout: 25_000 });
 });
 
 test("Classic: «звонки за неделю» показывает сводку в чате", async ({ page }) => {
   await openClassicAssistant(page);
   await page.getByTestId("assistant-chat-input").fill("звонки за неделю");
   await page.getByTestId("assistant-chat-input").press("Enter");
-  await expect(page.getByText("Детали и график ниже", { exact: false })).toBeVisible({ timeout: 25_000 });
-  await expect(page.getByText("Звонки за неделю", { exact: true })).toBeVisible();
+  await expect(page.getByText("Звонки за неделю", { exact: true })).toBeVisible({ timeout: 25_000 });
 });
 
 test("Classic: чип «Счета на оплату» показывает сводку счетов в чате", async ({ page }) => {
   await openClassicAssistant(page);
   await page.locator("button").filter({ hasText: /^Счета на оплату/ }).click();
   await expect(page.getByTestId("invoices-summary-widget")).toBeVisible({ timeout: 25_000 });
-  await expect(page.getByText("Сводка по счетам", { exact: false }).first()).toBeVisible();
+  await expect(page.getByText("Всего", { exact: true })).toBeVisible();
 });
 
 test("Classic: «Мои счета» в чате показывает виджет сводки", async ({ page }) => {

@@ -25,7 +25,11 @@ describe("assistant scenarios contract", () => {
 
       const deterministic = resolveDeterministicResponse(c.prompt, runtimeInvoices);
       expect(deterministic, `deterministic route should handle: "${c.prompt}"`).not.toBeNull();
-      expect(deterministic?.text).toContain(c.contains);
+      if (c.expectEmptyText) {
+        expect(deterministic?.text?.trim(), `empty text for: "${c.prompt}"`).toBe("");
+      } else {
+        expect(deterministic?.text).toContain(c.contains!);
+      }
       if (c.expectWidget) expect(deterministic?.widget).toBe(c.expectWidget);
       if (c.expectNavigateTo) expect(deterministic?.navigateTo).toBe(c.expectNavigateTo);
     }

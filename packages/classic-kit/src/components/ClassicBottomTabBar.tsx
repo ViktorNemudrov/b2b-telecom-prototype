@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FileText, Headphones, Home, LayoutGrid, Sparkles } from "lucide-react";
 import { cn } from "@shared/components/ui/cn";
+import { useDocumentsSheet } from "@shared/components/DocumentsSheetProvider";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { getCustomizationButtonClasses, useUiCustomization } from "@shared/lib/uiCustomization";
 
@@ -16,6 +17,7 @@ const tabClass = (active: boolean) =>
 
 export function ClassicBottomTabBar() {
   const pathname = usePathname() ?? "";
+  const documentsSheet = useDocumentsSheet();
 
   const homeNav = useUiCustomization("classic.widgets.bottom.home");
   const servicesNav = useUiCustomization("classic.widgets.bottom.services");
@@ -23,13 +25,16 @@ export function ClassicBottomTabBar() {
   const sphereNav = useUiCustomization("classic.widgets.bottom.sphere");
   const supportNav = useUiCustomization("classic.widgets.bottom.support");
 
+  const pathNorm = pathname.replace(/\/$/, "") || "/";
+  const isDocumentsRoute = pathNorm === "/documents" || pathNorm.startsWith("/documents/");
   const isWidgets = pathname === "/widgets" || pathname.startsWith("/widgets/");
-  const isDocuments = pathname === "/documents" || pathname.startsWith("/documents/");
+  const isDocuments =
+    documentsSheet.open || pathname === "/documents" || pathname.startsWith("/documents/");
   const isSupport = pathname === "/support" || pathname.startsWith("/support/");
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur dark:border-slate-700/80 dark:bg-slate-900/95"
+      className="fixed bottom-0 left-0 right-0 z-[90] border-t border-slate-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur dark:border-slate-700/80 dark:bg-slate-900/95"
       aria-label="Основное меню"
     >
       <div className="mx-auto flex max-w-lg items-stretch justify-between px-1">
@@ -39,6 +44,7 @@ export function ClassicBottomTabBar() {
           className={cn(tabClass(isWidgets), getCustomizationButtonClasses(homeNav.dimmedDisabled))}
           aria-current={isWidgets ? "page" : undefined}
           onClick={(e) => {
+            documentsSheet.closeDocumentsSheet();
             if (homeNav.dimmedDisabled) {
               e.preventDefault();
               return;
@@ -57,6 +63,7 @@ export function ClassicBottomTabBar() {
           data-testid="classic-bottom-nav-services"
           className={cn(tabClass(false), getCustomizationButtonClasses(servicesNav.dimmedDisabled))}
           onClick={() => {
+            documentsSheet.closeDocumentsSheet();
             if (servicesNav.dimmedDisabled) return;
             openDevelopmentStub(
               servicesNav.useMock
@@ -81,7 +88,11 @@ export function ClassicBottomTabBar() {
             if (documentsNav.useMock) {
               e.preventDefault();
               openDevelopmentStub("Документы (мок из кастомизации).");
+              return;
             }
+            if (isDocumentsRoute) return;
+            e.preventDefault();
+            documentsSheet.toggleDocumentsSheet();
           }}
         >
           <FileText className="h-5 w-5 shrink-0" aria-hidden />
@@ -92,6 +103,7 @@ export function ClassicBottomTabBar() {
           data-testid="classic-bottom-nav-sphere"
           className={cn(tabClass(false), getCustomizationButtonClasses(sphereNav.dimmedDisabled))}
           onClick={() => {
+            documentsSheet.closeDocumentsSheet();
             if (sphereNav.dimmedDisabled) return;
             openDevelopmentStub(
               sphereNav.useMock ? "Раздел «Сфера» (мок из кастомизации)." : "Раздел «Сфера» в разработке."
@@ -107,6 +119,7 @@ export function ClassicBottomTabBar() {
           className={cn(tabClass(isSupport), getCustomizationButtonClasses(supportNav.dimmedDisabled))}
           aria-current={isSupport ? "page" : undefined}
           onClick={(e) => {
+            documentsSheet.closeDocumentsSheet();
             if (supportNav.dimmedDisabled) {
               e.preventDefault();
               return;

@@ -45,7 +45,7 @@ test.describe("assistant AI UX", () => {
     await expect(page.getByText("покажи неоплаченные счета", { exact: true })).toBeVisible({
       timeout: 10_000
     });
-    await expect(page.getByText("Показываю неоплаченные счета в чате.")).toBeVisible({
+    await expect(page.getByText("Неоплаченные счета", { exact: true })).toBeVisible({
       timeout: 15_000
     });
   });
@@ -117,7 +117,7 @@ test.describe("assistant AI UX", () => {
     await openAssistant(page);
 
     await sendWithEnter(page, "покажи неоплаченные счета");
-    await expect(page.getByText("Показываю неоплаченные счета в чате.")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText("Неоплаченные счета", { exact: true })).toBeVisible({ timeout: 10_000 });
     await expect(page.getByText("детерминированный сценарий").last()).toBeVisible({ timeout: 10_000 });
 
     await sendWithEnter(page, "привет");
