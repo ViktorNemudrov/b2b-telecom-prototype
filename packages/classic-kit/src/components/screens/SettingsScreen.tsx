@@ -36,10 +36,10 @@ export function SettingsScreen({
   };
 
   return (
-    <div className="safe-px mx-auto max-w-[430px] space-y-4 pb-10 pt-2">
-      <PageBackLink href={backHref} />
+    <div className="safe-px mx-auto max-w-[430px] space-y-4 pb-10 pt-1">
+      <PageBackLink href={backHref} className="mb-1.5" />
 
-      <div className="flex flex-col items-center gap-1 text-center">
+      <div className="flex flex-col items-center gap-0.5 text-center">
         <div className="text-lg font-bold text-slate-900 dark:text-slate-100">
           Билайн <span className="text-accent-yellow">One</span>
         </div>

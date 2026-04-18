@@ -149,7 +149,7 @@ function DocumentsBottomSheet({
 
   const sheet = (
     <div
-      className="pointer-events-auto fixed inset-0 z-[80] flex flex-col justify-end opacity-100 transition-opacity duration-200"
+      className="pointer-events-auto fixed inset-0 z-[110] flex flex-col justify-end opacity-100 transition-opacity duration-200"
       aria-hidden={false}
     >
       <button
@@ -163,7 +163,7 @@ function DocumentsBottomSheet({
         aria-modal="true"
         aria-label="Документы"
         data-testid="classic-documents-sheet"
-        className="relative z-[81] mx-auto flex max-h-[min(92dvh,820px)] w-full max-w-[430px] flex-col rounded-t-[22px] bg-[#f2f4f8] shadow-[0_-12px_48px_rgba(15,23,42,0.18)] dark:bg-slate-900 dark:shadow-[0_-12px_48px_rgba(0,0,0,0.45)]"
+        className="relative z-[111] mx-auto flex max-h-[min(92dvh,820px)] w-full max-w-[430px] flex-col rounded-t-[22px] bg-[#f2f4f8] shadow-[0_-12px_48px_rgba(15,23,42,0.18)] dark:bg-slate-900 dark:shadow-[0_-12px_48px_rgba(0,0,0,0.45)]"
         style={{
           transform: `translateY(${totalY}px)`,
           transition: isDragging ? "none" : `transform ${ANIM_MS}ms cubic-bezier(0.32, 0.72, 0, 1)`
@@ -180,7 +180,7 @@ function DocumentsBottomSheet({
           <span className="h-1.5 w-12 rounded-full bg-slate-300 dark:bg-slate-600" aria-hidden />
           <span className="sr-only">Потяните вниз, чтобы закрыть</span>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-1">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] pt-1">
           <ClassicDocumentsScreen />
         </div>
       </div>

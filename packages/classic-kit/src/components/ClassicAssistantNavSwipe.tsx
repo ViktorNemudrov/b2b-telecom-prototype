@@ -16,6 +16,7 @@ export {
 } from "@shared/components/classicAssistantNavSwipeHelpers";
 
 const SWIPE_MIN_PX = 56;
+const SWIPE_MIN_PX_TOUCH = 44;
 const HORIZONTAL_DOMINATES = 1.2;
 
 function swipeTargetFromWindowPath(): number | null {
@@ -40,6 +41,7 @@ export function ClassicAssistantNavSwipeContainer({ children }: { children: Reac
   const pathname = usePathname() ?? "";
   const router = useRouter();
   const { open: documentsSheetOpen } = useDocumentsSheet();
+  const rootRef = React.useRef<HTMLDivElement | null>(null);
 
   const trackingRef = React.useRef<
     | { phase: "idle" }
@@ -72,9 +74,10 @@ export function ClassicAssistantNavSwipeContainer({ children }: { children: Reac
   }, [pathname, router]);
 
   const flushNav = React.useCallback(
-    (deltaX: number, deltaY: number) => {
+    (deltaX: number, deltaY: number, pointerType: string) => {
       if (documentsSheetOpen) return;
-      if (Math.abs(deltaX) < SWIPE_MIN_PX) return;
+      const minPx = pointerType === "touch" ? SWIPE_MIN_PX_TOUCH : SWIPE_MIN_PX;
+      if (Math.abs(deltaX) < minPx) return;
       if (Math.abs(deltaX) < Math.abs(deltaY) * HORIZONTAL_DOMINATES) return;
 
       const idx = swipeTargetFromWindowPath();
@@ -90,17 +93,27 @@ export function ClassicAssistantNavSwipeContainer({ children }: { children: Reac
     [documentsSheetOpen, router]
   );
 
+  const pointerTypeRef = React.useRef<string>("mouse");
+
   const onPointerDownCapture = React.useCallback(
     (e: React.PointerEvent) => {
       if (!navSwipeActive) return;
       if (e.pointerType === "mouse" && e.button !== 0) return;
       if (shouldIgnoreSwipeTarget(e.target)) return;
+      pointerTypeRef.current = e.pointerType;
       trackingRef.current = {
         phase: "active",
         pointerId: e.pointerId,
         startX: e.clientX,
         startY: e.clientY
       };
+      if (e.pointerType === "touch" && rootRef.current) {
+        try {
+          rootRef.current.setPointerCapture(e.pointerId);
+        } catch {
+          /* ignore */
+        }
+      }
     },
     [navSwipeActive]
   );
@@ -112,7 +125,7 @@ export function ClassicAssistantNavSwipeContainer({ children }: { children: Reac
       trackingRef.current = { phase: "idle" };
       const dx = e.clientX - t.startX;
       const dy = e.clientY - t.startY;
-      flushNav(dx, dy);
+      flushNav(dx, dy, pointerTypeRef.current);
     },
     [flushNav]
   );
@@ -124,13 +137,19 @@ export function ClassicAssistantNavSwipeContainer({ children }: { children: Reac
     }
   }, []);
 
+  const onLostPointerCapture = React.useCallback(() => {
+    trackingRef.current = { phase: "idle" };
+  }, []);
+
   return (
     <div
+      ref={rootRef}
       className="min-h-dvh"
       data-testid={navSwipeActive ? "classic-assistant-nav-swipe-root" : undefined}
       onPointerDownCapture={navSwipeActive ? onPointerDownCapture : undefined}
       onPointerUpCapture={navSwipeActive ? endTracking : undefined}
       onPointerCancelCapture={navSwipeActive ? onPointerCancelCapture : undefined}
+      onLostPointerCapture={navSwipeActive ? onLostPointerCapture : undefined}
     >
       {children}
     </div>

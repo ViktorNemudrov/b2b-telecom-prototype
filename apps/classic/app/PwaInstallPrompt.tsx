@@ -59,10 +59,13 @@ export function PwaInstallPrompt() {
     }
 
     const ua = window.navigator.userAgent;
-    const { isIosSafari } = parseUa(ua);
+    const { isIosSafari, isAndroid } = parseUa(ua);
 
     let openTimer: number | null = null;
     if (isIosSafari) {
+      setShowInstall(true);
+    } else if (isAndroid) {
+      // Сразу показываем баннер: на Android задержка приводит к тому, что подсказку «не видно» при быстром взгляде; beforeinstallprompt придёт отдельно.
       setShowInstall(true);
     } else {
       openTimer = window.setTimeout(() => setShowInstall(true), 1200);

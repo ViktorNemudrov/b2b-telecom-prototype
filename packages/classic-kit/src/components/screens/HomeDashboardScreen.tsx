@@ -144,7 +144,6 @@ export function HomeDashboardScreen({
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Записи разговоров</h2>
                   <span className="text-xs font-medium text-slate-400 dark:text-slate-500">24.05</span>
-                  <span className="h-2 w-2 rounded-full bg-rose-500" />
                 </div>
                 <div className="mt-2 flex flex-wrap gap-3 text-xs">
                   <span>
@@ -241,11 +240,11 @@ export function HomeDashboardScreen({
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
-        <div className="flex gap-3 overflow-x-auto pb-1">
+        <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             type="button"
             onClick={() => setMailingOpen(true)}
-            className="w-[220px] shrink-0 rounded-[22px] border border-slate-100 bg-gradient-to-br from-sky-50 to-indigo-50 p-4 text-left shadow-softSm transition hover:brightness-[1.02] active:translate-y-[1px] dark:border-slate-600 dark:from-slate-700 dark:to-slate-800"
+            className="w-[220px] shrink-0 snap-start rounded-[22px] border border-slate-100 bg-gradient-to-br from-sky-50 to-indigo-50 p-4 text-left shadow-softSm transition hover:brightness-[1.02] active:translate-y-[1px] dark:border-slate-600 dark:from-slate-700 dark:to-slate-800"
           >
             <div className="text-3xl">📣</div>
             <div className="mt-3 text-sm font-bold text-slate-900 dark:text-slate-100">Таргет рассылка</div>
@@ -254,7 +253,7 @@ export function HomeDashboardScreen({
           <button
             type="button"
             onClick={() => openDevelopmentStub("Акция: скидка на пакет минут (демо).")}
-            className="w-[200px] shrink-0 rounded-[22px] bg-accent-dark p-4 text-left text-white shadow-softSm transition hover:brightness-110 active:translate-y-[1px]"
+            className="w-[200px] shrink-0 snap-start rounded-[22px] bg-accent-dark p-4 text-left text-white shadow-softSm transition hover:brightness-110 active:translate-y-[1px]"
           >
             <div className="text-xs font-semibold opacity-80">Акция</div>
             <div className="mt-2 text-sm font-bold">Скидка на пакет минут</div>
@@ -274,11 +273,11 @@ export function HomeDashboardScreen({
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
-        <div className="flex gap-3 overflow-x-auto pb-1">
+        <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             type="button"
             onClick={() => router.push("/assistant/?q=Дай советы для бизнеса")}
-            className="w-[260px] shrink-0 overflow-hidden rounded-[22px] border border-slate-200 bg-white text-left shadow-softSm transition hover:bg-slate-50/80 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
+            className="w-[260px] shrink-0 snap-start overflow-hidden rounded-[22px] border border-slate-200 bg-white text-left shadow-softSm transition hover:bg-slate-50/80 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
           >
             <div className="h-28 bg-gradient-to-br from-emerald-100 via-amber-50 to-rose-100" />
             <div className="p-3 text-xs font-semibold leading-snug text-slate-900 dark:text-slate-100">
@@ -288,7 +287,7 @@ export function HomeDashboardScreen({
           <button
             type="button"
             onClick={() => router.push("/assistant/")}
-            className="w-[200px] shrink-0 rounded-[22px] border border-slate-200 bg-slate-50 p-3 text-left text-xs text-slate-600 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+            className="w-[200px] shrink-0 snap-start rounded-[22px] border border-slate-200 bg-slate-50 p-3 text-left text-xs text-slate-600 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
           >
             Ещё статьи в ленте (демо)
           </button>
