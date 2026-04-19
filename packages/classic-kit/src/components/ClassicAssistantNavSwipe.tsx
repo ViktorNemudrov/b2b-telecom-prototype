@@ -15,9 +15,10 @@ export {
   normalizeClassicNavPath
 } from "@shared/components/classicAssistantNavSwipeHelpers";
 
-const SWIPE_MIN_PX = 56;
-const SWIPE_MIN_PX_TOUCH = 44;
-const HORIZONTAL_DOMINATES = 1.2;
+const SWIPE_MIN_PX = 52;
+const SWIPE_MIN_PX_TOUCH = 36;
+const HORIZONTAL_DOMINATES = 1.05;
+const NAV_DEBOUNCE_MS = 380;
 
 function swipeTargetFromWindowPath(): number | null {
   if (typeof window === "undefined") return null;
@@ -42,6 +43,8 @@ export function ClassicAssistantNavSwipeContainer({ children }: { children: Reac
   const router = useRouter();
   const { open: documentsSheetOpen } = useDocumentsSheet();
   const rootRef = React.useRef<HTMLDivElement | null>(null);
+  const lastNavAtRef = React.useRef(0);
+  const touchStartRef = React.useRef<{ x: number; y: number } | null>(null);
 
   const trackingRef = React.useRef<
     | { phase: "idle" }
@@ -83,11 +86,16 @@ export function ClassicAssistantNavSwipeContainer({ children }: { children: Reac
       const idx = swipeTargetFromWindowPath();
       if (idx === null) return;
 
+      const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+      if (now - lastNavAtRef.current < NAV_DEBOUNCE_MS) return;
+
       const goLeftContent = deltaX < 0;
       if (goLeftContent && idx < CLASSIC_NAV_SWIPE_SEGMENTS.length - 1) {
         router.push(hrefForClassicNavSegment(idx + 1));
+        lastNavAtRef.current = now;
       } else if (!goLeftContent && idx > 0) {
         router.push(hrefForClassicNavSegment(idx - 1));
+        lastNavAtRef.current = now;
       }
     },
     [documentsSheetOpen, router]
@@ -141,15 +149,49 @@ export function ClassicAssistantNavSwipeContainer({ children }: { children: Reac
     trackingRef.current = { phase: "idle" };
   }, []);
 
+  const onTouchStartCapture = React.useCallback(
+    (e: React.TouchEvent) => {
+      if (!navSwipeActive) return;
+      if (shouldIgnoreSwipeTarget(e.target)) return;
+      const t = e.touches[0];
+      if (!t) return;
+      touchStartRef.current = { x: t.clientX, y: t.clientY };
+    },
+    [navSwipeActive]
+  );
+
+  const onTouchEndCapture = React.useCallback(
+    (e: React.TouchEvent) => {
+      const start = touchStartRef.current;
+      touchStartRef.current = null;
+      if (!navSwipeActive || !start) return;
+      const t = e.changedTouches[0];
+      flushNav(t.clientX - start.x, t.clientY - start.y, "touch");
+    },
+    [flushNav, navSwipeActive]
+  );
+
+  const onTouchCancelCapture = React.useCallback(() => {
+    touchStartRef.current = null;
+  }, []);
+
   return (
     <div
       ref={rootRef}
       className="min-h-dvh"
+      style={
+        navSwipeActive
+          ? ({ overscrollBehaviorX: "contain", touchAction: "pan-x pan-y" } as React.CSSProperties)
+          : undefined
+      }
       data-testid={navSwipeActive ? "classic-assistant-nav-swipe-root" : undefined}
       onPointerDownCapture={navSwipeActive ? onPointerDownCapture : undefined}
       onPointerUpCapture={navSwipeActive ? endTracking : undefined}
       onPointerCancelCapture={navSwipeActive ? onPointerCancelCapture : undefined}
       onLostPointerCapture={navSwipeActive ? onLostPointerCapture : undefined}
+      onTouchStartCapture={navSwipeActive ? onTouchStartCapture : undefined}
+      onTouchEndCapture={navSwipeActive ? onTouchEndCapture : undefined}
+      onTouchCancelCapture={navSwipeActive ? onTouchCancelCapture : undefined}
     >
       {children}
     </div>

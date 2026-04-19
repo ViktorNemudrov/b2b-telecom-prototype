@@ -11,8 +11,8 @@ export default function SupportPage() {
     <>
       <AppHeader />
       <AppShell>
-        <div className="safe-px pb-24 pt-4">
-          <PageBackLink />
+        <div className="safe-px pb-24 pt-2">
+          <PageBackLink className="mb-1.5" />
           <ClassicSupportScreen />
         </div>
       </AppShell>

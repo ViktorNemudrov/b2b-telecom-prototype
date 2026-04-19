@@ -35,58 +35,60 @@ export function ClassicSupportScreen() {
         Написать в чат
       </Button>
 
-      <Card data-testid="support-appeals-card" className="border-slate-200 dark:border-slate-700">
-        <CardContent className="space-y-3 pb-4 pt-4">
-          <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700">
-              <ClipboardList className="h-5 w-5 text-slate-700 dark:text-slate-200" aria-hidden />
-            </span>
-            <div className="min-w-0 flex-1">
-              <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Обращения</h2>
-              <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                Активных: {activeAppeals.length}. В работе: {inWorkCount}
-                {signPendingCount ? ` · Ожидает подписания: ${signPendingCount}` : ""}
-              </p>
+      <Link
+        href="/appeals/"
+        data-testid="support-appeals-card"
+        className="block rounded-2xl outline-none ring-offset-2 ring-offset-white transition hover:brightness-[1.01] focus-visible:ring-2 focus-visible:ring-accent-yellow dark:ring-offset-slate-900"
+      >
+        <Card className="border-slate-200 dark:border-slate-700">
+          <CardContent className="space-y-3 pb-4 pt-4">
+            <div className="flex items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700">
+                <ClipboardList className="h-5 w-5 text-slate-700 dark:text-slate-200" aria-hidden />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Обращения</h2>
+                <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                  Активных: {activeAppeals.length}. В работе: {inWorkCount}
+                  {signPendingCount ? ` · Ожидает подписания: ${signPendingCount}` : ""}
+                </p>
+              </div>
             </div>
-          </div>
 
-          {previewAppeals.length ? (
-            <div className="divide-y divide-slate-100 rounded-xl border border-slate-100 dark:divide-slate-700 dark:border-slate-600">
-              {previewAppeals.map((a) => (
-                <Link
-                  key={a.id}
-                  href="/appeals/"
-                  className="flex items-start justify-between gap-2 px-3 py-2.5 transition hover:bg-slate-50 dark:hover:bg-slate-700/40"
-                >
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-medium text-slate-900 dark:text-slate-100">{a.title}</span>
-                    <span className="mt-0.5 block text-[11px] text-slate-500 dark:text-slate-400">
-                      {a.category} · ID от {a.dateLabel}
-                    </span>
-                  </span>
-                  <span
-                    className={cn(
-                      "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold",
-                      a.badgeLabel.includes("работе") && "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200",
-                      a.badgeLabel.includes("подпис") && "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100"
-                    )}
+            {previewAppeals.length ? (
+              <div className="divide-y divide-slate-100 rounded-xl border border-slate-100 dark:divide-slate-700 dark:border-slate-600">
+                {previewAppeals.map((a) => (
+                  <div
+                    key={a.id}
+                    className="flex items-start justify-between gap-2 px-3 py-2.5 dark:text-slate-100"
                   >
-                    {a.badgeLabel}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          ) : null}
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium text-slate-900 dark:text-slate-100">{a.title}</span>
+                      <span className="mt-0.5 block text-[11px] text-slate-500 dark:text-slate-400">
+                        {a.category} · ID от {a.dateLabel}
+                      </span>
+                    </span>
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold",
+                        a.badgeLabel.includes("работе") && "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200",
+                        a.badgeLabel.includes("подпис") && "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100"
+                      )}
+                    >
+                      {a.badgeLabel}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
 
-          <Link
-            href="/appeals/"
-            className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-softSm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
-          >
-            Список обращений
-            <ChevronRight className="h-4 w-4 text-slate-400" aria-hidden />
-          </Link>
-        </CardContent>
-      </Card>
+            <div className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-softSm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+              Список обращений
+              <ChevronRight className="h-4 w-4 text-slate-400" aria-hidden />
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
 
       <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Популярные темы</h2>
       <div className="space-y-2">

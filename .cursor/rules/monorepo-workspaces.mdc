@@ -19,4 +19,5 @@ alwaysApply: true
 ## Change Discipline
 
 - При правках AI-first — затронуты `packages/ai-kit` и/или `apps/ai-first`. При правках Classic — `packages/classic-kit` и/или `apps/classic`.
+- **Задачи по умолчанию считаются Classic-only:** не менять `packages/ai-kit`, `apps/ai-first` и связанный AI-поток, пока пользователь **явно** не попросил правки AI-first или «обе ветки». Исключение — когда в запросе прямо указано синхронизировать обе ветки (например FAQ/общие контракты).
 - Document breaking changes in README/changelog того пакета, где меняется публичный контракт.

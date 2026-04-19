@@ -7,9 +7,7 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 };
 
-const PWA_INSTALL_DISMISSED_KEY = "b2b_pwa_install_dismissed_v1";
 const PWA_INSTALL_COMPLETED_KEY = "b2b_pwa_install_completed_v1";
-const LEGACY_PWA_INSTALL_DISMISSED_KEY = "pwa-install-dismissed";
 
 /** Сохраняем событие между пересозданием эффекта (React Strict Mode) и не теряем prompt. */
 let capturedDeferredInstall: BeforeInstallPromptEvent | null = null;
@@ -30,6 +28,8 @@ export function PwaInstallPrompt() {
     capturedDeferredInstall
   );
   const [showInstall, setShowInstall] = React.useState(false);
+  /** «Позже» скрывает баннер только до перезагрузки страницы — без записи в localStorage. */
+  const [dismissedSession, setDismissedSession] = React.useState(false);
 
   React.useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
@@ -42,16 +42,13 @@ export function PwaInstallPrompt() {
       (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
     if (isStandalone) return;
 
-    const dismissed =
-      window.localStorage.getItem(PWA_INSTALL_DISMISSED_KEY) === "1" ||
-      window.localStorage.getItem(LEGACY_PWA_INSTALL_DISMISSED_KEY) === "1";
     const completed = window.localStorage.getItem(PWA_INSTALL_COMPLETED_KEY) === "1";
-    if (dismissed || completed) {
-      if (dismissed) {
-        window.localStorage.setItem(PWA_INSTALL_DISMISSED_KEY, "1");
-      }
-      return;
-    }
+    /** Только наследованные ключи до этой версии — для совместимости со smoke/e2e. Новый «Позже» в LS не пишется. */
+    const legacyDismissed =
+      window.localStorage.getItem("b2b_pwa_install_dismissed_v1") === "1" ||
+      window.localStorage.getItem("pwa-install-dismissed") === "1";
+
+    if (completed || dismissedSession || legacyDismissed) return;
 
     if (capturedDeferredInstall) {
       setDeferredPrompt(capturedDeferredInstall);
@@ -93,11 +90,10 @@ export function PwaInstallPrompt() {
       window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
       window.removeEventListener("appinstalled", onAppInstalled);
     };
-  }, []);
+  }, [dismissedSession]);
 
   const dismiss = () => {
-    window.localStorage.setItem(PWA_INSTALL_DISMISSED_KEY, "1");
-    window.localStorage.setItem(LEGACY_PWA_INSTALL_DISMISSED_KEY, "1");
+    setDismissedSession(true);
     setShowInstall(false);
   };
 

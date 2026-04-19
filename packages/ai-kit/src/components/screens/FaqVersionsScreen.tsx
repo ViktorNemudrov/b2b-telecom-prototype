@@ -4,7 +4,29 @@ import Link from "next/link";
 import { PageBackLink } from "@shared/components/PageBackLink";
 import { Card, CardContent } from "@shared/components/ui/card";
 
+const FAQ_VERSION_ANCHOR_MS = Date.parse("2026-04-18T15:30:00+03:00");
+
+function formatVersionReleasedAtLabel(versionIndex: number): string {
+  const dayMs = 86400000;
+  const d = new Date(FAQ_VERSION_ANCHOR_MS - versionIndex * dayMs);
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Moscow"
+  }).format(d);
+}
+
 const versions = [
+  {
+    tag: "v.0.2.51",
+    items: [
+      "FAQ: рядом с номером версии показываются дата и время (Europe/Moscow)",
+      "Исправлены неточности работы продукта"
+    ]
+  },
   {
     tag: "v.0.2.50",
     items: [
@@ -367,10 +389,15 @@ export function FaqVersionsScreen({ backHref = "/settings/" }: { backHref?: stri
         </CardContent>
       </Card>
 
-      {versions.map((version) => (
+      {versions.map((version, index) => (
         <Card key={version.tag}>
           <CardContent className="space-y-2 pb-4 pt-4">
-            <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{version.tag}</h2>
+            <h2 className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+              <span>{version.tag}</span>
+              <span className="text-xs font-normal tabular-nums text-slate-500 dark:text-slate-400">
+                {formatVersionReleasedAtLabel(index)}
+              </span>
+            </h2>
             <ul className="list-disc space-y-1 pl-5 text-sm text-slate-700 dark:text-slate-300">
               {version.items.map((line) => (
                 <li key={line}>{line}</li>

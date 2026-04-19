@@ -11,8 +11,8 @@ export default function DocumentsFinancePage() {
     <>
       <AppHeader />
       <AppShell>
-        <div className="safe-px pb-24 pt-4">
-          <PageBackLink href="/documents/" />
+        <div className="safe-px pb-24 pt-2">
+          <PageBackLink href="/documents/" className="mb-1.5" />
           <ClassicDocumentsFinanceScreen />
         </div>
       </AppShell>

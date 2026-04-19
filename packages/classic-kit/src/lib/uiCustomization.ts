@@ -243,7 +243,8 @@ export const customizableElements: CustomizableElementMeta[] = [
     id: "classic.search",
     label: "Classic шапка: Поиск",
     app: "classic",
-    description: "Кнопка поиска в верхней шапке Classic-версии."
+    description:
+      "Управляет полем/кнопкой поиска в верхней шапке (`GlobalAppHeader`). В обычном режиме открывает демо-сценарий глобального поиска по разделам; режим «мок» подставляет заглушку вместо реального запроса."
   },
   {
     id: "classic.notifications",
@@ -303,8 +304,6 @@ export const customizableElements: CustomizableElementMeta[] = [
 
 type Store = Record<CustomizableElementId, ElementCustomization>;
 
-const STORAGE_KEY = "b2b_ui_customization_v1";
-
 function buildDefaultStore(): Store {
   return customizableElements.reduce(
     (acc, item) => {
@@ -347,25 +346,6 @@ const UiCustomizationContext = React.createContext<UiCustomizationContextShape>(
 
 export function UiCustomizationProvider({ children }: { children: React.ReactNode }) {
   const [store, setStore] = React.useState<Store>(DEFAULT_STORE);
-
-  React.useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        setStore(sanitizeStore(JSON.parse(raw)));
-      }
-    } catch {
-      setStore(DEFAULT_STORE);
-    }
-  }, []);
-
-  React.useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-    } catch {
-      // ignore write errors in private mode
-    }
-  }, [store]);
 
   const setUseMock = React.useCallback((id: CustomizableElementId, value: boolean) => {
     setStore((prev) => ({
