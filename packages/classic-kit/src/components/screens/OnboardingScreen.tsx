@@ -164,6 +164,61 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
     }
   };
 
+  const renderBottomNav = (paneIndex: number) => {
+    const isActivePane = paneIndex === activeSlide;
+    return (
+      <div
+        className={`absolute z-40 ${isActivePane ? "pointer-events-auto" : "pointer-events-none"}`}
+        aria-hidden={!isActivePane}
+        style={{
+          left: `${imageFrame.x}px`,
+          top: `${imageFrame.y + imageFrame.height * 0.9}px`,
+          width: `${imageFrame.width}px`,
+          height: `${imageFrame.height * 0.1}px`
+        }}
+      >
+        <div className="relative h-full w-full">
+          <div className="absolute inset-0 bg-[#f3f3f6]" />
+
+          <button
+            type="button"
+            aria-label="Предыдущий экран"
+            className="absolute left-[7%] top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#eceef3] text-[#6f7483] shadow-[0_1px_3px_rgba(0,0,0,0.05)] disabled:opacity-35"
+            onClick={() => setActiveSlide((prev) => Math.max(0, prev - 1))}
+            disabled={activeSlide === 0}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+
+          <div className="absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2">
+            {onboardingSlides.map((slide, index) => (
+              <button
+                type="button"
+                key={`dot-${paneIndex}-${slide[0]}`}
+                data-testid={isActivePane ? `onboarding-dot-${index}` : undefined}
+                aria-label={`Перейти к экрану ${index + 1}`}
+                onClick={() => setActiveSlide(index)}
+                className={`h-2.5 w-2.5 rounded-full transition-colors ${
+                  index === activeSlide ? "bg-[#1f2230]" : "bg-[#dde0e8]"
+                }`}
+              />
+            ))}
+          </div>
+
+          <button
+            type="button"
+            aria-label="Следующий экран"
+            className="absolute right-[7%] top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#eceef3] text-[#2f3241] shadow-[0_1px_3px_rgba(0,0,0,0.05)] disabled:opacity-35"
+            onClick={() => setActiveSlide((prev) => Math.min(onboardingSlides.length - 1, prev + 1))}
+            disabled={activeSlide === onboardingSlides.length - 1}
+          >
+            <ChevronLeft className="h-5 w-5 rotate-180" />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[#11131a]">
       <Link
@@ -201,7 +256,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
               {index === 0 ? (
                 <div className="relative h-full w-full">
                   <div
-                    className="absolute overflow-hidden rounded-[44px] bg-[#f3f3f6]"
+                    className="absolute overflow-hidden rounded-[44px] bg-white"
                     style={{
                       left: `${imageFrame.x}px`,
                       top: `${imageFrame.y}px`,
@@ -216,15 +271,31 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
                       <span className="h-2.5 w-5 rounded-full bg-[#121723]" />
                     </div>
 
-                    <div className="absolute left-1/2 top-[38.6%] -translate-x-1/2 text-center">
-                      <div className="text-[18px] font-semibold leading-none text-[#303342]">Билайн🟡One</div>
-                      <div className="mt-2.5 whitespace-nowrap text-[22px] font-semibold leading-none tracking-[-0.02em] text-[#2f3241]">
-                        Ваш бизнес ассистент
+                    <div className="absolute left-1/2 top-[30%] w-[92%] -translate-x-1/2 px-1 text-center">
+                      <div className="flex flex-col items-center gap-2.5">
+                        <div className="flex items-center justify-center gap-1 text-[17px] font-medium leading-none tracking-[-0.01em]">
+                          <span className="text-[#555555]">Билайн</span>
+                          <span className="inline-flex h-[18px] w-[18px] shrink-0 translate-y-[0.5px] items-center justify-center overflow-hidden rounded-full bg-white">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src="/mockups/Шар.png"
+                              alt=""
+                              className="h-full w-full object-contain mix-blend-multiply"
+                              width={18}
+                              height={18}
+                              draggable={false}
+                            />
+                          </span>
+                          <span className="text-[#000000]">One</span>
+                        </div>
+                        <div className="whitespace-nowrap text-[24px] font-bold leading-[1.15] tracking-[-0.03em] text-[#222222]">
+                          Ваш бизнес ассистент
+                        </div>
+                        <div className="text-[13px] font-normal leading-normal text-[#555555]">Стоит только спросить</div>
                       </div>
-                      <div className="mt-2.5 text-[12px] leading-none text-[#2f3241]">Стоит только спросить</div>
                     </div>
 
-                    <div className="absolute left-1/2 top-[47.05%] w-[84%] -translate-x-1/2 rounded-full border border-[#e4e6ec] bg-[#eff0f3] px-[12px] py-[9px]">
+                    <div className="absolute left-1/2 top-[48%] w-[84%] -translate-x-1/2 rounded-full border border-[#e4e6ec] bg-[#eff0f3] px-[12px] py-[9px]">
                       <div className="flex items-center justify-between gap-2">
                         <span className="inline-flex min-w-0 items-center whitespace-nowrap text-[11px] font-normal leading-[1.1] text-[#9ca0aa]">
                           <span className="max-w-full overflow-hidden text-ellipsis tracking-[-0.01em]">{animatedText || " "}</span>
@@ -239,6 +310,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
                       </div>
                     </div>
                   </div>
+                  {renderBottomNav(index)}
                 </div>
               ) : (
                 <>
@@ -270,6 +342,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
                       Не удалось загрузить экран онбординга {index + 1}
                     </div>
                   ) : null}
+                  {renderBottomNav(index)}
                 </>
               )}
             </div>
@@ -289,55 +362,6 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
           }
         }
       `}</style>
-
-      <div
-        className="absolute z-40"
-        style={{
-          left: `${imageFrame.x}px`,
-          top: `${imageFrame.y + imageFrame.height * 0.90}px`,
-          width: `${imageFrame.width}px`,
-          height: `${imageFrame.height * 0.1}px`
-        }}
-      >
-        <div className="relative h-full w-full">
-          <div className="absolute inset-0 bg-[#f3f3f6]" />
-
-          <button
-            type="button"
-            aria-label="Предыдущий экран"
-            className="absolute left-[7%] top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#eceef3] text-[#6f7483] shadow-[0_1px_3px_rgba(0,0,0,0.05)] disabled:opacity-35"
-            onClick={() => setActiveSlide((prev) => Math.max(0, prev - 1))}
-            disabled={activeSlide === 0}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-
-          <div className="absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2">
-            {onboardingSlides.map((slide, index) => (
-              <button
-                type="button"
-                key={`dot-${slide[0]}`}
-                data-testid={`onboarding-dot-${index}`}
-                aria-label={`Перейти к экрану ${index + 1}`}
-                onClick={() => setActiveSlide(index)}
-                className={`h-2.5 w-2.5 rounded-full transition-colors ${
-                  index === activeSlide ? "bg-[#1f2230]" : "bg-[#dde0e8]"
-                }`}
-              />
-            ))}
-          </div>
-
-          <button
-            type="button"
-            aria-label="Следующий экран"
-            className="absolute right-[7%] top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#eceef3] text-[#2f3241] shadow-[0_1px_3px_rgba(0,0,0,0.05)] disabled:opacity-35"
-            onClick={() => setActiveSlide((prev) => Math.min(onboardingSlides.length - 1, prev + 1))}
-            disabled={activeSlide === onboardingSlides.length - 1}
-          >
-            <ChevronLeft className="h-5 w-5 rotate-180" />
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
