@@ -59,6 +59,7 @@ import { getCustomizationButtonClasses, useUiCustomization } from "@shared/lib/u
 const sphereSrc = "/mockups/%D0%A8%D0%B0%D1%80.png";
 type LiveProvider = "gemini" | "together" | "openrouter" | "groq" | "grok";
 type LiveCandidate = { provider: LiveProvider; apiKey: string; model: string };
+type ProvidersProbeResponse = { enabled?: LiveProvider[] };
 
 function id() {
   return Math.random().toString(16).slice(2);
@@ -300,10 +301,35 @@ export function AiAssistantScreen() {
   const openRouterModel = process.env.NEXT_PUBLIC_OPENROUTER_MODEL;
   const grokModel = process.env.NEXT_PUBLIC_GROK_MODEL ?? "grok-3-mini";
   const groqModel = process.env.NEXT_PUBLIC_GROQ_MODEL ?? "llama-3.1-8b-instant";
+  const [serverEnabledProviders, setServerEnabledProviders] = React.useState<LiveProvider[]>([]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const ac = new AbortController();
+    void fetch("/api/llm/providers", {
+      method: "GET",
+      cache: "no-store",
+      signal: ac.signal
+    })
+      .then(async (res) => {
+        if (!res.ok) return;
+        const payload = (await res.json()) as ProvidersProbeResponse;
+        const enabled = Array.isArray(payload.enabled)
+          ? payload.enabled.filter(
+              (p): p is LiveProvider => p === "gemini" || p === "together" || p === "openrouter" || p === "grok" || p === "groq"
+            )
+          : [];
+        setServerEnabledProviders(enabled);
+      })
+      .catch(() => {
+        setServerEnabledProviders([]);
+      });
+    return () => ac.abort();
+  }, []);
 
   const baseLiveCandidates = React.useMemo(
-    () =>
-      buildLiveCandidates({
+    () => {
+      const fromPublic = buildLiveCandidates({
         geminiApiKey,
         geminiModel,
         togetherApiKey,
@@ -314,7 +340,23 @@ export function AiAssistantScreen() {
         grokModel,
         groqApiKey,
         groqModel
-      }),
+      });
+      if (fromPublic.length > 0) return fromPublic;
+      if (serverEnabledProviders.length === 0) return [];
+      const proxyToken = "__server_proxy__";
+      return buildLiveCandidates({
+        geminiApiKey: serverEnabledProviders.includes("gemini") ? proxyToken : undefined,
+        geminiModel,
+        togetherApiKey: serverEnabledProviders.includes("together") ? proxyToken : undefined,
+        togetherModel,
+        openRouterApiKey: serverEnabledProviders.includes("openrouter") ? proxyToken : undefined,
+        openRouterModel,
+        grokApiKey: serverEnabledProviders.includes("grok") ? proxyToken : undefined,
+        grokModel,
+        groqApiKey: serverEnabledProviders.includes("groq") ? proxyToken : undefined,
+        groqModel
+      });
+    },
     [
       geminiApiKey,
       geminiModel,
@@ -325,7 +367,8 @@ export function AiAssistantScreen() {
       grokApiKey,
       grokModel,
       groqApiKey,
-      groqModel
+      groqModel,
+      serverEnabledProviders
     ]
   );
 

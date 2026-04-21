@@ -18,28 +18,28 @@ export default defineConfig({
   projects: [
     {
       name: "desktop-chromium",
-      testIgnore: "**/classic-call-scenarios.spec.ts",
+      testIgnore: /classic-(call-scenarios|onboarding)\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"]
       }
     },
     {
       name: "mobile-android-chrome",
-      testIgnore: "**/classic-call-scenarios.spec.ts",
+      testIgnore: /classic-(call-scenarios|onboarding)\.spec\.ts/,
       use: {
         ...devices["Pixel 7"]
       }
     },
     {
       name: "mobile-ios-safari",
-      testIgnore: "**/classic-call-scenarios.spec.ts",
+      testIgnore: /classic-(call-scenarios|onboarding)\.spec\.ts/,
       use: {
         ...devices["iPhone 13"]
       }
     },
     {
       name: "desktop-chromium-classic",
-      testMatch: "**/classic-call-scenarios.spec.ts",
+      testMatch: /classic-(call-scenarios|onboarding)\.spec\.ts/,
       use: {
         baseURL: "http://127.0.0.1:3001",
         ...devices["Desktop Chrome"]

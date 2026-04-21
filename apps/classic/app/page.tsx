@@ -8,12 +8,14 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
+    const nextPath = "/onboarding/";
+
     const t = window.setTimeout(() => {
-      router.replace("/assistant/");
+      router.replace(nextPath);
     }, 3000);
     const hardFallback = window.setTimeout(() => {
       if (window.location.pathname === "/") {
-        window.location.replace("/assistant/");
+        window.location.replace(nextPath);
       }
     }, 5200);
     return () => {

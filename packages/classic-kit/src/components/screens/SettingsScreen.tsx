@@ -16,7 +16,7 @@ export function SettingsScreen({
   backHref = "/assistant/",
   faqHref = "/settings/faq/",
   qaHref = "/qa/",
-  onboardingHref = "/settings/onboarding/",
+  onboardingHref = "/onboarding/?from=settings",
   subscriptionHref = "/settings/subscription/",
   customizationHref = "/settings/customization/"
 }: {

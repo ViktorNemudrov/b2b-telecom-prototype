@@ -18,12 +18,23 @@ export function SessionGate({
   const pathname = usePathname() ?? "";
   const router = useRouter();
   const { authenticated } = useDemoSession();
-  const publicSet = useMemo(() => new Set(publicPaths), [publicPaths]);
-  const isPublic = publicSet.has(pathname);
-  const [allowed, setAllowed] = useState(isPublic);
+  const normalizePath = (value: string) => {
+    if (!value) return "";
+    if (value === "/") return "/";
+    return value.replace(/\/+$/, "");
+  };
+  const normalizedPathname = normalizePath(pathname);
+  const publicSet = useMemo(() => new Set(publicPaths.map(normalizePath)), [publicPaths]);
+  const isPublic = normalizedPathname ? publicSet.has(normalizedPathname) : true;
+  const [allowed, setAllowed] = useState(true);
 
   useEffect(() => {
-    if (publicSet.has(pathname)) {
+    if (!pathname) {
+      // Во время гидрации pathname может быть пустым: не блокируем UI.
+      setAllowed(true);
+      return;
+    }
+    if (publicSet.has(normalizedPathname)) {
       setAllowed(true);
       return;
     }
@@ -32,7 +43,7 @@ export function SessionGate({
       return;
     }
     setAllowed(true);
-  }, [pathname, router, authenticated, publicSet, unauthenticatedRedirect]);
+  }, [pathname, normalizedPathname, router, authenticated, publicSet, unauthenticatedRedirect]);
 
   if (!allowed) {
     return <div className="min-h-dvh bg-[rgb(var(--bg))]" aria-busy="true" />;

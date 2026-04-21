@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
-  const key = process.env.NEXT_PUBLIC_GEMINI_API_KEY?.trim();
+  const key = (process.env.GEMINI_API_KEY ?? process.env.NEXT_PUBLIC_GEMINI_API_KEY)?.trim();
   if (!key) {
     return NextResponse.json({ error: "missing Gemini key" }, { status: 503 });
   }

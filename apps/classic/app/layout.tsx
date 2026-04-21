@@ -44,7 +44,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ThemeProvider>
             <DemoSessionProvider>
               <UiCustomizationProvider>
-                <SessionGate publicPaths={["/"]} unauthenticatedRedirect="/">
+                <SessionGate
+                  publicPaths={["/", "/onboarding", "/onboarding/", "/settings/onboarding", "/settings/onboarding/"]}
+                  unauthenticatedRedirect="/"
+                >
                   <ClassicShellProviders>{children}</ClassicShellProviders>
                 </SessionGate>
                 <PwaInstallPrompt />
