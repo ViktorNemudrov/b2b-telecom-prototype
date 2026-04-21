@@ -15,7 +15,7 @@ export default function EventsPage() {
               Лента событий
             </h1>
           </div>
-          <EventsFeedScreen showTitle={false} />
+          <EventsFeedScreen />
         </div>
       </AppShell>
     </>
