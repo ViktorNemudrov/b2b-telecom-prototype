@@ -402,6 +402,20 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
   }
 
   const asksProducts = hasAny(clean, compact, ["мои продукты", "покажи мои продукты", "какие продукты подключены", "мои подключения"]);
+  const asksAiAssistantsAvailability = hasAny(clean, compact, [
+    "вам доступны ии ассистенты",
+    "доступны ии ассистенты",
+    "какие ассистенты доступны"
+  ]);
+  if (asksAiAssistantsAvailability) {
+    return {
+      text:
+        "Вам доступны\n" +
+        "- нейросети\n" +
+        "- ассистенты: SMM, Бухгалтер, Юрист\n" +
+        "- помощники по созданию сайтов и презентаций"
+    };
+  }
   if (asksProducts) {
     return {
       text:

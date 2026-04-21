@@ -6,11 +6,16 @@ import { SwipeSheet, SwipeSheetHandle } from "@shared/components/ui/SwipeSheet";
 
 export function DevelopmentStubHost() {
   const [open, setOpen] = useState(false);
+  const [hint, setHint] = useState("");
 
   const close = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
-    const onStub = () => setOpen(true);
+    const onStub = (event: Event) => {
+      const customEvent = event as CustomEvent<string>;
+      setHint(typeof customEvent.detail === "string" ? customEvent.detail : "");
+      setOpen(true);
+    };
     window.addEventListener("development-stub", onStub as EventListener);
     return () => window.removeEventListener("development-stub", onStub as EventListener);
   }, []);
@@ -23,6 +28,7 @@ export function DevelopmentStubHost() {
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
           В демо-версии этот сценарий пока не подключён. Доступны экраны с моковыми данными и навигация по прототипу.
         </p>
+        {hint ? <p className="mt-2 text-sm font-medium text-slate-800">Мок: {hint}</p> : null}
         <p className="mt-3 text-xs text-slate-500">Потяните вниз, чтобы закрыть.</p>
         <Button type="button" className="mt-5 w-full rounded-2xl py-6 text-base font-semibold" onClick={close}>
           Понятно

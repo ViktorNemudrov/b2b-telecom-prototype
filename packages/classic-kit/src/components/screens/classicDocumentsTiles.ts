@@ -8,11 +8,36 @@ export const CLASSIC_DOCUMENT_TILES: Array<{
   icon: LucideIcon;
   href: string;
   badge?: number;
+  mockHint?: string;
 }> = [
   { id: "fin", label: "Финансы", icon: CreditCard, href: "/documents/finance/" },
-  { id: "contracts", label: "Договоры", icon: FileText, href: "/settings/subscription/" },
-  { id: "products", label: "Продукты", icon: Layers, href: "/home/" },
-  { id: "reports", label: "Отчеты", icon: BarChart3, href: "/events/" },
-  { id: "users", label: "Пользователи", icon: Users, href: "/settings/customization/" },
+  {
+    id: "contracts",
+    label: "Договоры",
+    icon: FileText,
+    href: "/documents/",
+    mockHint: "Договоры"
+  },
+  {
+    id: "products",
+    label: "Продукты",
+    icon: Layers,
+    href: "/documents/",
+    mockHint: "Продукты"
+  },
+  {
+    id: "reports",
+    label: "Отчеты",
+    icon: BarChart3,
+    href: "/documents/",
+    mockHint: "Отчеты"
+  },
+  {
+    id: "users",
+    label: "Пользователи",
+    icon: Users,
+    href: "/documents/",
+    mockHint: "Пользователи"
+  },
   { id: "support", label: "Поддержка", icon: MessageCircle, href: "/support/", badge: 1 }
 ];

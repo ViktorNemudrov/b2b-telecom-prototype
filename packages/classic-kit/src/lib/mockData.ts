@@ -125,8 +125,13 @@ export const myNumbersChatMock: MyNumberLine[] = [
 
 /** Последние запросы — чипсы над поиском (ТЗ). */
 export const recentQueryChips = [
-  "Мои сервисы",
-  "Счета за март 2026"
+  "Что ты умеешь",
+  "Запустить смс-рассылку",
+  "Создатьплатеж",
+  "Изменить настройки секретаря",
+  "Инсайты",
+  "Баланс",
+  "Мои номера"
 ] as const;
 
 /** Дополнительные новые запросы — через кнопку истории (иконка часов). */
@@ -263,7 +268,7 @@ export const standaloneCalls: CallItem[] = [
     id: "c2",
     time: "16:02",
     phone: "+7 (946) 525-00-24",
-    missed: false,
+    missed: true,
     summary: "Короткий контакт, секретарь принял сообщение.",
     transcript: "Секретарь: Клиент оставил номер для перезвона по счёту.",
     recordingUrl: "/call-invoice.wav",
@@ -273,7 +278,7 @@ export const standaloneCalls: CallItem[] = [
     id: "c3",
     time: "14:15",
     phone: "+7 (906) 062-60-26",
-    missed: false,
+    missed: true,
     title: "Поставщик канцелярии",
     summary: "Уточнение по заказу канцтоваров.",
     transcript: "Клиент: Нужен счёт на дополнительную партию.\n\nСекретарь: Передал менеджеру.",
@@ -284,7 +289,7 @@ export const standaloneCalls: CallItem[] = [
     id: "c4",
     time: "11:04",
     phone: "+7 (904) 023-53-21",
-    missed: false,
+    missed: true,
     summary: "Входящий: уточнение по графику.",
     transcript: "Секретарь: Клиент спросил про график поставок.",
     recordingUrl: "/call-schedule.wav",
@@ -294,7 +299,7 @@ export const standaloneCalls: CallItem[] = [
     id: "c5",
     time: "09:02",
     phone: "+7 (903) 111-22-33",
-    missed: false,
+    missed: true,
     title: "Вода офис",
     summary: "Заказ воды, уточнение адреса.",
     transcript: "Секретарь: Уточнили адрес и подъезд.",
@@ -531,16 +536,12 @@ export function getAppealById(id: string): AppealItem | undefined {
   return appealsMock.find((a) => a.id === id);
 }
 
-/** Навигация из чата (ТЗ: «мои обращения», «мои счета» / «счета за …»). Пропущенные — в чате. */
+/** Демо-навигация из чата (например пропущенные звонки). Список обращений — в чате, без перехода по интенту «обращения». */
 export function getDemoNavigationIntent(
   prompt: string
 ): { to: ChatNavigateTo; ack: string } | undefined {
   const q = prompt.trim().toLowerCase();
   if (!q) return undefined;
-
-  if (q === "обращения" || q.includes("мои обращения") || q.includes("активные обращения")) {
-    return { to: "/appeals/", ack: "Открываю раздел обращений." };
-  }
 
   return undefined;
 }

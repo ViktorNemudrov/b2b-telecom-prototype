@@ -48,6 +48,14 @@ test("Classic: «Мои счета» в чате показывает видже
   await expect(page.getByTestId("invoices-summary-widget")).toBeVisible({ timeout: 25_000 });
 });
 
+test("Classic: «Мои обращения» остаётся в чате без перехода на страницу", async ({ page }) => {
+  await openClassicAssistant(page);
+  await page.getByTestId("assistant-chat-input").fill("Мои обращения");
+  await page.getByTestId("assistant-chat-input").press("Enter");
+  await expect(page.getByText("Активные обращения", { exact: true })).toBeVisible({ timeout: 25_000 });
+  await expect(page).toHaveURL(/\/assistant\/?$/, { timeout: 15_000 });
+});
+
 test("Classic: карточка пропущенного (2-й слайд hero) ведёт в карточку звонка", async ({ page }) => {
   await openClassicAssistant(page);
   await page.getByTestId("assistant-hero-swiper").waitFor({ state: "visible", timeout: 30_000 });

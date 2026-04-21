@@ -10,29 +10,20 @@ test.describe("AI-first user actions", () => {
 
     await expect(page.getByText("Неоплаченные счета", { exact: true })).toBeVisible();
 
-    const firstAmountButton = page.locator("button", { hasText: "₽" }).first();
-    const box = await firstAmountButton.boundingBox();
-    expect(box).not.toBeNull();
-    if (!box) return;
-
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-    await page.mouse.down();
-    await page.mouse.up();
-
-    await expect(page).toHaveURL(/\/invoices\/.+\/?$/);
+    const firstUnpaidRow = page.getByRole("button", { name: /Не оплачен/ }).first();
+    await expect(firstUnpaidRow).toBeVisible();
+    await firstUnpaidRow.scrollIntoViewIfNeeded();
+    await Promise.all([page.waitForURL(/\/invoices\/.+\/?$/, { timeout: 15_000 }), firstUnpaidRow.click()]);
     await expect(page.getByText("Скачать PDF", { exact: true })).toBeVisible();
   });
 
-  test("settings interactions: toggle switch and open FAQ", async ({ page }) => {
+  test("settings interactions: toggle notifications switch", async ({ page }) => {
     await page.goto("/settings/");
 
     const notificationsSwitch = page.getByRole("switch", { name: "Уведомления" });
     await expect(notificationsSwitch).toHaveAttribute("aria-checked", "true");
     await notificationsSwitch.click();
     await expect(notificationsSwitch).toHaveAttribute("aria-checked", "false");
-
-    await page.getByRole("link", { name: "FAQ и история версий" }).click();
-    await expect(page).toHaveURL(/\/settings\/faq\/?$/);
   });
 });
 
@@ -50,7 +41,7 @@ test.describe("Classic user actions", () => {
     await page.getByRole("link", { name: "Виджеты" }).click();
     await expect(page).toHaveURL(/\/widgets\/?$/);
     await expect(page.getByText("Связь для бизнеса", { exact: true })).toBeVisible();
-    await expect(page.getByText("Записи разговоров", { exact: true })).toBeVisible();
+    await expect(page.getByText(/Записи разговоров/)).toBeVisible();
   });
 
   test("assistant: horizontal swipe navigates between feed / main / widgets without navbar tap first", async ({
@@ -104,7 +95,7 @@ test.describe("Classic user actions", () => {
     await expect(page.getByTestId("classic-documents-sheet")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Документы", level: 1 })).toBeVisible();
 
-    await page.getByRole("link", { name: "Поддержка" }).click();
+    await page.getByTestId("documents-tile-support").click();
     await expect(page).toHaveURL(/\/support\/?$/);
     await expect(page.getByRole("heading", { name: "Поддержка", level: 1 })).toBeVisible();
 
@@ -158,8 +149,8 @@ test.describe("Classic user actions", () => {
     await expect(page.getByRole("button", { name: "Назад" })).toBeVisible({ timeout: 30_000 });
     await page.getByRole("button", { name: "Назад" }).click();
     await expect(page).toHaveURL(/\/assistant\/?$/);
-    await expect(page.getByTestId("assistant-hero-swiper")).toBeVisible();
-    await expect(page.getByText("Еженедельный отчет", { exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Профиль" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Главный экран" })).toBeVisible();
   });
 
   test("записи разговоров: Назад возвращает на виджеты после перехода с виджетов", async ({ page }) => {

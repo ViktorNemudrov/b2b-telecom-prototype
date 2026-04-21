@@ -286,6 +286,9 @@ export function AiAssistantScreen() {
   const invoicesChipCustom = useUiCustomization("assistant.home.invoices");
   const unpaidChipCustom = useUiCustomization("assistant.home.unpaid");
   const unpaidInvoicesCount = runtimeInvoices.filter((inv) => inv.status === "pay").length;
+  const missedCalls = React.useMemo(() => standaloneCalls.filter((c) => c.missed), []);
+  const primaryMissedCall = missedCalls[0];
+  const otherMissedCalls = React.useMemo(() => missedCalls.slice(1), [missedCalls]);
   const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY?.trim();
   const togetherApiKey = process.env.NEXT_PUBLIC_TOGETHER_API_KEY?.trim();
   const openRouterApiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY?.trim();
@@ -914,8 +917,9 @@ export function AiAssistantScreen() {
                               type="button"
                               className="mt-1 rounded-full bg-accent-yellow px-4 py-1.5 text-xs font-semibold text-[#2F3141] transition hover:brightness-95"
                               onClick={() => {
-                                setInput("Мои продукты");
-                                window.setTimeout(() => send("Мои продукты"), 60);
+                                const assistantsPrompt = "Вам доступны ИИ ассистенты";
+                                setInput(assistantsPrompt);
+                                window.setTimeout(() => send(assistantsPrompt), 60);
                               }}
                             >
                               Начать
@@ -1003,20 +1007,22 @@ export function AiAssistantScreen() {
               </Link>
             </div>
             <div className="flex w-full max-w-[360px] flex-wrap justify-center gap-2.5">
-              <button
-                type="button"
+              <Link
+                href="/widgets/"
                 className={cn(pillBase, getCustomizationButtonClasses(invoicesChipCustom.dimmedDisabled))}
-                disabled={invoicesChipCustom.dimmedDisabled}
-                onClick={() => {
-                  if (invoicesChipCustom.useMock) {
-                    setToast("Мои счета (мок из кастомизации).");
+                onClick={(e) => {
+                  if (invoicesChipCustom.dimmedDisabled) {
+                    e.preventDefault();
                     return;
                   }
-                  window.setTimeout(() => send("Мои счета"), 60);
+                  if (invoicesChipCustom.useMock) {
+                    e.preventDefault();
+                    setToast("Мои продукты (мок из кастомизации).");
+                  }
                 }}
               >
-                <span>Мои счета</span>
-              </button>
+                <span>Мои продукты</span>
+              </Link>
               <button
                 type="button"
                 className={cn(pillBase, getCustomizationButtonClasses(unpaidChipCustom.dimmedDisabled))}
@@ -1170,8 +1176,30 @@ export function AiAssistantScreen() {
                         <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                           Пропущенные в чате
                         </div>
-                        {standaloneCalls
-                          .filter((c) => c.missed)
+                        {primaryMissedCall ? (
+                          <button
+                            key={primaryMissedCall.id}
+                            type="button"
+                            className="flex w-full items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2 text-left dark:border-slate-600 dark:bg-slate-800"
+                            onClick={() => router.push(`/call/${primaryMissedCall.id}/`)}
+                          >
+                            <span className="text-sm text-slate-800 dark:text-slate-200">
+                              {primaryMissedCall.title ?? primaryMissedCall.phone}
+                            </span>
+                            <span className="text-xs text-slate-500 dark:text-slate-400">{primaryMissedCall.time}</span>
+                          </button>
+                        ) : (
+                          <div className="rounded-xl border border-slate-100 bg-white px-3 py-2 text-sm text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                            Пропущенных звонков не найдено.
+                          </div>
+                        )}
+                        {otherMissedCalls.length > 0 ? (
+                          <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-600 dark:bg-slate-800/60 dark:text-slate-300">
+                            Ещё пропущенных: {otherMissedCalls.length}.{" "}
+                            {otherMissedCalls.map((c) => c.title ?? c.phone).join(", ")}.
+                          </div>
+                        ) : null}
+                        {otherMissedCalls
                           .map((c) => (
                             <button
                               key={c.id}
@@ -1297,15 +1325,15 @@ export function AiAssistantScreen() {
       {!hasChat && chipTags.length > 0 ? (
         <div className="fixed bottom-[104px] left-0 right-0 z-30 mx-auto w-full max-w-[430px]">
           <div className="safe-px">
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {chipTags.map((label) => (
                 <div
                   key={label}
-                  className="inline-flex items-center overflow-hidden rounded-full border border-[#E8EAED] bg-white text-[12px] font-medium text-[#3C4858] shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+                  className="inline-flex items-center overflow-hidden rounded-full border border-[#E8EAED] bg-white text-[11px] font-medium leading-none text-[#3C4858] shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
                 >
                   <button
                     type="button"
-                    className="px-3 py-1.5 text-left hover:bg-slate-50 dark:hover:bg-slate-700"
+                    className="px-2.5 py-1 text-left hover:bg-slate-50 dark:hover:bg-slate-700"
                     onClick={() => {
                       setInput(label);
                       window.setTimeout(() => send(label), 50);
@@ -1315,11 +1343,11 @@ export function AiAssistantScreen() {
                   </button>
                   <button
                     type="button"
-                    className="border-l border-[#E8EAED] px-2 py-1.5 text-[#C7C7CC] hover:bg-slate-100 hover:text-slate-600 dark:border-slate-600 dark:hover:bg-slate-700"
+                    className="border-l border-[#E8EAED] px-1.5 py-1 text-[#C7C7CC] hover:bg-slate-100 hover:text-slate-600 dark:border-slate-600 dark:hover:bg-slate-700"
                     aria-label="Убрать"
                     onClick={() => setChipTags((t) => t.filter((x) => x !== label))}
                   >
-                    <X className="h-3.5 w-3.5" strokeWidth={2.5} />
+                    <X className="h-3 w-3" strokeWidth={2.5} />
                   </button>
                 </div>
               ))}

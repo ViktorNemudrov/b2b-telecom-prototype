@@ -200,12 +200,18 @@ describe("assistantResponse routing", () => {
   });
 
   it("handles exact quick chips/history prompts deterministically", () => {
-    expect(resolveDeterministicResponse("Мои сервисы", invoicesMarch2026)?.text).toContain("Ваши подключенные продукты");
+    expect(resolveDeterministicResponse("Мои сервисы", invoicesMarch2026)?.text).toContain("активные пакеты");
     expect(resolveDeterministicResponse("Обращения", invoicesMarch2026)?.widget).toBe("appeals-summary");
     expect(resolveDeterministicResponse("Счета на оплату", invoicesMarch2026)?.widget).toBe("invoices-summary-inline");
     expect(resolveDeterministicResponse("Записи звонков", invoicesMarch2026)?.widget).toBe("missed-calls-inline");
     expect(resolveDeterministicResponse("Баланс", invoicesMarch2026)?.widget).toBe("subscription-balance-inline");
     expect(resolveDeterministicResponse("Мои номера", invoicesMarch2026)?.widget).toBe("my-numbers-inline");
+  });
+
+  it("answers about available AI assistants deterministically", () => {
+    const res = resolveDeterministicResponse("Вам доступны ИИ ассистенты?", invoicesMarch2026);
+    expect(res).not.toBeNull();
+    expect(res?.text).toContain("ассистенты: SMM, Бухгалтер, Юрист");
   });
 
   it("returns null for query that should go to live AI", () => {

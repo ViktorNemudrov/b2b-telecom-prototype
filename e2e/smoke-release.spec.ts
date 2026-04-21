@@ -24,7 +24,11 @@ test("smoke: Classic invoices and details are reachable", async ({ page }) => {
   await page.goto("http://127.0.0.1:3001/invoices/");
   await expect(page.getByRole("heading", { name: "Счета 2026" })).toBeVisible();
 
-  await page.getByTestId("classic-invoices-list").getByRole("link").first().click();
+  await page
+    .getByTestId("classic-invoices-list")
+    .locator('a[href^="/invoices/"]:not([href="/invoices/"]):not([href="/invoices"])')
+    .first()
+    .click();
   await expect(page).toHaveURL(/http:\/\/127\.0\.0\.1:3001\/invoices\/.+\/?$/);
   await expect(page.getByText("Скачать PDF", { exact: true })).toBeVisible();
 });

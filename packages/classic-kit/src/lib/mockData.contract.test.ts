@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   appealTopicOptions,
   getAppealsFiltered,
+  getDemoNavigationIntent,
   missedCallsCount,
   myNumbersChatMock,
   subscriptionBalanceChatMock,
@@ -34,6 +35,12 @@ describe("mock data contracts", () => {
       ])
     );
     expect(topics.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("does not map appeals phrases to standalone appeals list navigation (summary stays in chat)", () => {
+    expect(getDemoNavigationIntent("обращения")).toBeUndefined();
+    expect(getDemoNavigationIntent("мои обращения")).toBeUndefined();
+    expect(getDemoNavigationIntent("активные обращения")).toBeUndefined();
   });
 
   it("keeps chat subscription and numbers demo payloads stable", () => {

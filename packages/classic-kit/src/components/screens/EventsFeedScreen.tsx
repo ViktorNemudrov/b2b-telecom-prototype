@@ -118,7 +118,7 @@ function useFeedHasVisibleContent(
   }, [feedFilter, dismissDaily, c1, c2]);
 }
 
-export function EventsFeedScreen() {
+export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) {
   const router = useRouter();
   const [feedFilter, setFeedFilter] = React.useState<EventsFeedFilter>("all");
   const [dismissDaily, setDismissDaily] = React.useState(false);
@@ -155,9 +155,11 @@ export function EventsFeedScreen() {
 
   return (
     <div className="space-y-3 pb-6">
-      <h1 className="px-2 text-center text-lg font-semibold leading-snug tracking-tight text-[#1F2430] dark:text-slate-100">
-        Лента событий
-      </h1>
+      {showTitle ? (
+        <h1 className="px-2 text-center text-lg font-semibold leading-snug tracking-tight text-[#1F2430] dark:text-slate-100">
+          Лента событий
+        </h1>
+      ) : null}
 
       <div>
         <div className={chipScroll} data-no-assistant-nav-swipe role="toolbar" aria-label="Фильтры ленты">

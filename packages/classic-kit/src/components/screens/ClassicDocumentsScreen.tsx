@@ -1,13 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { useDocumentsSheet } from "@shared/components/DocumentsSheetProvider";
 import { cn } from "@shared/components/ui/cn";
 import { CLASSIC_DOCUMENT_TILES } from "@shared/components/screens/classicDocumentsTiles";
+import { openDevelopmentStub } from "@shared/lib/developmentStub";
 
 /** Экран «Документы» по макету `Документы.png`: сетка разделов 2×3; плитки ведут на реальные экраны прототипа. */
 const tiles = CLASSIC_DOCUMENT_TILES;
 
 export function ClassicDocumentsScreen() {
+  const documentsSheet = useDocumentsSheet();
+
   return (
     <div className="space-y-4">
       <div>
@@ -22,13 +26,8 @@ export function ClassicDocumentsScreen() {
             "relative flex min-h-[112px] flex-col items-start justify-between rounded-2xl border border-slate-200/90 bg-slate-100/90 p-3 text-left shadow-sm transition",
             "hover:brightness-[1.02] active:translate-y-[1px] dark:border-slate-600 dark:bg-slate-800/80"
           );
-          return (
-            <Link
-              key={t.id}
-              href={t.href}
-              data-testid={`documents-tile-${t.id}`}
-              className={tileClass}
-            >
+          const tileContent = (
+            <>
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm dark:bg-slate-700 dark:text-slate-100">
                 <Icon className="h-5 w-5" aria-hidden />
               </span>
@@ -40,6 +39,35 @@ export function ClassicDocumentsScreen() {
                   </span>
                 ) : null}
               </span>
+            </>
+          );
+
+          if (t.mockHint) {
+            return (
+              <button
+                key={t.id}
+                type="button"
+                data-testid={`documents-tile-${t.id}`}
+                className={tileClass}
+                onClick={() => {
+                  // Закрываем лист «Документы», чтобы «Мок» открывался в одном модальном окне.
+                  documentsSheet.closeDocumentsSheet();
+                  window.setTimeout(() => openDevelopmentStub(t.mockHint), 60);
+                }}
+              >
+                {tileContent}
+              </button>
+            );
+          }
+
+          return (
+            <Link
+              key={t.id}
+              href={t.href}
+              data-testid={`documents-tile-${t.id}`}
+              className={tileClass}
+            >
+              {tileContent}
             </Link>
           );
         })}
