@@ -178,7 +178,7 @@ export function ClassicAssistantNavSwipeContainer({ children }: { children: Reac
   return (
     <div
       ref={rootRef}
-      className="min-h-dvh"
+      className="min-h-[calc(100dvh-44px)]"
       style={
         navSwipeActive
           ? ({ overscrollBehaviorX: "contain", touchAction: "pan-x pan-y" } as React.CSSProperties)

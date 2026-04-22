@@ -8,7 +8,7 @@ export default function NotificationsPage() {
     <>
       <AppHeader />
       <AppShell>
-        <div className="safe-px pb-24 pt-2">
+        <div className="safe-px pb-24 pt-0">
           <NotificationsScreen />
         </div>
       </AppShell>

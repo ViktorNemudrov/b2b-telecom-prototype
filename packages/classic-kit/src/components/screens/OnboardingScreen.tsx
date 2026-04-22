@@ -4,6 +4,8 @@ import * as React from "react";
 import Link from "next/link";
 import { ChevronLeft, X, SendHorizonal } from "lucide-react";
 
+const PWA_PROMPT_READY_AFTER_ONBOARDING_KEY = "b2b_pwa_prompt_ready_after_onboarding_v1";
+
 const onboardingSlides = [
   "generated-onboarding-1",
   "generated-onboarding-2",
@@ -130,9 +132,14 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
     return { x: 0, y: 0, width, height };
   }, [viewportSize]);
 
-  const finishOnboarding = React.useCallback(() => {
-    window.location.assign("/assistant/");
+  const markPwaPromptReadyAfterOnboarding = React.useCallback(() => {
+    window.sessionStorage.setItem(PWA_PROMPT_READY_AFTER_ONBOARDING_KEY, "1");
   }, []);
+
+  const finishOnboarding = React.useCallback(() => {
+    markPwaPromptReadyAfterOnboarding();
+    window.location.assign("/assistant/");
+  }, [markPwaPromptReadyAfterOnboarding]);
 
   const onTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     const point = event.touches[0];
@@ -197,13 +204,13 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
         }}
       >
         <div className="relative h-full w-full">
-          <div className="absolute inset-0 bg-[#f3f3f6]" />
+          <div className="absolute inset-0 bg-[#f3f3f6] dark:bg-slate-900" />
 
           <button
             type="button"
             data-testid="onboarding-prev"
             aria-label="Предыдущий экран"
-            className="absolute left-[7%] top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#eceef3] text-[#6f7483] shadow-[0_1px_3px_rgba(0,0,0,0.05)] disabled:opacity-35"
+            className="absolute left-[7%] top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#eceef3] text-[#6f7483] shadow-[0_1px_3px_rgba(0,0,0,0.05)] disabled:opacity-35 dark:bg-slate-800 dark:text-slate-300"
             onClick={() => setActiveSlide((prev) => Math.max(0, prev - 1))}
             disabled={activeSlide === 0}
           >
@@ -219,7 +226,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
                 aria-label={`Перейти к экрану ${index + 1}`}
                 onClick={() => setActiveSlide(index)}
                 className={`h-2.5 w-2.5 rounded-full transition-colors ${
-                  index === activeSlide ? "bg-[#1f2230]" : "bg-[#dde0e8]"
+                  index === activeSlide ? "bg-[#1f2230] dark:bg-slate-200" : "bg-[#dde0e8] dark:bg-slate-600"
                 }`}
               />
             ))}
@@ -229,7 +236,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
             type="button"
             data-testid="onboarding-next"
             aria-label="Следующий экран"
-            className="absolute right-[7%] top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#eceef3] text-[#2f3241] shadow-[0_1px_3px_rgba(0,0,0,0.05)] disabled:opacity-35"
+            className="absolute right-[7%] top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#eceef3] text-[#2f3241] shadow-[0_1px_3px_rgba(0,0,0,0.05)] disabled:opacity-35 dark:bg-slate-800 dark:text-slate-100"
             onClick={() => {
               if (activeSlide === onboardingSlides.length - 1) {
                 finishOnboarding();
@@ -254,26 +261,26 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
       return (
         <div className="h-[90%] w-full bg-[rgb(var(--bg))] px-5 pb-8 pt-20">
           <div className="mx-auto max-w-[360px]">
-            <h2 className="text-center text-3xl font-bold leading-tight tracking-tight text-[#1F2430]">
+            <h2 className="text-center text-3xl font-bold leading-tight tracking-tight text-[#1F2430] dark:text-slate-100">
               Контролируйте бизнес
               <br />
               в одном месте
             </h2>
-            <p className="mt-3 text-center text-sm text-[#6F7483]">Звонки, счета, обращения и события под рукой.</p>
+            <p className="mt-3 text-center text-sm text-[#6F7483] dark:text-slate-300">Звонки, счета, обращения и события под рукой.</p>
             <div className="mt-8 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-white p-4 shadow-soft">
-                <div className="text-xs text-[#8A90A1]">Звонки</div>
-                <div className="mt-2 text-2xl font-semibold text-[#1F2430]">127</div>
+              <div className="rounded-2xl bg-white p-4 shadow-soft dark:bg-slate-800">
+                <div className="text-xs text-[#8A90A1] dark:text-slate-400">Звонки</div>
+                <div className="mt-2 text-2xl font-semibold text-[#1F2430] dark:text-slate-100">127</div>
                 <div className="text-xs text-emerald-600">+12% к неделе</div>
               </div>
-              <div className="rounded-2xl bg-white p-4 shadow-soft">
-                <div className="text-xs text-[#8A90A1]">Счета</div>
-                <div className="mt-2 text-2xl font-semibold text-[#1F2430]">8</div>
+              <div className="rounded-2xl bg-white p-4 shadow-soft dark:bg-slate-800">
+                <div className="text-xs text-[#8A90A1] dark:text-slate-400">Счета</div>
+                <div className="mt-2 text-2xl font-semibold text-[#1F2430] dark:text-slate-100">8</div>
                 <div className="text-xs text-amber-600">2 к оплате</div>
               </div>
-              <div className="col-span-2 rounded-2xl bg-white p-4 shadow-soft">
-                <div className="text-xs text-[#8A90A1]">События сегодня</div>
-                <ul className="mt-2 space-y-2 text-sm text-[#1F2430]">
+              <div className="col-span-2 rounded-2xl bg-white p-4 shadow-soft dark:bg-slate-800">
+                <div className="text-xs text-[#8A90A1] dark:text-slate-400">События сегодня</div>
+                <ul className="mt-2 space-y-2 text-sm text-[#1F2430] dark:text-slate-100">
                   <li>• 4 пропущенных звонка</li>
                   <li>• 1 новое обращение</li>
                   <li>• Напоминание по оплате счета</li>
@@ -289,26 +296,26 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
       return (
         <div className="h-[90%] w-full bg-[rgb(var(--bg))] px-5 pb-8 pt-20">
           <div className="mx-auto max-w-[360px]">
-            <h2 className="text-center text-3xl font-bold leading-tight tracking-tight text-[#1F2430]">
+            <h2 className="text-center text-3xl font-bold leading-tight tracking-tight text-[#1F2430] dark:text-slate-100">
               ИИ подскажет
               <br />
               следующий шаг
             </h2>
-            <p className="mt-3 text-center text-sm text-[#6F7483]">Спросите своими словами и сразу получите результат.</p>
+            <p className="mt-3 text-center text-sm text-[#6F7483] dark:text-slate-300">Спросите своими словами и сразу получите результат.</p>
             <div className="mt-8 space-y-3">
-              <div className="rounded-2xl bg-white p-3 shadow-soft">
-                <div className="text-xs text-[#8A90A1]">Вы</div>
-                <div className="mt-1 text-sm text-[#1F2430]">Покажи пропущенные звонки за неделю</div>
+              <div className="rounded-2xl bg-white p-3 shadow-soft dark:bg-slate-800">
+                <div className="text-xs text-[#8A90A1] dark:text-slate-400">Вы</div>
+                <div className="mt-1 text-sm text-[#1F2430] dark:text-slate-100">Покажи пропущенные звонки за неделю</div>
               </div>
-              <div className="rounded-2xl bg-[#FFF8D9] p-3 shadow-soft">
-                <div className="text-xs text-[#8A90A1]">Ассистент</div>
-                <div className="mt-1 text-sm text-[#1F2430]">
+              <div className="rounded-2xl bg-[#FFF8D9] p-3 shadow-soft dark:bg-amber-900/40">
+                <div className="text-xs text-[#8A90A1] dark:text-slate-400">Ассистент</div>
+                <div className="mt-1 text-sm text-[#1F2430] dark:text-slate-100">
                   12 пропущенных звонков. Пиковое время: 14:00-16:00. Рекомендую включить автоответ.
                 </div>
               </div>
-              <div className="rounded-2xl bg-white p-3 shadow-soft">
-                <div className="text-xs text-[#8A90A1]">Вы</div>
-                <div className="mt-1 text-sm text-[#1F2430]">Запусти рассылку по пропущенным</div>
+              <div className="rounded-2xl bg-white p-3 shadow-soft dark:bg-slate-800">
+                <div className="text-xs text-[#8A90A1] dark:text-slate-400">Вы</div>
+                <div className="mt-1 text-sm text-[#1F2430] dark:text-slate-100">Запусти рассылку по пропущенным</div>
               </div>
             </div>
           </div>
@@ -319,13 +326,13 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
     return (
       <div className="h-[90%] w-full bg-[rgb(var(--bg))] px-5 pb-8 pt-20">
         <div className="mx-auto max-w-[360px]">
-          <h2 className="text-center text-3xl font-bold leading-tight tracking-tight text-[#1F2430]">
+          <h2 className="text-center text-3xl font-bold leading-tight tracking-tight text-[#1F2430] dark:text-slate-100">
             Решения за пару секунд
           </h2>
-          <p className="mt-3 text-center text-sm text-[#6F7483]">Начните с главного экрана и откройте ассистента в один тап.</p>
-          <div className="mt-8 rounded-3xl bg-white p-5 shadow-soft">
-            <div className="text-sm font-medium text-[#1F2430]">Что можно сделать сразу</div>
-            <ul className="mt-3 space-y-2 text-sm text-[#3A4050]">
+          <p className="mt-3 text-center text-sm text-[#6F7483] dark:text-slate-300">Начните с главного экрана и откройте ассистента в один тап.</p>
+          <div className="mt-8 rounded-3xl bg-white p-5 shadow-soft dark:bg-slate-800">
+            <div className="text-sm font-medium text-[#1F2430] dark:text-slate-100">Что можно сделать сразу</div>
+            <ul className="mt-3 space-y-2 text-sm text-[#3A4050] dark:text-slate-200">
               <li>✓ Проверить пропущенные звонки</li>
               <li>✓ Узнать статус счетов</li>
               <li>✓ Открыть обращения и документы</li>
@@ -346,6 +353,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
         prefetch={false}
         className="absolute right-4 top-4 z-30 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur"
         aria-label="Закрыть онбординг"
+        onClick={markPwaPromptReadyAfterOnboarding}
       >
         <X className="h-5 w-5" />
       </Link>
@@ -376,7 +384,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
               {index === 0 ? (
                 <div className="relative h-full w-full">
                   <div
-                    className="absolute inset-0 overflow-hidden bg-white"
+                    className="absolute inset-0 overflow-hidden bg-white dark:bg-slate-900"
                     style={{
                       left: `${imageFrame.x}px`,
                       top: `${imageFrame.y}px`,
@@ -388,7 +396,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
                     <div className="absolute left-1/2 top-[30%] w-[92%] -translate-x-1/2 px-1 text-center">
                       <div className="flex flex-col items-center gap-2.5">
                         <div className="flex items-center justify-center gap-1 text-[17px] font-medium leading-none tracking-[-0.01em]">
-                          <span className="text-[#555555]">Билайн</span>
+                          <span className="text-[#555555] dark:text-slate-300">Билайн</span>
                           <span className="inline-flex h-[18px] w-[18px] shrink-0 translate-y-[0.5px] items-center justify-center overflow-hidden rounded-full bg-white">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
@@ -400,18 +408,18 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
                               draggable={false}
                             />
                           </span>
-                          <span className="text-[#000000]">One</span>
+                          <span className="text-[#000000] dark:text-slate-100">One</span>
                         </div>
-                        <div className="whitespace-nowrap text-[24px] font-bold leading-[1.15] tracking-[-0.03em] text-[#222222]">
+                        <div className="whitespace-nowrap text-[24px] font-bold leading-[1.15] tracking-[-0.03em] text-[#222222] dark:text-slate-100">
                           Ваш бизнес ассистент
                         </div>
-                        <div className="text-[13px] font-normal leading-normal text-[#555555]">Стоит только спросить</div>
+                        <div className="text-[13px] font-normal leading-normal text-[#555555] dark:text-slate-300">Стоит только спросить</div>
                       </div>
                     </div>
 
-                    <div className="absolute left-1/2 top-[48%] w-[84%] -translate-x-1/2 rounded-full border border-[#e4e6ec] bg-[#eff0f3] px-[12px] py-[9px]">
+                    <div className="absolute left-1/2 top-[48%] w-[84%] -translate-x-1/2 rounded-full border border-[#e4e6ec] bg-[#eff0f3] px-[12px] py-[9px] dark:border-slate-700 dark:bg-slate-800">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="inline-flex min-w-0 items-center whitespace-nowrap text-[11px] font-normal leading-[1.1] text-[#9ca0aa]">
+                        <span className="inline-flex min-w-0 items-center whitespace-nowrap text-[11px] font-normal leading-[1.1] text-[#9ca0aa] dark:text-slate-400">
                           <span className="max-w-full overflow-hidden text-ellipsis tracking-[-0.01em]">{animatedText || " "}</span>
                           <span
                             className="ml-[2px] inline-block h-[0.95em] w-[1px] bg-[#9ca0aa] align-middle"

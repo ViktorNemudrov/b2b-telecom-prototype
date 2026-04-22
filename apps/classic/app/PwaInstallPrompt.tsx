@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -8,6 +9,7 @@ type BeforeInstallPromptEvent = Event & {
 };
 
 const PWA_INSTALL_COMPLETED_KEY = "b2b_pwa_install_completed_v1";
+const PWA_PROMPT_READY_AFTER_ONBOARDING_KEY = "b2b_pwa_prompt_ready_after_onboarding_v1";
 
 /** Сохраняем событие между пересозданием эффекта (React Strict Mode) и не теряем prompt. */
 let capturedDeferredInstall: BeforeInstallPromptEvent | null = null;
@@ -26,6 +28,7 @@ function parseUa(ua: string) {
 }
 
 export function PwaInstallPrompt() {
+  const pathname = usePathname();
   const [deferredPrompt, setDeferredPrompt] = React.useState<BeforeInstallPromptEvent | null>(() =>
     capturedDeferredInstall
   );
@@ -50,28 +53,30 @@ export function PwaInstallPrompt() {
     if (isStandalone) return;
 
     const completed = window.localStorage.getItem(PWA_INSTALL_COMPLETED_KEY) === "1";
-    /** Только наследованные ключи до этой версии — для совместимости со smoke/e2e. Новый «Позже» в LS не пишется. */
-    const legacyDismissed =
-      window.localStorage.getItem("b2b_pwa_install_dismissed_v1") === "1" ||
-      window.localStorage.getItem("pwa-install-dismissed") === "1";
+    const promptReadyAfterOnboarding =
+      window.sessionStorage.getItem(PWA_PROMPT_READY_AFTER_ONBOARDING_KEY) === "1";
+    const isAssistantRoute = pathname === "/assistant" || pathname === "/assistant/";
+    const canShowInstallPrompt = promptReadyAfterOnboarding && isAssistantRoute;
 
-    if (completed || dismissedSession || legacyDismissed || installPromptShownInPageSession) return;
+    if (completed || dismissedSession || installPromptShownInPageSession) return;
 
     if (capturedDeferredInstall) {
       setDeferredPrompt(capturedDeferredInstall);
-      showInstallOncePerPageSession();
+      if (canShowInstallPrompt) {
+        showInstallOncePerPageSession();
+      }
     }
 
     const ua = window.navigator.userAgent;
     const { isIosSafari, isAndroid } = parseUa(ua);
 
     let openTimer: number | null = null;
-    if (isIosSafari) {
+    if (isIosSafari && canShowInstallPrompt) {
       showInstallOncePerPageSession();
-    } else if (isAndroid) {
+    } else if (isAndroid && canShowInstallPrompt) {
       // Сразу показываем баннер: на Android задержка приводит к тому, что подсказку «не видно» при быстром взгляде; beforeinstallprompt придёт отдельно.
       showInstallOncePerPageSession();
-    } else {
+    } else if (canShowInstallPrompt) {
       openTimer = window.setTimeout(showInstallOncePerPageSession, 1200);
     }
 
@@ -80,7 +85,9 @@ export function PwaInstallPrompt() {
       e.preventDefault();
       capturedDeferredInstall = e;
       setDeferredPrompt(e);
-      showInstallOncePerPageSession();
+      if (canShowInstallPrompt) {
+        showInstallOncePerPageSession();
+      }
     };
 
     const onAppInstalled = () => {
@@ -97,7 +104,7 @@ export function PwaInstallPrompt() {
       window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
       window.removeEventListener("appinstalled", onAppInstalled);
     };
-  }, [dismissedSession, showInstallOncePerPageSession]);
+  }, [dismissedSession, pathname, showInstallOncePerPageSession]);
 
   const dismiss = () => {
     setDismissedSession(true);

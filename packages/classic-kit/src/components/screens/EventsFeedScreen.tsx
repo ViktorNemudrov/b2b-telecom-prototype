@@ -156,7 +156,7 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
   return (
     <div className="space-y-3 pb-6">
       {showTitle ? (
-        <h1 className="px-2 text-center text-lg font-semibold leading-snug tracking-tight text-[#1F2430] dark:text-slate-100">
+        <h1 className="px-2 text-center text-lg font-bold leading-snug tracking-tight text-[#1F2430] dark:text-slate-100">
           Лента событий
         </h1>
       ) : null}

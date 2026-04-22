@@ -37,14 +37,14 @@ export function SettingsScreen({
 
   return (
     <div className="safe-px mx-auto max-w-[430px] pb-10 pt-0">
-      <div className="flex flex-col gap-1.5">
-        <PageBackLink href={backHref} className="mb-0" />
-        <div className="flex flex-col items-center gap-0.5 text-center">
-          <div className="text-lg font-bold text-slate-900 dark:text-slate-100">
+      <div className="space-y-0.5">
+        <div className="relative flex min-h-8 items-center justify-center">
+          <PageBackLink href={backHref} className="absolute left-0 mb-0 h-8 w-8 p-0 leading-none" />
+          <div className="text-center text-lg font-bold text-slate-900 dark:text-slate-100">
             Билайн <span className="text-accent-yellow">One</span>
           </div>
-          <div className="text-sm text-slate-600 dark:text-slate-400">{userProfile.legalName}</div>
         </div>
+        <div className="text-center text-sm text-slate-600 dark:text-slate-400">{userProfile.legalName}</div>
       </div>
 
       <div className="mt-4 space-y-4">

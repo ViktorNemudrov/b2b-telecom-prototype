@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, CircleAlert, FileText, MessageCircleWarning, PhoneMissed, Sparkles } from "lucide-react";
+import { CircleAlert, FileText, MessageCircleWarning, PhoneMissed, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { PageBackLink } from "@shared/components/PageBackLink";
 import { getAppealsFiltered, standaloneCalls } from "@shared/lib/mockData";
@@ -45,20 +45,16 @@ export function NotificationsScreen({ backHref = "/settings/" }: { backHref?: st
   ];
 
   return (
-    <div className="space-y-4 pb-8">
-      <PageBackLink href={backHref} />
+    <div className="pb-8 pt-0">
+      <div className="space-y-0.5">
+        <div className="relative flex min-h-8 items-center justify-center">
+          <PageBackLink href={backHref} className="absolute left-0 mb-0 h-8 w-8 p-0 leading-none" />
+          <h1 className="text-center text-lg font-bold text-slate-900 dark:text-slate-100">Уведомления</h1>
+        </div>
+        <p className="text-center text-sm text-slate-600 dark:text-slate-300">Здесь собраны действия, которые требуют внимания.</p>
+      </div>
 
-      <Card>
-        <CardContent className="space-y-2 pb-4 pt-4">
-          <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
-            <Bell className="h-4 w-4" />
-            <h1 className="text-base font-semibold">Уведомления</h1>
-          </div>
-          <p className="text-sm text-slate-600 dark:text-slate-300">Здесь собраны действия, которые требуют внимания.</p>
-        </CardContent>
-      </Card>
-
-      <div className="space-y-2">
+      <div className="mt-4 space-y-2">
         {rows.map((row) => (
           <Link key={row.id} href={row.href} className="block">
             <Card className="transition hover:brightness-[1.01]">

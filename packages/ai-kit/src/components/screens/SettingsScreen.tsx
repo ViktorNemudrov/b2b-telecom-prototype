@@ -36,18 +36,20 @@ export function SettingsScreen({
   };
 
   return (
-    <div className="safe-px mx-auto max-w-[430px] space-y-4 pb-10 pt-2">
-      <PageBackLink href={backHref} />
-
-      <div className="flex flex-col items-center gap-1 text-center">
-        <div className="text-lg font-bold text-slate-900 dark:text-slate-100">
-          Билайн <span className="text-accent-yellow">One</span>
+    <div className="safe-px mx-auto max-w-[430px] pb-10 pt-0">
+      <div className="space-y-0.5">
+        <div className="relative flex min-h-8 items-center justify-center">
+          <PageBackLink href={backHref} className="absolute left-0 mb-0 h-8 w-8 p-0 leading-none" />
+          <div className="text-center text-lg font-bold text-slate-900 dark:text-slate-100">
+            Билайн <span className="text-accent-yellow">One</span>
+          </div>
         </div>
-        <div className="text-sm text-slate-600 dark:text-slate-400">{userProfile.legalName}</div>
+        <div className="text-center text-sm text-slate-600 dark:text-slate-400">{userProfile.legalName}</div>
       </div>
 
-      <Card className="border-violet-200/50 bg-gradient-to-br from-violet-50 to-white dark:border-violet-800/50 dark:from-violet-950/40 dark:to-slate-900">
-        <CardContent className="space-y-3 pb-5 pt-5">
+      <div className="mt-4 space-y-4">
+        <Card className="border-violet-200/50 bg-gradient-to-br from-violet-50 to-white dark:border-violet-800/50 dark:from-violet-950/40 dark:to-slate-900">
+          <CardContent className="space-y-3 pb-5 pt-5">
           <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white dark:bg-slate-200 dark:text-slate-900">
             <span className="text-accent-yellow">✓</span> Подписка
           </div>
@@ -65,11 +67,11 @@ export function SettingsScreen({
               Управление подпиской
             </Button>
           </Link>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      <Card className="border-slate-200 bg-white dark:border-slate-600 dark:bg-slate-800/90">
-        <CardContent className="divide-y divide-slate-100 p-0 dark:divide-slate-600">
+        <Card className="border-slate-200 bg-white dark:border-slate-600 dark:bg-slate-800/90">
+          <CardContent className="divide-y divide-slate-100 p-0 dark:divide-slate-600">
           <button
             type="button"
             className="flex w-full items-center gap-3 px-4 py-3 text-left"
@@ -143,23 +145,24 @@ export function SettingsScreen({
             <span className="flex-1 text-sm text-slate-700 dark:text-slate-300">Кастомизация приложения</span>
             <ChevronLeft className="h-4 w-4 rotate-180 text-slate-400" />
           </Link>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      <div className="space-y-1 px-1 text-[11px] text-slate-500 dark:text-slate-400">
-        <p>Версия продукта: v.0.2.14</p>
-        <p>Дизайнер: Балашов Влад</p>
-        <p>Создатель: Немудров Виктор</p>
-        <p>Владелец продукта: Пальчиков Леонид</p>
+        <div className="space-y-1 px-1 text-[11px] text-slate-500 dark:text-slate-400">
+          <p>Версия продукта: v.0.2.14</p>
+          <p>Дизайнер: Балашов Влад</p>
+          <p>Создатель: Немудров Виктор</p>
+          <p>Владелец продукта: Пальчиков Леонид</p>
+        </div>
+
+        <button
+          type="button"
+          className="flex w-full items-center justify-center gap-2 py-3 text-sm font-semibold text-rose-600 dark:text-rose-400"
+          onClick={onExit}
+        >
+          Выход
+        </button>
       </div>
-
-      <button
-        type="button"
-        className="flex w-full items-center justify-center gap-2 py-3 text-sm font-semibold text-rose-600 dark:text-rose-400"
-        onClick={onExit}
-      >
-        Выход
-      </button>
     </div>
   );
 }
