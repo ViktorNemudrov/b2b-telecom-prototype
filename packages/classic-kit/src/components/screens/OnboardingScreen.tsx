@@ -291,12 +291,12 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
       return (
         <div className="h-[90%] w-full overflow-hidden bg-[rgb(var(--bg))] px-4 pb-2 pt-8">
           <div className="mx-auto flex h-full max-w-[360px] min-h-0 flex-col">
-            <h2 className="text-[24px] font-normal leading-[1.15] tracking-[-0.03em] text-[#222222]">
+            <h2 className="text-[24px] font-normal leading-[1.15] tracking-[-0.03em] text-[#222222] dark:text-slate-100">
               Личный ассистент
               <br />
               для ведения бизнеса
             </h2>
-            <p className="mt-2 text-[11px] leading-[1.3] text-[#8F93A2]">
+            <p className="mt-2 text-[11px] leading-[1.3] text-[#8F93A2] dark:text-slate-400">
               Сформируйте и задайте запрос в чате, в нем появиться
               <br />
               вся актуальная информация о вашем бизнесе и процессах
@@ -313,7 +313,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
                 />
               </div>
             </div>
-            <p className="mt-3 text-[21px] font-normal leading-[1.12] tracking-normal text-[#222222]">
+            <p className="mt-3 text-[21px] font-normal leading-[1.12] tracking-normal text-[#222222] dark:text-slate-100">
               Ежедневная сводка о состоянии вашего бизнеса и умный помощник в одном окне
             </p>
           </div>
@@ -325,12 +325,12 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
       return (
         <div className="h-[90%] w-full overflow-hidden bg-[rgb(var(--bg))] px-4 pb-2 pt-8">
           <div className="mx-auto flex h-full max-w-[360px] min-h-0 flex-col">
-            <h2 className="text-[24px] font-normal leading-[1.15] tracking-[-0.03em] text-[#222222]">
+            <h2 className="text-[24px] font-normal leading-[1.15] tracking-[-0.03em] text-[#222222] dark:text-slate-100">
               Только актуальные события
               <br />
               требующие вашего внимания
             </h2>
-            <p className="mt-2 text-[11px] leading-[1.3] text-[#8F93A2]">
+            <p className="mt-2 text-[11px] leading-[1.3] text-[#8F93A2] dark:text-slate-400">
               Не беспокойтесь пропустить, что-то важное, мы подскажем
               <br />
               когда вам нужно заниматься рутинными делами
@@ -347,7 +347,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
                 />
               </div>
             </div>
-            <p className="mt-3 text-[21px] font-normal leading-[1.12] tracking-normal text-[#222222]">
+            <p className="mt-3 text-[21px] font-normal leading-[1.12] tracking-normal text-[#222222] dark:text-slate-100">
               Важные события, активности и оповещения без лишней воды
             </p>
           </div>
@@ -358,12 +358,12 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
     return (
       <div className="h-[90%] w-full overflow-hidden bg-[rgb(var(--bg))] px-4 pb-2 pt-8">
         <div className="mx-auto flex h-full max-w-[360px] min-h-0 flex-col">
-          <h2 className="text-[24px] font-normal leading-[1.15] tracking-[-0.03em] text-[#222222]">
+          <h2 className="text-[24px] font-normal leading-[1.15] tracking-[-0.03em] text-[#222222] dark:text-slate-100">
             Когда нужно — действуйте
             <br />
             привычным способом
           </h2>
-          <p className="mt-2 text-[11px] leading-[1.3] text-[#8F93A2]">Все важные функции собраны в привычном виде</p>
+          <p className="mt-2 text-[11px] leading-[1.3] text-[#8F93A2] dark:text-slate-400">Все важные функции собраны в привычном виде</p>
           <div className="mt-4 min-h-0 flex-1 rounded-2xl bg-[#E8EAF1] p-2">
             <div className="h-full w-full overflow-hidden rounded-xl">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -376,7 +376,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
               />
             </div>
           </div>
-          <p className="mt-3 text-[21px] font-normal leading-[1.12] tracking-normal text-[#222222]">
+          <p className="mt-3 text-[21px] font-normal leading-[1.12] tracking-normal text-[#222222] dark:text-slate-100">
             Экраны, виджеты и операции всегда под рукой для точных и привычных сценариев
           </p>
         </div>

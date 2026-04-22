@@ -168,6 +168,8 @@ function getAiSourceLabel(intentUsed: string, liveProvider: LiveProvider) {
       return "без live (fallback)";
     case "no-live-keys":
       return "ИИ не настроен (нет ключей в сборке)";
+    case "live-providers-disabled":
+      return "live временно отключен (провайдеры заблокированы в сессии)";
     default:
       return intentUsed;
   }
@@ -394,6 +396,18 @@ export function AiAssistantScreen() {
   const [sessionDisabledProviderReasons, setSessionDisabledProviderReasons] = React.useState<
     Partial<Record<LiveProvider, string>>
   >({});
+  const resetDisabledProviders = React.useCallback(() => {
+    setSessionDisabledProviders([]);
+    setSessionDisabledProviderReasons({});
+    if (typeof window !== "undefined") {
+      try {
+        window.sessionStorage.removeItem(LIVE_BAD_PROVIDERS_SESSION_KEY);
+        window.sessionStorage.removeItem(LIVE_BAD_PROVIDERS_REASON_SESSION_KEY);
+      } catch {
+        // ignore
+      }
+    }
+  }, []);
 
   React.useEffect(() => {
     setSessionDisabledProviders(readSessionDisabledProviders());
@@ -726,11 +740,20 @@ export function AiAssistantScreen() {
         liveCandidates.length > 0 ? liveCandidates : await fetchLiveCandidatesFromServer();
       const hasLiveCandidates = activeCandidates.length > 0;
       const activePrimaryProvider: LiveProvider = activeCandidates[0]?.provider ?? primaryLiveProvider;
+      const noCandidatesBecauseSessionDisabled =
+        !hasLiveCandidates && serverEnabledProviders.length > 0 && sessionDisabledProviders.length > 0;
       let resolved: ChatMessage = toAiMessage({
-        ...(hasLiveCandidates ? buildSafeLiveFallbackResponse() : buildNoLiveKeysFallbackResponse()),
-        sourceLabel: getAiSourceLabel(hasLiveCandidates ? "fallback-no-live" : "no-live-keys", activePrimaryProvider)
+        ...(hasLiveCandidates || noCandidatesBecauseSessionDisabled ? buildSafeLiveFallbackResponse() : buildNoLiveKeysFallbackResponse()),
+        sourceLabel: getAiSourceLabel(
+          hasLiveCandidates ? "fallback-no-live" : noCandidatesBecauseSessionDisabled ? "live-providers-disabled" : "no-live-keys",
+          activePrimaryProvider
+        )
       });
-      let intentUsed = hasLiveCandidates ? "fallback-no-live" : "no-live-keys";
+      let intentUsed = hasLiveCandidates
+        ? "fallback-no-live"
+        : noCandidatesBecauseSessionDisabled
+          ? "live-providers-disabled"
+          : "no-live-keys";
       let resolvedLiveProvider: LiveProvider = activePrimaryProvider;
 
       try {
@@ -1261,6 +1284,13 @@ export function AiAssistantScreen() {
               <div className="text-xs font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-200">
                 Dev: отключены live-провайдеры (текущая сессия)
               </div>
+              <button
+                type="button"
+                className="inline-flex rounded-full border border-amber-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-amber-900 transition hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-100 dark:hover:bg-amber-900/40"
+                onClick={resetDisabledProviders}
+              >
+                Сбросить отключения
+              </button>
               {sessionDisabledProviders.map((p) => (
                 <div key={`disabled-provider-${p}`} className="text-xs text-amber-900 dark:text-amber-100">
                   <span className="font-semibold">{liveProviderShort(p)}:</span>{" "}
