@@ -21,6 +21,13 @@ function formatVersionReleasedAtLabel(versionIndex: number): string {
 
 const versions = [
   {
+    tag: "v.0.2.73",
+    items: [
+      "Онбординг Classic: высота экрана переведена на мобильные viewport-единицы (svh/dvh), поэтому нижняя панель не уезжает за видимую область в Safari/Chrome на iOS и Android",
+      "Исправлены неточности работы продукта"
+    ]
+  },
+  {
     tag: "v.0.2.72",
     items: [
       "Онбординг Classic, первый экран: уменьшены отступы между строками бренда, заголовка и подзаголовка",

@@ -75,6 +75,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
   const [slideSourceIndexes, setSlideSourceIndexes] = React.useState<number[]>(() => onboardingSlides.map(() => 0));
   const [slideBroken, setSlideBroken] = React.useState<boolean[]>(() => onboardingSlides.map(() => false));
   const [viewportSize, setViewportSize] = React.useState({ width: 390, height: 844 });
+  const [screenHeightPx, setScreenHeightPx] = React.useState<number | null>(null);
   const viewportRef = React.useRef<HTMLDivElement | null>(null);
   const touchStartRef = React.useRef<{ x: number; y: number } | null>(null);
   const touchCurrentRef = React.useRef<{ x: number; y: number } | null>(null);
@@ -85,12 +86,46 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
     const node = viewportRef.current;
     if (!node) return;
     const updateSize = () => {
-      setViewportSize({ width: node.clientWidth, height: node.clientHeight });
+      const visualWidth = Math.round(window.visualViewport?.width ?? window.innerWidth);
+      const visualHeight = Math.round(window.visualViewport?.height ?? window.innerHeight);
+      setViewportSize({
+        width: Math.min(node.clientWidth || visualWidth, visualWidth),
+        height: Math.min(node.clientHeight || visualHeight, visualHeight)
+      });
     };
     updateSize();
     const observer = new ResizeObserver(updateSize);
     observer.observe(node);
-    return () => observer.disconnect();
+    window.addEventListener("resize", updateSize);
+    window.visualViewport?.addEventListener("resize", updateSize);
+    window.visualViewport?.addEventListener("scroll", updateSize);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateSize);
+      window.visualViewport?.removeEventListener("resize", updateSize);
+      window.visualViewport?.removeEventListener("scroll", updateSize);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    const updateScreenHeight = () => {
+      const visualHeight = Math.round(window.visualViewport?.height ?? window.innerHeight);
+      const nextHeight = visualHeight;
+      setScreenHeightPx(nextHeight > 0 ? nextHeight : null);
+    };
+
+    updateScreenHeight();
+    window.addEventListener("resize", updateScreenHeight);
+    window.addEventListener("orientationchange", updateScreenHeight);
+    window.visualViewport?.addEventListener("resize", updateScreenHeight);
+    window.visualViewport?.addEventListener("scroll", updateScreenHeight);
+
+    return () => {
+      window.removeEventListener("resize", updateScreenHeight);
+      window.removeEventListener("orientationchange", updateScreenHeight);
+      window.visualViewport?.removeEventListener("resize", updateScreenHeight);
+      window.visualViewport?.removeEventListener("scroll", updateScreenHeight);
+    };
   }, []);
 
   const imageFrame = React.useMemo(() => {
@@ -168,13 +203,13 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
     const isActivePane = paneIndex === activeSlide;
     return (
       <div
-        className={`absolute z-40 ${isActivePane ? "pointer-events-auto" : "pointer-events-none"}`}
+        className={`fixed z-40 ${isActivePane ? "pointer-events-auto" : "pointer-events-none"}`}
         aria-hidden={!isActivePane}
         style={{
           left: `${imageFrame.x}px`,
-          top: `${imageFrame.y + imageFrame.height * 0.9}px`,
+          bottom: "max(0px, env(safe-area-inset-bottom))",
           width: `${imageFrame.width}px`,
-          height: `${imageFrame.height * 0.1}px`
+          height: `${Math.max(76, imageFrame.height * 0.1)}px`
         }}
       >
         <div className="relative h-full w-full">
@@ -219,8 +254,12 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
     );
   };
 
+  const rootViewportStyle: React.CSSProperties = screenHeightPx
+    ? { minHeight: `${screenHeightPx}px`, height: `${screenHeightPx}px` }
+    : { minHeight: "100svh", height: "100dvh" };
+
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#11131a]">
+    <div className="relative w-full overflow-hidden bg-[#11131a]" style={rootViewportStyle}>
       <Link
         href="/assistant/"
         prefetch={false}
@@ -241,8 +280,8 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
 
       <div
         ref={viewportRef}
-        className="relative z-0 h-screen w-full"
-        style={{ touchAction: "pan-y" }}
+        className="relative z-0 w-full"
+        style={{ touchAction: "pan-y", height: "100%", minHeight: "100%" }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
