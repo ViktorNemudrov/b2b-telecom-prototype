@@ -1,19 +1,22 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("PWA install banner session behavior", () => {
-  test("`Позже` hides banner persistently in browser storage", async ({ browser }) => {
-    const contextA = await browser.newContext();
-    const pageA = await contextA.newPage();
-    await pageA.goto("/assistant/");
+  test.use({ baseURL: "http://127.0.0.1:3001" });
 
-    const titleA = pageA.getByText("Установить Билайн.One");
-    await expect(titleA).toBeVisible();
-    await pageA.getByRole("button", { name: "Позже" }).click();
-    await expect(titleA).toBeHidden();
+  test("Classic: `Позже` hides banner only until full reload", async ({ page }) => {
+    await page.goto("/onboarding/");
+    const installTitle = page.getByText("Установить Билайн.One");
+    await expect(installTitle).toBeVisible({ timeout: 10_000 });
+    await page.getByRole("button", { name: "Позже" }).click();
+    await expect(installTitle).toBeHidden();
 
-    // Same browser context keeps localStorage; the banner should stay hidden after reload.
-    await pageA.reload();
-    await expect(pageA.getByText("Установить Билайн.One")).toBeHidden();
-    await contextA.close();
+    // Repeat onboarding from profile flow without full reload.
+    await page.goto("/assistant/");
+    await page.goto("/settings/onboarding/");
+    await expect(page.getByText("Установить Билайн.One")).toBeHidden();
+
+    // Full reload starts a new page runtime session.
+    await page.reload();
+    await expect(page.getByText("Установить Билайн.One")).toBeVisible({ timeout: 10_000 });
   });
 });

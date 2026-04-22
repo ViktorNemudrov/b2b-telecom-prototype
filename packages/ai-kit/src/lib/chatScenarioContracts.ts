@@ -28,7 +28,7 @@ export const deterministicScenarioCases: DeterministicScenarioCase[] = [
   { prompt: "Покажи мои продукты", contains: "Ваши подключенные продукты" },
   { prompt: "Инсайты", contains: "Ключевые инсайты" },
   { prompt: "Открытые обращения", expectWidget: "appeals-summary", expectEmptyText: true },
-  { prompt: "Создать платеж", expectNavigateTo: "/invoices/", contains: "Открываю счета и оплату" },
+  { prompt: "Создать платеж", contains: "Сценарий создания платежей пока в разработке" },
   { prompt: "Запустить смс рассылку", contains: "Подготовил черновик SMS-рассылки" },
   { prompt: "Записи звонков", expectWidget: "missed-calls-inline", expectEmptyText: true },
   { prompt: "Баланс", expectWidget: "subscription-balance-inline", expectEmptyText: true },

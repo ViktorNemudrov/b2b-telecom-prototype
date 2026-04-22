@@ -124,8 +124,17 @@ test.describe("Classic user actions", () => {
     await page.goto("/settings/customization/");
     await expect(page.getByText("Classic навбар: иконка Фид", { exact: true })).toBeVisible();
     await expect(page.getByText("Classic навбар: иконка Виджеты", { exact: true })).toBeVisible();
+    await expect(page.getByText("Виджеты: кнопка «Добавить новый продукт»", { exact: true })).toBeVisible();
+    await expect(page.getByText("Виджеты: кнопка «Помощник»", { exact: true })).toBeVisible();
     await expect(page.getByText("Виджеты: карточка «Запись разговоров»", { exact: true })).toBeVisible();
     await expect(page.getByText("Виджеты: нижнее меню «Документы»", { exact: true })).toBeVisible();
+  });
+
+  test("FAQ contains latest Classic release notes", async ({ page }) => {
+    await page.goto("/settings/faq/");
+    await expect(page.getByRole("heading", { name: "FAQ и история версий" })).toBeVisible();
+    await expect(page.getByText("v.0.2.77", { exact: true })).toBeVisible();
+    await expect(page.getByText("PWA Classic: окно установки показывается один раз за сессию страницы", { exact: false })).toBeVisible();
   });
 
   test("кастомизация: мок карточки записей отменяет переход на экран записей", async ({ page }) => {

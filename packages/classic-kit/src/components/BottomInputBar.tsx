@@ -115,7 +115,11 @@ export function BottomInputBar({
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") onSend();
+              if (e.key === "Enter") {
+                e.preventDefault();
+                e.stopPropagation();
+                onSend();
+              }
             }}
             aria-label="Поле ввода"
             data-testid={inputDataTestId}

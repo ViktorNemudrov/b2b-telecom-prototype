@@ -163,13 +163,17 @@ export function WidgetsScreen() {
 
       <Card>
         <CardContent className="pt-2.5">
-          <ArrowRow title="AI - команда" subtitle="Ваши помощники 24/7" onClick={() => router.push("/assistant/")} />
+          <ArrowRow
+            title="AI - команда"
+            subtitle="Ваши помощники 24/7"
+            onClick={() => openDevelopmentStub("AI - команда в разработке.")}
+          />
           <div className="mt-1.5 flex gap-1.5">
             {["🎙", "📈", "🛠", "🧩", "🚀"].map((icon, i) => (
               <button
                 key={icon + i}
                 type="button"
-                onClick={() => router.push("/assistant/")}
+                onClick={() => openDevelopmentStub("AI - команда в разработке.")}
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm transition hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600"
               >
                 {icon}

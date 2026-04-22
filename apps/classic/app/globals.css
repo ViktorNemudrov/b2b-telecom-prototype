@@ -25,6 +25,7 @@ body {
 }
 
 body {
+  margin: 0;
   color: rgb(var(--text));
   background: rgb(var(--bg));
   font-feature-settings: "ss01" 1, "ss02" 1, "cv10" 1;

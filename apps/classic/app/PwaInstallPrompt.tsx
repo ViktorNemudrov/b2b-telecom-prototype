@@ -11,6 +11,8 @@ const PWA_INSTALL_COMPLETED_KEY = "b2b_pwa_install_completed_v1";
 
 /** Сохраняем событие между пересозданием эффекта (React Strict Mode) и не теряем prompt. */
 let capturedDeferredInstall: BeforeInstallPromptEvent | null = null;
+/** Показываем подсказку установки только один раз за runtime страницы (до полного reload). */
+let installPromptShownInPageSession = false;
 
 function parseUa(ua: string) {
   const u = ua.toLowerCase();
@@ -30,6 +32,11 @@ export function PwaInstallPrompt() {
   const [showInstall, setShowInstall] = React.useState(false);
   /** «Позже» скрывает баннер только до перезагрузки страницы — без записи в localStorage. */
   const [dismissedSession, setDismissedSession] = React.useState(false);
+  const showInstallOncePerPageSession = React.useCallback(() => {
+    if (installPromptShownInPageSession) return;
+    installPromptShownInPageSession = true;
+    setShowInstall(true);
+  }, []);
 
   React.useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
@@ -48,11 +55,11 @@ export function PwaInstallPrompt() {
       window.localStorage.getItem("b2b_pwa_install_dismissed_v1") === "1" ||
       window.localStorage.getItem("pwa-install-dismissed") === "1";
 
-    if (completed || dismissedSession || legacyDismissed) return;
+    if (completed || dismissedSession || legacyDismissed || installPromptShownInPageSession) return;
 
     if (capturedDeferredInstall) {
       setDeferredPrompt(capturedDeferredInstall);
-      setShowInstall(true);
+      showInstallOncePerPageSession();
     }
 
     const ua = window.navigator.userAgent;
@@ -60,12 +67,12 @@ export function PwaInstallPrompt() {
 
     let openTimer: number | null = null;
     if (isIosSafari) {
-      setShowInstall(true);
+      showInstallOncePerPageSession();
     } else if (isAndroid) {
       // Сразу показываем баннер: на Android задержка приводит к тому, что подсказку «не видно» при быстром взгляде; beforeinstallprompt придёт отдельно.
-      setShowInstall(true);
+      showInstallOncePerPageSession();
     } else {
-      openTimer = window.setTimeout(() => setShowInstall(true), 1200);
+      openTimer = window.setTimeout(showInstallOncePerPageSession, 1200);
     }
 
     const onBeforeInstallPrompt = (event: Event) => {
@@ -73,7 +80,7 @@ export function PwaInstallPrompt() {
       e.preventDefault();
       capturedDeferredInstall = e;
       setDeferredPrompt(e);
-      setShowInstall(true);
+      showInstallOncePerPageSession();
     };
 
     const onAppInstalled = () => {
@@ -90,7 +97,7 @@ export function PwaInstallPrompt() {
       window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
       window.removeEventListener("appinstalled", onAppInstalled);
     };
-  }, [dismissedSession]);
+  }, [dismissedSession, showInstallOncePerPageSession]);
 
   const dismiss = () => {
     setDismissedSession(true);

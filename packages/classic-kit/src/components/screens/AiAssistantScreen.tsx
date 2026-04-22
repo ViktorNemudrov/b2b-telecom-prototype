@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bot, ChevronLeft, ChevronRight, Loader2, Pause, PhoneOff, Play, Sparkles, X } from "lucide-react";
@@ -60,6 +59,9 @@ const sphereSrc = "/mockups/%D0%A8%D0%B0%D1%80.png";
 type LiveProvider = "gemini" | "together" | "openrouter" | "groq" | "grok";
 type LiveCandidate = { provider: LiveProvider; apiKey: string; model: string };
 type ProvidersProbeResponse = { enabled?: LiveProvider[] };
+const SERVER_PROXY_TOKEN = "__server_proxy__";
+const LIVE_BAD_PROVIDERS_SESSION_KEY = "b2b_live_bad_providers_v1";
+const LIVE_BAD_PROVIDERS_REASON_SESSION_KEY = "b2b_live_bad_providers_reason_v1";
 
 function id() {
   return Math.random().toString(16).slice(2);
@@ -203,6 +205,92 @@ function compactLiveFailureLabels(labels: string[]): string {
   return joined.length > 360 ? `${joined.slice(0, 357)}…` : joined;
 }
 
+function shouldDisableProviderForSession(err: unknown): boolean {
+  const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+  if (
+    msg.includes("http 401") ||
+    msg.includes("http 402") ||
+    msg.includes("http 403") ||
+    msg.includes("http 404")
+  ) {
+    return true;
+  }
+  if (
+    msg.includes("http 429") &&
+    (msg.includes("quota") || msg.includes("resource_exhausted") || msg.includes("credit"))
+  ) {
+    return true;
+  }
+  return (
+    msg.includes("invalid api key") ||
+    msg.includes("credit limit exceeded") ||
+    msg.includes("model_not_available") ||
+    msg.includes("model not found") ||
+    msg.includes("no endpoints found") ||
+    msg.includes("doesn't have any credits") ||
+    msg.includes("does not have permission")
+  );
+}
+
+function getDisableReason(err: unknown): string {
+  const msg = (err instanceof Error ? err.message : String(err)).trim();
+  if (!msg) return "ошибка провайдера";
+  return msg.length > 140 ? `${msg.slice(0, 137)}...` : msg;
+}
+
+function readSessionDisabledProviders(): LiveProvider[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.sessionStorage.getItem(LIVE_BAD_PROVIDERS_SESSION_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (p): p is LiveProvider =>
+        p === "gemini" || p === "together" || p === "openrouter" || p === "grok" || p === "groq"
+    );
+  } catch {
+    return [];
+  }
+}
+
+function writeSessionDisabledProviders(providers: LiveProvider[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(LIVE_BAD_PROVIDERS_SESSION_KEY, JSON.stringify(providers));
+  } catch {
+    // private mode / quota
+  }
+}
+
+function readSessionDisabledProviderReasons(): Partial<Record<LiveProvider, string>> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.sessionStorage.getItem(LIVE_BAD_PROVIDERS_REASON_SESSION_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, string>;
+    const out: Partial<Record<LiveProvider, string>> = {};
+    for (const [k, v] of Object.entries(parsed)) {
+      if (!v) continue;
+      if (k === "gemini" || k === "together" || k === "openrouter" || k === "grok" || k === "groq") {
+        out[k] = v;
+      }
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+function writeSessionDisabledProviderReasons(reasons: Partial<Record<LiveProvider, string>>): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(LIVE_BAD_PROVIDERS_REASON_SESSION_KEY, JSON.stringify(reasons));
+  } catch {
+    // private mode / quota
+  }
+}
+
 function buildLiveCandidates(args: {
   geminiApiKey?: string;
   geminiModel: string;
@@ -302,6 +390,15 @@ export function AiAssistantScreen() {
   const grokModel = process.env.NEXT_PUBLIC_GROK_MODEL ?? "grok-3-mini";
   const groqModel = process.env.NEXT_PUBLIC_GROQ_MODEL ?? "llama-3.1-8b-instant";
   const [serverEnabledProviders, setServerEnabledProviders] = React.useState<LiveProvider[]>([]);
+  const [sessionDisabledProviders, setSessionDisabledProviders] = React.useState<LiveProvider[]>([]);
+  const [sessionDisabledProviderReasons, setSessionDisabledProviderReasons] = React.useState<
+    Partial<Record<LiveProvider, string>>
+  >({});
+
+  React.useEffect(() => {
+    setSessionDisabledProviders(readSessionDisabledProviders());
+    setSessionDisabledProviderReasons(readSessionDisabledProviderReasons());
+  }, []);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -343,17 +440,16 @@ export function AiAssistantScreen() {
       });
       if (fromPublic.length > 0) return fromPublic;
       if (serverEnabledProviders.length === 0) return [];
-      const proxyToken = "__server_proxy__";
       return buildLiveCandidates({
-        geminiApiKey: serverEnabledProviders.includes("gemini") ? proxyToken : undefined,
+        geminiApiKey: serverEnabledProviders.includes("gemini") ? SERVER_PROXY_TOKEN : undefined,
         geminiModel,
-        togetherApiKey: serverEnabledProviders.includes("together") ? proxyToken : undefined,
+        togetherApiKey: serverEnabledProviders.includes("together") ? SERVER_PROXY_TOKEN : undefined,
         togetherModel,
-        openRouterApiKey: serverEnabledProviders.includes("openrouter") ? proxyToken : undefined,
+        openRouterApiKey: serverEnabledProviders.includes("openrouter") ? SERVER_PROXY_TOKEN : undefined,
         openRouterModel,
-        grokApiKey: serverEnabledProviders.includes("grok") ? proxyToken : undefined,
+        grokApiKey: serverEnabledProviders.includes("grok") ? SERVER_PROXY_TOKEN : undefined,
         grokModel,
-        groqApiKey: serverEnabledProviders.includes("groq") ? proxyToken : undefined,
+        groqApiKey: serverEnabledProviders.includes("groq") ? SERVER_PROXY_TOKEN : undefined,
         groqModel
       });
     },
@@ -373,9 +469,48 @@ export function AiAssistantScreen() {
   );
 
   const [rankedLiveCandidates, setRankedLiveCandidates] = React.useState<LiveCandidate[] | null>(null);
-  const liveCandidates = rankedLiveCandidates ?? baseLiveCandidates;
+  const liveCandidates = React.useMemo(() => {
+    if (sessionDisabledProviders.length === 0) return rankedLiveCandidates ?? baseLiveCandidates;
+    const blocked = new Set(sessionDisabledProviders);
+    return (rankedLiveCandidates ?? baseLiveCandidates).filter((c) => !blocked.has(c.provider));
+  }, [rankedLiveCandidates, baseLiveCandidates, sessionDisabledProviders]);
   const isLiveEnabled = liveCandidates.length > 0;
   const primaryLiveProvider: LiveProvider = liveCandidates[0]?.provider ?? "groq";
+  const buildServerProxyCandidates = React.useCallback(
+    (enabledProviders: LiveProvider[]) =>
+      buildLiveCandidates({
+        geminiApiKey: enabledProviders.includes("gemini") ? SERVER_PROXY_TOKEN : undefined,
+        geminiModel,
+        togetherApiKey: enabledProviders.includes("together") ? SERVER_PROXY_TOKEN : undefined,
+        togetherModel,
+        openRouterApiKey: enabledProviders.includes("openrouter") ? SERVER_PROXY_TOKEN : undefined,
+        openRouterModel,
+        grokApiKey: enabledProviders.includes("grok") ? SERVER_PROXY_TOKEN : undefined,
+        grokModel,
+        groqApiKey: enabledProviders.includes("groq") ? SERVER_PROXY_TOKEN : undefined,
+        groqModel
+      }),
+    [geminiModel, togetherModel, openRouterModel, grokModel, groqModel]
+  );
+
+  const fetchLiveCandidatesFromServer = React.useCallback(async (): Promise<LiveCandidate[]> => {
+    if (typeof window === "undefined") return [];
+    try {
+      const res = await fetch("/api/llm/providers", { method: "GET", cache: "no-store" });
+      if (!res.ok) return [];
+      const payload = (await res.json()) as ProvidersProbeResponse;
+      const enabled = Array.isArray(payload.enabled)
+        ? payload.enabled.filter(
+            (p): p is LiveProvider => p === "gemini" || p === "together" || p === "openrouter" || p === "grok" || p === "groq"
+          )
+        : [];
+      setServerEnabledProviders(enabled);
+      const blocked = new Set(sessionDisabledProviders);
+      return buildServerProxyCandidates(enabled).filter((c) => !blocked.has(c.provider));
+    } catch {
+      return [];
+    }
+  }, [buildServerProxyCandidates, sessionDisabledProviders]);
 
   React.useEffect(() => {
     if (baseLiveCandidates.length <= 1) {
@@ -587,15 +722,19 @@ export function AiAssistantScreen() {
         return;
       }
 
+      const activeCandidates =
+        liveCandidates.length > 0 ? liveCandidates : await fetchLiveCandidatesFromServer();
+      const hasLiveCandidates = activeCandidates.length > 0;
+      const activePrimaryProvider: LiveProvider = activeCandidates[0]?.provider ?? primaryLiveProvider;
       let resolved: ChatMessage = toAiMessage({
-        ...(isLiveEnabled ? buildSafeLiveFallbackResponse() : buildNoLiveKeysFallbackResponse()),
-        sourceLabel: getAiSourceLabel(isLiveEnabled ? "fallback-no-live" : "no-live-keys", primaryLiveProvider)
+        ...(hasLiveCandidates ? buildSafeLiveFallbackResponse() : buildNoLiveKeysFallbackResponse()),
+        sourceLabel: getAiSourceLabel(hasLiveCandidates ? "fallback-no-live" : "no-live-keys", activePrimaryProvider)
       });
-      let intentUsed = isLiveEnabled ? "fallback-no-live" : "no-live-keys";
-      let resolvedLiveProvider: LiveProvider = primaryLiveProvider;
+      let intentUsed = hasLiveCandidates ? "fallback-no-live" : "no-live-keys";
+      let resolvedLiveProvider: LiveProvider = activePrimaryProvider;
 
       try {
-        if (isLiveEnabled) {
+        if (hasLiveCandidates) {
           const controller = new AbortController();
           liveAbortRef.current = controller;
           const abortMeta: { kind: "timeout" | "supersede" } = { kind: "supersede" };
@@ -610,7 +749,9 @@ export function AiAssistantScreen() {
             let liveResolved = false;
             let lastErrorLabel: string | null = null;
             const failureLabels: string[] = [];
-            for (const candidate of liveCandidates) {
+            const disableCandidates = new Set<LiveProvider>();
+            const disableReasons: Partial<Record<LiveProvider, string>> = {};
+            for (const candidate of activeCandidates) {
               resolvedLiveProvider = candidate.provider;
               try {
                 const liveText = await getLiveAiText({
@@ -660,9 +801,25 @@ export function AiAssistantScreen() {
                   finishReply();
                   return;
                 }
+                if (shouldDisableProviderForSession(e)) {
+                  disableCandidates.add(candidate.provider);
+                  disableReasons[candidate.provider] = getDisableReason(e);
+                }
                 lastErrorLabel = formatLiveErrorLabel(e, candidate.provider);
                 failureLabels.push(lastErrorLabel);
               }
+            }
+            if (disableCandidates.size > 0) {
+              setSessionDisabledProviders((prev) => {
+                const merged = Array.from(new Set([...prev, ...Array.from(disableCandidates)]));
+                writeSessionDisabledProviders(merged);
+                return merged;
+              });
+              setSessionDisabledProviderReasons((prev) => {
+                const merged: Partial<Record<LiveProvider, string>> = { ...prev, ...disableReasons };
+                writeSessionDisabledProviderReasons(merged);
+                return merged;
+              });
             }
             if (!liveResolved) {
               const baseFb = buildSafeLiveFallbackResponse();
@@ -1032,40 +1189,39 @@ export function AiAssistantScreen() {
                   </span>
                 ) : null}
               </button>
-              <Link
-                href="/appeals/"
+              <button
+                type="button"
                 className={cn(pillBase, getCustomizationButtonClasses(appealsChipCustom.dimmedDisabled))}
-                onClick={(e) => {
-                  if (appealsChipCustom.dimmedDisabled) {
-                    e.preventDefault();
+                disabled={appealsChipCustom.dimmedDisabled}
+                onClick={() => {
+                  if (appealsChipCustom.useMock) {
+                    setToast("Обращения (мок из кастомизации).");
                     return;
                   }
-                  if (appealsChipCustom.useMock) {
-                    e.preventDefault();
-                    setToast("Обращения (мок из кастомизации).");
-                  }
+                  window.setTimeout(() => send("Обращения"), 60);
                 }}
               >
                 <span>Обращения</span>
-              </Link>
+              </button>
             </div>
             <div className="flex w-full max-w-[360px] flex-wrap justify-center gap-2.5">
-              <Link
-                href="/widgets/"
+              <button
+                type="button"
                 className={cn(pillBase, getCustomizationButtonClasses(invoicesChipCustom.dimmedDisabled))}
-                onClick={(e) => {
+                disabled={invoicesChipCustom.dimmedDisabled}
+                onClick={() => {
                   if (invoicesChipCustom.dimmedDisabled) {
-                    e.preventDefault();
                     return;
                   }
                   if (invoicesChipCustom.useMock) {
-                    e.preventDefault();
                     setToast("Мои продукты (мок из кастомизации).");
+                    return;
                   }
+                  window.setTimeout(() => send("Мои продукты"), 60);
                 }}
               >
                 <span>Мои продукты</span>
-              </Link>
+              </button>
               <button
                 type="button"
                 className={cn(pillBase, getCustomizationButtonClasses(unpaidChipCustom.dimmedDisabled))}
@@ -1092,6 +1248,21 @@ export function AiAssistantScreen() {
       ) : null}
 
       <div className="space-y-3">
+        {process.env.NODE_ENV === "development" && sessionDisabledProviders.length > 0 ? (
+          <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
+            <CardContent className="space-y-1.5 pb-3 pt-3">
+              <div className="text-xs font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-200">
+                Dev: отключены live-провайдеры (текущая сессия)
+              </div>
+              {sessionDisabledProviders.map((p) => (
+                <div key={`disabled-provider-${p}`} className="text-xs text-amber-900 dark:text-amber-100">
+                  <span className="font-semibold">{liveProviderShort(p)}:</span>{" "}
+                  {sessionDisabledProviderReasons[p] ?? "ошибка провайдера"}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        ) : null}
         {hasChat ? (
           <button
             type="button"

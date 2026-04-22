@@ -5,10 +5,10 @@ import Link from "next/link";
 import { ChevronLeft, X, SendHorizonal } from "lucide-react";
 
 const onboardingSlides = [
-  ["generated-onboarding-1"],
-  ["/mockups/onboarding-2.jpg", "/mockups/2 экран онбординга.jpg"],
-  ["/mockups/onboarding-3.jpg", "/mockups/3 экран онбординга.jpg"],
-  ["/mockups/onboarding-4.jpg", "/mockups/4 экран онбординга.jpg"]
+  "generated-onboarding-1",
+  "generated-onboarding-2",
+  "generated-onboarding-3",
+  "generated-onboarding-4"
 ];
 const animatedPrompts = ["Покажи инсайты по звонкам", "Запустить таргет рассылку", "Открой записи разговоров"];
 const typingCharMsByPhrase = [57, 54, 56];
@@ -72,15 +72,12 @@ function useAnimatedPrompt() {
 
 export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: { showBack?: boolean; backHref?: string }) {
   const [activeSlide, setActiveSlide] = React.useState(0);
-  const [slideSourceIndexes, setSlideSourceIndexes] = React.useState<number[]>(() => onboardingSlides.map(() => 0));
-  const [slideBroken, setSlideBroken] = React.useState<boolean[]>(() => onboardingSlides.map(() => false));
   const [viewportSize, setViewportSize] = React.useState({ width: 390, height: 844 });
   const [screenHeightPx, setScreenHeightPx] = React.useState<number | null>(null);
   const viewportRef = React.useRef<HTMLDivElement | null>(null);
   const touchStartRef = React.useRef<{ x: number; y: number } | null>(null);
   const touchCurrentRef = React.useRef<{ x: number; y: number } | null>(null);
   const animatedText = useAnimatedPrompt();
-  const sourceAspect = 591 / 1280;
 
   React.useEffect(() => {
     const node = viewportRef.current;
@@ -130,27 +127,12 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
 
   const imageFrame = React.useMemo(() => {
     const { width, height } = viewportSize;
-    if (!width || !height) return { x: 0, y: 0, width, height };
-    const viewportAspect = width / height;
-    if (viewportAspect > sourceAspect) {
-      const renderedWidth = height * sourceAspect;
-      return { x: (width - renderedWidth) / 2, y: 0, width: renderedWidth, height };
-    }
-    const renderedHeight = width / sourceAspect;
-    return { x: 0, y: (height - renderedHeight) / 2, width, height: renderedHeight };
+    return { x: 0, y: 0, width, height };
   }, [viewportSize]);
 
-  React.useEffect(() => {
-    if (activeSlide !== onboardingSlides.length - 1) {
-      return;
-    }
-
-    const timeout = window.setTimeout(() => {
-      window.location.assign("/assistant/");
-    }, 1100);
-
-    return () => window.clearTimeout(timeout);
-  }, [activeSlide]);
+  const finishOnboarding = React.useCallback(() => {
+    window.location.assign("/assistant/");
+  }, []);
 
   const onTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     const point = event.touches[0];
@@ -191,7 +173,11 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
       return;
     }
 
-    if (deltaX < 0 && activeSlide < onboardingSlides.length - 1) {
+    if (deltaX < 0) {
+      if (activeSlide >= onboardingSlides.length - 1) {
+        finishOnboarding();
+        return;
+      }
       setActiveSlide((prev) => prev + 1);
     }
     if (deltaX > 0 && activeSlide > 0) {
@@ -199,17 +185,15 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
     }
   };
 
-  const renderBottomNav = (paneIndex: number) => {
-    const isActivePane = paneIndex === activeSlide;
+  const renderBottomNav = () => {
     return (
       <div
-        className={`fixed z-40 ${isActivePane ? "pointer-events-auto" : "pointer-events-none"}`}
-        aria-hidden={!isActivePane}
+        className="absolute z-40 pointer-events-auto"
         style={{
           left: `${imageFrame.x}px`,
-          bottom: "max(0px, env(safe-area-inset-bottom))",
+          top: `${imageFrame.y + imageFrame.height * 0.9}px`,
           width: `${imageFrame.width}px`,
-          height: `${Math.max(76, imageFrame.height * 0.1)}px`
+          height: `${imageFrame.height * 0.1}px`
         }}
       >
         <div className="relative h-full w-full">
@@ -217,6 +201,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
 
           <button
             type="button"
+            data-testid="onboarding-prev"
             aria-label="Предыдущий экран"
             className="absolute left-[7%] top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#eceef3] text-[#6f7483] shadow-[0_1px_3px_rgba(0,0,0,0.05)] disabled:opacity-35"
             onClick={() => setActiveSlide((prev) => Math.max(0, prev - 1))}
@@ -229,8 +214,8 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
             {onboardingSlides.map((slide, index) => (
               <button
                 type="button"
-                key={`dot-${paneIndex}-${slide[0]}`}
-                data-testid={isActivePane ? `onboarding-dot-${index}` : undefined}
+                key={`dot-${slide}`}
+                data-testid={`onboarding-dot-${index}`}
                 aria-label={`Перейти к экрану ${index + 1}`}
                 onClick={() => setActiveSlide(index)}
                 className={`h-2.5 w-2.5 rounded-full transition-colors ${
@@ -242,10 +227,16 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
 
           <button
             type="button"
+            data-testid="onboarding-next"
             aria-label="Следующий экран"
             className="absolute right-[7%] top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#eceef3] text-[#2f3241] shadow-[0_1px_3px_rgba(0,0,0,0.05)] disabled:opacity-35"
-            onClick={() => setActiveSlide((prev) => Math.min(onboardingSlides.length - 1, prev + 1))}
-            disabled={activeSlide === onboardingSlides.length - 1}
+            onClick={() => {
+              if (activeSlide === onboardingSlides.length - 1) {
+                finishOnboarding();
+                return;
+              }
+              setActiveSlide((prev) => Math.min(onboardingSlides.length - 1, prev + 1));
+            }}
           >
             <ChevronLeft className="h-5 w-5 rotate-180" />
           </button>
@@ -258,8 +249,98 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
     ? { minHeight: `${screenHeightPx}px`, height: `${screenHeightPx}px` }
     : { minHeight: "100svh", height: "100dvh" };
 
+  const renderGeneratedSlide = (index: number) => {
+    if (index === 1) {
+      return (
+        <div className="h-[90%] w-full bg-[rgb(var(--bg))] px-5 pb-8 pt-20">
+          <div className="mx-auto max-w-[360px]">
+            <h2 className="text-center text-3xl font-bold leading-tight tracking-tight text-[#1F2430]">
+              Контролируйте бизнес
+              <br />
+              в одном месте
+            </h2>
+            <p className="mt-3 text-center text-sm text-[#6F7483]">Звонки, счета, обращения и события под рукой.</p>
+            <div className="mt-8 grid grid-cols-2 gap-3">
+              <div className="rounded-2xl bg-white p-4 shadow-soft">
+                <div className="text-xs text-[#8A90A1]">Звонки</div>
+                <div className="mt-2 text-2xl font-semibold text-[#1F2430]">127</div>
+                <div className="text-xs text-emerald-600">+12% к неделе</div>
+              </div>
+              <div className="rounded-2xl bg-white p-4 shadow-soft">
+                <div className="text-xs text-[#8A90A1]">Счета</div>
+                <div className="mt-2 text-2xl font-semibold text-[#1F2430]">8</div>
+                <div className="text-xs text-amber-600">2 к оплате</div>
+              </div>
+              <div className="col-span-2 rounded-2xl bg-white p-4 shadow-soft">
+                <div className="text-xs text-[#8A90A1]">События сегодня</div>
+                <ul className="mt-2 space-y-2 text-sm text-[#1F2430]">
+                  <li>• 4 пропущенных звонка</li>
+                  <li>• 1 новое обращение</li>
+                  <li>• Напоминание по оплате счета</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (index === 2) {
+      return (
+        <div className="h-[90%] w-full bg-[rgb(var(--bg))] px-5 pb-8 pt-20">
+          <div className="mx-auto max-w-[360px]">
+            <h2 className="text-center text-3xl font-bold leading-tight tracking-tight text-[#1F2430]">
+              ИИ подскажет
+              <br />
+              следующий шаг
+            </h2>
+            <p className="mt-3 text-center text-sm text-[#6F7483]">Спросите своими словами и сразу получите результат.</p>
+            <div className="mt-8 space-y-3">
+              <div className="rounded-2xl bg-white p-3 shadow-soft">
+                <div className="text-xs text-[#8A90A1]">Вы</div>
+                <div className="mt-1 text-sm text-[#1F2430]">Покажи пропущенные звонки за неделю</div>
+              </div>
+              <div className="rounded-2xl bg-[#FFF8D9] p-3 shadow-soft">
+                <div className="text-xs text-[#8A90A1]">Ассистент</div>
+                <div className="mt-1 text-sm text-[#1F2430]">
+                  12 пропущенных звонков. Пиковое время: 14:00-16:00. Рекомендую включить автоответ.
+                </div>
+              </div>
+              <div className="rounded-2xl bg-white p-3 shadow-soft">
+                <div className="text-xs text-[#8A90A1]">Вы</div>
+                <div className="mt-1 text-sm text-[#1F2430]">Запусти рассылку по пропущенным</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="h-[90%] w-full bg-[rgb(var(--bg))] px-5 pb-8 pt-20">
+        <div className="mx-auto max-w-[360px]">
+          <h2 className="text-center text-3xl font-bold leading-tight tracking-tight text-[#1F2430]">
+            Решения за пару секунд
+          </h2>
+          <p className="mt-3 text-center text-sm text-[#6F7483]">Начните с главного экрана и откройте ассистента в один тап.</p>
+          <div className="mt-8 rounded-3xl bg-white p-5 shadow-soft">
+            <div className="text-sm font-medium text-[#1F2430]">Что можно сделать сразу</div>
+            <ul className="mt-3 space-y-2 text-sm text-[#3A4050]">
+              <li>✓ Проверить пропущенные звонки</li>
+              <li>✓ Узнать статус счетов</li>
+              <li>✓ Открыть обращения и документы</li>
+            </ul>
+            <div className="mt-5 rounded-2xl bg-[#1F2430] px-4 py-3 text-center text-sm font-medium text-white">
+              На последнем шаге откроется ассистент
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="relative w-full overflow-hidden bg-[#11131a]" style={rootViewportStyle}>
+    <div className="relative w-full overflow-hidden bg-[rgb(var(--bg))]" style={rootViewportStyle}>
       <Link
         href="/assistant/"
         prefetch={false}
@@ -291,11 +372,11 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
           style={{ width: `${onboardingSlides.length * 100}%`, transform: `translateX(-${activeSlide * (100 / onboardingSlides.length)}%)` }}
         >
           {onboardingSlides.map((slide, index) => (
-            <div key={slide[0]} className="relative h-full" style={{ width: `${100 / onboardingSlides.length}%` }}>
+            <div key={slide} className="relative h-full" style={{ width: `${100 / onboardingSlides.length}%` }}>
               {index === 0 ? (
                 <div className="relative h-full w-full">
                   <div
-                    className="absolute overflow-hidden rounded-[44px] bg-white"
+                    className="absolute inset-0 overflow-hidden bg-white"
                     style={{
                       left: `${imageFrame.x}px`,
                       top: `${imageFrame.y}px`,
@@ -303,12 +384,6 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
                       height: `${imageFrame.height}px`
                     }}
                   >
-                    <div className="absolute left-[8.5%] top-[3.3%] text-[13px] font-semibold text-[#121723]">9:41</div>
-                    <div className="absolute right-[8%] top-[3.2%] flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded-full bg-[#121723]" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-[#121723]" />
-                      <span className="h-2.5 w-5 rounded-full bg-[#121723]" />
-                    </div>
 
                     <div className="absolute left-1/2 top-[30%] w-[92%] -translate-x-1/2 px-1 text-center">
                       <div className="flex flex-col items-center gap-2.5">
@@ -349,45 +424,15 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
                       </div>
                     </div>
                   </div>
-                  {renderBottomNav(index)}
                 </div>
               ) : (
-                <>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={slide[slideSourceIndexes[index]]}
-                    alt={`Экран онбординга ${index + 1}`}
-                    className="h-full w-full object-contain"
-                    draggable={false}
-                    onError={() => {
-                      const hasNextSource = slideSourceIndexes[index] + 1 < slide.length;
-                      if (hasNextSource) {
-                        setSlideSourceIndexes((prev) => {
-                          const next = [...prev];
-                          next[index] = prev[index] + 1;
-                          return next;
-                        });
-                        return;
-                      }
-                      setSlideBroken((prev) => {
-                        const next = [...prev];
-                        next[index] = true;
-                        return next;
-                      });
-                    }}
-                  />
-                  {slideBroken[index] ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[#11131a] p-6 text-center text-sm text-white/90">
-                      Не удалось загрузить экран онбординга {index + 1}
-                    </div>
-                  ) : null}
-                  {renderBottomNav(index)}
-                </>
+                renderGeneratedSlide(index)
               )}
             </div>
           ))}
         </div>
       </div>
+      {renderBottomNav()}
 
       <style jsx>{`
         @keyframes onboardingCaretBlink {

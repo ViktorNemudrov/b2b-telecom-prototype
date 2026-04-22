@@ -293,8 +293,11 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
         suggested: ["Создать обращение", "Список обращений", "Выполненные", "Отклонённые"]
       };
     }
-    if (hasAny(clean, compact, ["счета на оплату", "мои счета", "создать платеж", "создать платёж"])) {
+    if (hasAny(clean, compact, ["счета на оплату", "мои счета"])) {
       return { text: "Открываю счета и оплату: можно выбрать счет и провести платеж удобным способом.", navigateTo: "/invoices/" };
+    }
+    if (hasAny(clean, compact, ["создать платеж", "создать платёж"])) {
+      return { text: "Сценарий создания платежей пока в разработке" };
     }
     if (hasAny(clean, compact, ["звонки за неделю", "сводка звонков", "недельный отчет", "статистика звонков за неделю"])) {
       return {
@@ -402,10 +405,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
 
   const asksCreatePayment = hasAny(clean, compact, ["создать платеж", "создай платеж", "новый платеж", "сформировать платеж"]);
   if (asksCreatePayment) {
-    return {
-      text: "Открываю счета и оплату: можно выбрать счет и провести платеж удобным способом.",
-      navigateTo: "/invoices/"
-    };
+    return { text: "Сценарий создания платежей пока в разработке" };
   }
 
   const asksSmsCampaign = hasAny(clean, compact, [

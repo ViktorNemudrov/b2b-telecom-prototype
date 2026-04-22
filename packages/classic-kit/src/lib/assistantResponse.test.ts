@@ -179,7 +179,9 @@ describe("assistantResponse routing", () => {
     expect(openAppeals?.widget).toBe("appeals-summary");
 
     const createPayment = resolveDeterministicResponse("Создать платеж", invoicesMarch2026);
-    expect(createPayment?.widget).toBe("invoices-summary-inline");
+    expect(createPayment?.text).toBe("Сценарий создания платежей пока в разработке");
+    expect(createPayment?.widget).toBeUndefined();
+    expect(createPayment?.navigateTo).toBeUndefined();
 
     const smsCampaign = resolveDeterministicResponse("Запустить смс рассылку", invoicesMarch2026);
     expect(smsCampaign?.text).toContain("SMS-рассылки");

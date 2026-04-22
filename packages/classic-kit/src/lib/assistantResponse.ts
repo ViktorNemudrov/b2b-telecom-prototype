@@ -141,6 +141,13 @@ function hasAny(clean: string, compact: string, samples: string[]) {
   return samples.some((s) => clean.includes(s) || compact.includes(s.replace(/\s+/g, "")));
 }
 
+function asksUnitsIntent(clean: string): boolean {
+  if (/(^|\s)(переведи|конвертируй)(\s|$)/.test(clean)) return true;
+  return /(^|\s)(км|метр|метра|метров|кг|килограмм|килограмма|килограммов|литр|литра|литров|минута|минуты|минут|час|часа|часы)\s+(в|во)\s+/.test(
+    clean
+  );
+}
+
 function mapEnLayoutToRu(input: string): string {
   const map: Record<string, string> = {
     q: "й",
@@ -313,7 +320,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
       return buildInvoicesSummaryPayload(runtimeInvoices);
     }
     if (hasAny(clean, compact, ["создать платеж", "создать платёж"])) {
-      return buildInvoicesSummaryPayload(runtimeInvoices);
+      return { text: "Сценарий создания платежей пока в разработке" };
     }
     if (hasAny(clean, compact, ["звонки за неделю", "сводка звонков", "недельный отчет", "статистика звонков за неделю", "статистика звонков"])) {
       return {
@@ -445,7 +452,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
 
   const asksCreatePayment = hasAny(clean, compact, ["создать платеж", "создай платеж", "новый платеж", "сформировать платеж"]);
   if (asksCreatePayment) {
-    return buildInvoicesSummaryPayload(runtimeInvoices);
+    return { text: "Сценарий создания платежей пока в разработке" };
   }
 
   const asksSmsCampaign = hasAny(clean, compact, [
@@ -679,7 +686,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
     return { text: `Результат: ${Number.isInteger(result) ? result : result.toLocaleString("ru-RU", { maximumFractionDigits: 6 })}.` };
   }
 
-  const asksUnits = hasAny(clean, compact, ["переведи", "конвертируй", "км в", "метр в", "кг в", "литр в", "минута в", "час в"]);
+  const asksUnits = asksUnitsIntent(clean);
   if (asksUnits) {
     const unitMatch = clean.match(
       /([0-9]+(?:[.,][0-9]+)?)\s*(км|м|см|мм|кг|г|мг|л|мл|час|часы|часа|мин|минута|минуты|сек|секунда|секунды)\s*(?:в|во)\s*(км|м|см|мм|кг|г|мг|л|мл|час|часы|часа|мин|минута|минуты|сек|секунда|секунды)/
