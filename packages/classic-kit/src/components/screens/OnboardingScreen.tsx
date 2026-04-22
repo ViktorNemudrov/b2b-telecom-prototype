@@ -12,6 +12,7 @@ const onboardingSlides = [
   "generated-onboarding-3",
   "generated-onboarding-4"
 ];
+const onboardingReferenceImages = ["/mockups/onboarding-2-user.png", "/mockups/onboarding-3-user.png", "/mockups/onboarding-4-user.png"] as const;
 const animatedPrompts = ["Покажи инсайты по звонкам", "Запустить таргет рассылку", "Открой записи разговоров"];
 const typingCharMsByPhrase = [57, 54, 56];
 const deletingCharMsByPhrase = [29, 27, 30];
@@ -73,9 +74,42 @@ function useAnimatedPrompt() {
 }
 
 export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: { showBack?: boolean; backHref?: string }) {
+  const getCurrentViewportHeight = React.useCallback(() => {
+    const visualHeight = window.visualViewport?.height;
+    const innerHeight = window.innerHeight;
+    const heightCandidates = [visualHeight, innerHeight].filter(
+      (value): value is number => typeof value === "number" && Number.isFinite(value) && value > 0
+    );
+    if (heightCandidates.length === 0) {
+      return null;
+    }
+    return Math.round(Math.min(...heightCandidates));
+  }, []);
+
   const [activeSlide, setActiveSlide] = React.useState(0);
-  const [viewportSize, setViewportSize] = React.useState({ width: 390, height: 844 });
-  const [screenHeightPx, setScreenHeightPx] = React.useState<number | null>(null);
+  const [viewportSize, setViewportSize] = React.useState(() => {
+    if (typeof window === "undefined") {
+      return { width: 390, height: 844 };
+    }
+    return {
+      width: Math.round(window.visualViewport?.width ?? window.innerWidth),
+      height: Math.round(window.visualViewport?.height ?? window.innerHeight)
+    };
+  });
+  const [screenHeightPx, setScreenHeightPx] = React.useState<number | null>(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+    const visualHeight = window.visualViewport?.height;
+    const innerHeight = window.innerHeight;
+    const heightCandidates = [visualHeight, innerHeight].filter(
+      (value): value is number => typeof value === "number" && Number.isFinite(value) && value > 0
+    );
+    if (heightCandidates.length === 0) {
+      return null;
+    }
+    return Math.round(Math.min(...heightCandidates));
+  });
   const viewportRef = React.useRef<HTMLDivElement | null>(null);
   const touchStartRef = React.useRef<{ x: number; y: number } | null>(null);
   const touchCurrentRef = React.useRef<{ x: number; y: number } | null>(null);
@@ -108,9 +142,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
 
   React.useEffect(() => {
     const updateScreenHeight = () => {
-      const visualHeight = Math.round(window.visualViewport?.height ?? window.innerHeight);
-      const nextHeight = visualHeight;
-      setScreenHeightPx(nextHeight > 0 ? nextHeight : null);
+      setScreenHeightPx(getCurrentViewportHeight());
     };
 
     updateScreenHeight();
@@ -125,7 +157,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
       window.visualViewport?.removeEventListener("resize", updateScreenHeight);
       window.visualViewport?.removeEventListener("scroll", updateScreenHeight);
     };
-  }, []);
+  }, [getCurrentViewportHeight]);
 
   const imageFrame = React.useMemo(() => {
     const { width, height } = viewportSize;
@@ -193,14 +225,12 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
   };
 
   const renderBottomNav = () => {
+    const navHeightPx = Math.max(68, Math.round(imageFrame.height * 0.1));
     return (
       <div
-        className="absolute z-40 pointer-events-auto"
+        className="fixed inset-x-0 bottom-0 z-40 pointer-events-auto"
         style={{
-          left: `${imageFrame.x}px`,
-          top: `${imageFrame.y + imageFrame.height * 0.9}px`,
-          width: `${imageFrame.width}px`,
-          height: `${imageFrame.height * 0.1}px`
+          height: `${navHeightPx}px`
         }}
       >
         <div className="relative h-full w-full">
@@ -254,39 +284,38 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
 
   const rootViewportStyle: React.CSSProperties = screenHeightPx
     ? { minHeight: `${screenHeightPx}px`, height: `${screenHeightPx}px` }
-    : { minHeight: "100svh", height: "100dvh" };
+    : { minHeight: "100svh", height: "100svh" };
 
   const renderGeneratedSlide = (index: number) => {
     if (index === 1) {
       return (
-        <div className="h-[90%] w-full bg-[rgb(var(--bg))] px-5 pb-8 pt-20">
-          <div className="mx-auto max-w-[360px]">
-            <h2 className="text-center text-3xl font-bold leading-tight tracking-tight text-[#1F2430] dark:text-slate-100">
-              Контролируйте бизнес
+        <div className="h-[90%] w-full overflow-hidden bg-[rgb(var(--bg))] px-4 pb-2 pt-8">
+          <div className="mx-auto flex h-full max-w-[360px] min-h-0 flex-col">
+            <h2 className="text-[24px] font-normal leading-[1.15] tracking-[-0.03em] text-[#222222]">
+              Личный ассистент
               <br />
-              в одном месте
+              для ведения бизнеса
             </h2>
-            <p className="mt-3 text-center text-sm text-[#6F7483] dark:text-slate-300">Звонки, счета, обращения и события под рукой.</p>
-            <div className="mt-8 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-white p-4 shadow-soft dark:bg-slate-800">
-                <div className="text-xs text-[#8A90A1] dark:text-slate-400">Звонки</div>
-                <div className="mt-2 text-2xl font-semibold text-[#1F2430] dark:text-slate-100">127</div>
-                <div className="text-xs text-emerald-600">+12% к неделе</div>
-              </div>
-              <div className="rounded-2xl bg-white p-4 shadow-soft dark:bg-slate-800">
-                <div className="text-xs text-[#8A90A1] dark:text-slate-400">Счета</div>
-                <div className="mt-2 text-2xl font-semibold text-[#1F2430] dark:text-slate-100">8</div>
-                <div className="text-xs text-amber-600">2 к оплате</div>
-              </div>
-              <div className="col-span-2 rounded-2xl bg-white p-4 shadow-soft dark:bg-slate-800">
-                <div className="text-xs text-[#8A90A1] dark:text-slate-400">События сегодня</div>
-                <ul className="mt-2 space-y-2 text-sm text-[#1F2430] dark:text-slate-100">
-                  <li>• 4 пропущенных звонка</li>
-                  <li>• 1 новое обращение</li>
-                  <li>• Напоминание по оплате счета</li>
-                </ul>
+            <p className="mt-2 text-[11px] leading-[1.3] text-[#8F93A2]">
+              Сформируйте и задайте запрос в чате, в нем появиться
+              <br />
+              вся актуальная информация о вашем бизнесе и процессах
+            </p>
+            <div className="mt-4 min-h-0 flex-1 rounded-2xl bg-[#E8EAF1] p-2">
+              <div className="h-full w-full overflow-hidden rounded-xl">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={onboardingReferenceImages[0]}
+                  alt="Референс онбординга 2"
+                  className="h-full w-full scale-[1.12] object-cover"
+                  style={{ objectPosition: "center 40%" }}
+                  draggable={false}
+                />
               </div>
             </div>
+            <p className="mt-3 text-[21px] font-normal leading-[1.12] tracking-normal text-[#222222]">
+              Ежедневная сводка о состоянии вашего бизнеса и умный помощник в одном окне
+            </p>
           </div>
         </div>
       );
@@ -294,53 +323,62 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
 
     if (index === 2) {
       return (
-        <div className="h-[90%] w-full bg-[rgb(var(--bg))] px-5 pb-8 pt-20">
-          <div className="mx-auto max-w-[360px]">
-            <h2 className="text-center text-3xl font-bold leading-tight tracking-tight text-[#1F2430] dark:text-slate-100">
-              ИИ подскажет
+        <div className="h-[90%] w-full overflow-hidden bg-[rgb(var(--bg))] px-4 pb-2 pt-8">
+          <div className="mx-auto flex h-full max-w-[360px] min-h-0 flex-col">
+            <h2 className="text-[24px] font-normal leading-[1.15] tracking-[-0.03em] text-[#222222]">
+              Только актуальные события
               <br />
-              следующий шаг
+              требующие вашего внимания
             </h2>
-            <p className="mt-3 text-center text-sm text-[#6F7483] dark:text-slate-300">Спросите своими словами и сразу получите результат.</p>
-            <div className="mt-8 space-y-3">
-              <div className="rounded-2xl bg-white p-3 shadow-soft dark:bg-slate-800">
-                <div className="text-xs text-[#8A90A1] dark:text-slate-400">Вы</div>
-                <div className="mt-1 text-sm text-[#1F2430] dark:text-slate-100">Покажи пропущенные звонки за неделю</div>
-              </div>
-              <div className="rounded-2xl bg-[#FFF8D9] p-3 shadow-soft dark:bg-amber-900/40">
-                <div className="text-xs text-[#8A90A1] dark:text-slate-400">Ассистент</div>
-                <div className="mt-1 text-sm text-[#1F2430] dark:text-slate-100">
-                  12 пропущенных звонков. Пиковое время: 14:00-16:00. Рекомендую включить автоответ.
-                </div>
-              </div>
-              <div className="rounded-2xl bg-white p-3 shadow-soft dark:bg-slate-800">
-                <div className="text-xs text-[#8A90A1] dark:text-slate-400">Вы</div>
-                <div className="mt-1 text-sm text-[#1F2430] dark:text-slate-100">Запусти рассылку по пропущенным</div>
+            <p className="mt-2 text-[11px] leading-[1.3] text-[#8F93A2]">
+              Не беспокойтесь пропустить, что-то важное, мы подскажем
+              <br />
+              когда вам нужно заниматься рутинными делами
+            </p>
+            <div className="mt-4 min-h-0 flex-1 rounded-2xl bg-[#E8EAF1] p-2">
+              <div className="h-full w-full overflow-hidden rounded-xl">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={onboardingReferenceImages[1]}
+                  alt="Референс онбординга 3"
+                  className="h-full w-full scale-[1.06] object-cover"
+                  style={{ objectPosition: "center 50%" }}
+                  draggable={false}
+                />
               </div>
             </div>
+            <p className="mt-3 text-[21px] font-normal leading-[1.12] tracking-normal text-[#222222]">
+              Важные события, активности и оповещения без лишней воды
+            </p>
           </div>
         </div>
       );
     }
 
     return (
-      <div className="h-[90%] w-full bg-[rgb(var(--bg))] px-5 pb-8 pt-20">
-        <div className="mx-auto max-w-[360px]">
-          <h2 className="text-center text-3xl font-bold leading-tight tracking-tight text-[#1F2430] dark:text-slate-100">
-            Решения за пару секунд
+      <div className="h-[90%] w-full overflow-hidden bg-[rgb(var(--bg))] px-4 pb-2 pt-8">
+        <div className="mx-auto flex h-full max-w-[360px] min-h-0 flex-col">
+          <h2 className="text-[24px] font-normal leading-[1.15] tracking-[-0.03em] text-[#222222]">
+            Когда нужно — действуйте
+            <br />
+            привычным способом
           </h2>
-          <p className="mt-3 text-center text-sm text-[#6F7483] dark:text-slate-300">Начните с главного экрана и откройте ассистента в один тап.</p>
-          <div className="mt-8 rounded-3xl bg-white p-5 shadow-soft dark:bg-slate-800">
-            <div className="text-sm font-medium text-[#1F2430] dark:text-slate-100">Что можно сделать сразу</div>
-            <ul className="mt-3 space-y-2 text-sm text-[#3A4050] dark:text-slate-200">
-              <li>✓ Проверить пропущенные звонки</li>
-              <li>✓ Узнать статус счетов</li>
-              <li>✓ Открыть обращения и документы</li>
-            </ul>
-            <div className="mt-5 rounded-2xl bg-[#1F2430] px-4 py-3 text-center text-sm font-medium text-white">
-              На последнем шаге откроется ассистент
+          <p className="mt-2 text-[11px] leading-[1.3] text-[#8F93A2]">Все важные функции собраны в привычном виде</p>
+          <div className="mt-4 min-h-0 flex-1 rounded-2xl bg-[#E8EAF1] p-2">
+            <div className="h-full w-full overflow-hidden rounded-xl">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={onboardingReferenceImages[2]}
+                alt="Референс онбординга 4"
+                className="h-full w-full scale-[1.12] object-cover"
+                style={{ objectPosition: "center 40%" }}
+                draggable={false}
+              />
             </div>
           </div>
+          <p className="mt-3 text-[21px] font-normal leading-[1.12] tracking-normal text-[#222222]">
+            Экраны, виджеты и операции всегда под рукой для точных и привычных сценариев
+          </p>
         </div>
       </div>
     );
