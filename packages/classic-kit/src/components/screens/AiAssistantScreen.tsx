@@ -1073,10 +1073,17 @@ export function AiAssistantScreen() {
                             {weeklySpeaking ? <Pause className="h-4 w-4 text-[#4B5563]" /> : <Play className="h-4 w-4 text-[#4B5563]" />}
                           </button>
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1 text-sm font-semibold text-[#343A4A] dark:text-slate-100">
+                            <button
+                              type="button"
+                              className="flex items-center gap-1 text-sm font-semibold text-[#343A4A] dark:text-slate-100"
+                              onClick={() => {
+                                setInput("звонки за неделю");
+                                window.setTimeout(() => send("звонки за неделю"), 60);
+                              }}
+                            >
                               <Sparkles className="h-4 w-4 text-[#9C8AF2]" />
                               Еженедельный отчет
-                            </div>
+                            </button>
                             <div className="text-xs text-[#A2A8B8]">за 24 апреля</div>
                             <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[#6B7280] dark:text-slate-300">
                               126 звонков, 1 пропущенный, средняя длительность 2:40. Есть 4 клиента в риске по оплате.
@@ -1269,6 +1276,10 @@ export function AiAssistantScreen() {
             aria-label="Назад"
             className="mb-3 inline-flex items-center text-sm font-semibold text-[#3C4858] transition hover:text-[#212529] dark:text-slate-200 dark:hover:text-white"
             onClick={() => {
+              if (window.history.length > 1) {
+                router.back();
+                return;
+              }
               setMessages(defaultChat);
               setInput("");
               setToast(null);
