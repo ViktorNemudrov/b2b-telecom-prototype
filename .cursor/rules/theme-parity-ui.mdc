@@ -1,0 +1,12 @@
+---
+description: Ensure UI works in light and dark themes
+alwaysApply: true
+---
+
+# Theme Parity For UI Changes
+
+- For every user-facing UI change, implement and verify both light and dark themes in the same task.
+- Do not leave theme-specific regressions for follow-up fixes.
+- For text, icons, and surfaces, always set explicit dark variants (`dark:*`) when colors are custom.
+- For images and embedded mockups, check readability and contrast on both themes.
+- During review, verify interactive states (default/hover/active/disabled) in both themes.

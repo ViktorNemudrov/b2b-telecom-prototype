@@ -7,7 +7,6 @@ import { ChevronDown, ChevronLeft } from "lucide-react";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { Modal } from "@shared/components/ui/modal";
-import { PageBackLink } from "@shared/components/PageBackLink";
 import { cn } from "@shared/components/ui/cn";
 import { downloadInvoicePdf } from "@shared/lib/minimalPdf";
 import { markInvoicePaid, useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
@@ -36,6 +35,14 @@ export function InvoiceDetailClient({
   const qrCustom = useUiCustomization("invoice.pay.qr");
   const cardCustom = useUiCustomization("invoice.pay.card");
   const requisitesCustom = useUiCustomization("invoice.pay.requisites");
+  const shouldForceBackToAssistant = backHref === "/assistant/";
+  const handleBack = React.useCallback(() => {
+    if (shouldForceBackToAssistant) {
+      router.push(backHref);
+      return;
+    }
+    goSmartBack(router, backHref);
+  }, [backHref, router, shouldForceBackToAssistant]);
 
   if (!inv) {
     return (
@@ -45,7 +52,7 @@ export function InvoiceDetailClient({
           type="button"
           aria-label="Назад"
           className="mx-auto mt-4 flex h-8 w-8 items-center justify-center rounded-full bg-[#F2F2F7] font-semibold text-accent-dark dark:bg-slate-700"
-          onClick={() => goSmartBack(router, backHref)}
+          onClick={handleBack}
         >
           <ChevronLeft className="h-4 w-4" aria-hidden />
         </button>
@@ -86,7 +93,16 @@ export function InvoiceDetailClient({
 
   return (
     <div className="space-y-4 pb-8">
-      <PageBackLink href={backHref} />
+      <button
+        type="button"
+        aria-label="Назад"
+        className="mb-3 inline-flex items-center text-sm font-semibold text-[#3C4858] transition hover:text-[#212529] dark:text-slate-200 dark:hover:text-white"
+        onClick={handleBack}
+      >
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F2F2F7] dark:bg-slate-700">
+          <ChevronLeft className="h-4 w-4" aria-hidden />
+        </span>
+      </button>
 
       <Card className="dark:border-slate-700">
         <CardContent className="space-y-2 pb-5 pt-5">

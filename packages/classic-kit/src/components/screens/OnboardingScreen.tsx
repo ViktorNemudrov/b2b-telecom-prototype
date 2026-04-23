@@ -168,10 +168,18 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
     window.sessionStorage.setItem(PWA_PROMPT_READY_AFTER_ONBOARDING_KEY, "1");
   }, []);
 
+  const goToAssistant = React.useCallback(() => {
+    if (showBack) {
+      window.location.assign("/assistant/");
+      return;
+    }
+    window.location.replace("/assistant/");
+  }, [showBack]);
+
   const finishOnboarding = React.useCallback(() => {
     markPwaPromptReadyAfterOnboarding();
-    window.location.assign("/assistant/");
-  }, [markPwaPromptReadyAfterOnboarding]);
+    goToAssistant();
+  }, [goToAssistant, markPwaPromptReadyAfterOnboarding]);
 
   const onTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     const point = event.touches[0];
@@ -391,7 +399,11 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
         prefetch={false}
         className="absolute right-4 top-4 z-30 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur"
         aria-label="Закрыть онбординг"
-        onClick={markPwaPromptReadyAfterOnboarding}
+        onClick={(event) => {
+          event.preventDefault();
+          markPwaPromptReadyAfterOnboarding();
+          goToAssistant();
+        }}
       >
         <X className="h-5 w-5" />
       </Link>

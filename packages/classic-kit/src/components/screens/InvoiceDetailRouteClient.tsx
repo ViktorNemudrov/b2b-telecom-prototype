@@ -8,6 +8,6 @@ import { InvoiceDetailClient } from "@shared/components/screens/InvoiceDetailCli
 export function InvoiceDetailRouteClient({ id }: { id: string }) {
   const sp = useSearchParams();
   const from = sp.get("from");
-  const backHref = from === "finance" ? "/documents/finance/" : "/invoices/";
+  const backHref = from === "finance" ? "/documents/finance/" : from === "assistant" ? "/assistant/" : "/invoices/";
   return <InvoiceDetailClient id={id} backHref={backHref} />;
 }

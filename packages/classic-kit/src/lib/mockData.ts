@@ -127,7 +127,7 @@ export const myNumbersChatMock: MyNumberLine[] = [
 export const recentQueryChips = [
   "Что ты умеешь",
   "Запустить смс-рассылку",
-  "Создатьплатеж",
+  "Создать платеж",
   "Изменить настройки секретаря",
   "Инсайты",
   "Баланс",

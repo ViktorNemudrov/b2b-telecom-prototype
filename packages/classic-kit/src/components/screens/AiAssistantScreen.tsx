@@ -59,6 +59,7 @@ const sphereSrc = "/mockups/%D0%A8%D0%B0%D1%80.png";
 type LiveProvider = "gemini" | "together" | "openrouter" | "groq" | "grok";
 type LiveCandidate = { provider: LiveProvider; apiKey: string; model: string };
 type ProvidersProbeResponse = { enabled?: LiveProvider[] };
+type ProvidersProbeState = "idle" | "ok" | "error";
 const SERVER_PROXY_TOKEN = "__server_proxy__";
 const LIVE_BAD_PROVIDERS_SESSION_KEY = "b2b_live_bad_providers_v1";
 const LIVE_BAD_PROVIDERS_REASON_SESSION_KEY = "b2b_live_bad_providers_reason_v1";
@@ -392,6 +393,7 @@ export function AiAssistantScreen() {
   const grokModel = process.env.NEXT_PUBLIC_GROK_MODEL ?? "grok-3-mini";
   const groqModel = process.env.NEXT_PUBLIC_GROQ_MODEL ?? "llama-3.1-8b-instant";
   const [serverEnabledProviders, setServerEnabledProviders] = React.useState<LiveProvider[]>([]);
+  const [providersProbeState, setProvidersProbeState] = React.useState<ProvidersProbeState>("idle");
   const [sessionDisabledProviders, setSessionDisabledProviders] = React.useState<LiveProvider[]>([]);
   const [sessionDisabledProviderReasons, setSessionDisabledProviderReasons] = React.useState<
     Partial<Record<LiveProvider, string>>
@@ -430,9 +432,11 @@ export function AiAssistantScreen() {
               (p): p is LiveProvider => p === "gemini" || p === "together" || p === "openrouter" || p === "grok" || p === "groq"
             )
           : [];
+        setProvidersProbeState("ok");
         setServerEnabledProviders(enabled);
       })
       .catch(() => {
+        setProvidersProbeState("error");
         setServerEnabledProviders([]);
       });
     return () => ac.abort();
@@ -518,10 +522,12 @@ export function AiAssistantScreen() {
             (p): p is LiveProvider => p === "gemini" || p === "together" || p === "openrouter" || p === "grok" || p === "groq"
           )
         : [];
+      setProvidersProbeState("ok");
       setServerEnabledProviders(enabled);
       const blocked = new Set(sessionDisabledProviders);
       return buildServerProxyCandidates(enabled).filter((c) => !blocked.has(c.provider));
     } catch {
+      setProvidersProbeState("error");
       return [];
     }
   }, [buildServerProxyCandidates, sessionDisabledProviders]);
@@ -655,6 +661,21 @@ export function AiAssistantScreen() {
     router.replace("/assistant/");
   }, [router, searchParams]);
 
+  React.useEffect(() => {
+    if (searchParams.get("openChat") !== "1") return;
+    setMessages((prev) => {
+      if (prev.length > 0) return prev;
+      return [
+        toAiMessage({
+          text: "Здравствуйте! Я ваш бизнес-ассистент. Чем могу помочь?",
+          suggested: ["Пропущенные звонки", "Счета на оплату", "Обращения"],
+          sourceLabel: "системное приветствие"
+        })
+      ];
+    });
+    router.replace("/assistant/");
+  }, [router, searchParams]);
+
   const send = (text?: string) => {
     const raw = (text ?? input).trim();
     if (!raw) return;
@@ -742,10 +763,27 @@ export function AiAssistantScreen() {
       const activePrimaryProvider: LiveProvider = activeCandidates[0]?.provider ?? primaryLiveProvider;
       const noCandidatesBecauseSessionDisabled =
         !hasLiveCandidates && serverEnabledProviders.length > 0 && sessionDisabledProviders.length > 0;
+      const hasPublicClientKeys = Boolean(
+        geminiApiKey || togetherApiKey || openRouterApiKey || grokApiKey || groqApiKey
+      );
+      const confirmedNoLiveKeys =
+        !hasLiveCandidates &&
+        !noCandidatesBecauseSessionDisabled &&
+        !hasPublicClientKeys &&
+        providersProbeState === "ok" &&
+        serverEnabledProviders.length === 0;
       let resolved: ChatMessage = toAiMessage({
-        ...(hasLiveCandidates || noCandidatesBecauseSessionDisabled ? buildSafeLiveFallbackResponse() : buildNoLiveKeysFallbackResponse()),
+        ...(hasLiveCandidates || noCandidatesBecauseSessionDisabled || !confirmedNoLiveKeys
+          ? buildSafeLiveFallbackResponse()
+          : buildNoLiveKeysFallbackResponse()),
         sourceLabel: getAiSourceLabel(
-          hasLiveCandidates ? "fallback-no-live" : noCandidatesBecauseSessionDisabled ? "live-providers-disabled" : "no-live-keys",
+          hasLiveCandidates
+            ? "fallback-no-live"
+            : noCandidatesBecauseSessionDisabled
+              ? "live-providers-disabled"
+              : confirmedNoLiveKeys
+                ? "no-live-keys"
+                : "live-unavailable",
           activePrimaryProvider
         )
       });
@@ -753,7 +791,9 @@ export function AiAssistantScreen() {
         ? "fallback-no-live"
         : noCandidatesBecauseSessionDisabled
           ? "live-providers-disabled"
-          : "no-live-keys";
+          : confirmedNoLiveKeys
+            ? "no-live-keys"
+            : "live-unavailable";
       let resolvedLiveProvider: LiveProvider = activePrimaryProvider;
 
       try {
@@ -1369,9 +1409,11 @@ export function AiAssistantScreen() {
                         {runtimeInvoices
                           .filter((inv) => inv.periodLabel.includes(m.invoiceMonth ?? ""))
                           .map((inv) => (
-                            <div
+                            <button
                               key={inv.id}
-                              className="flex w-full items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2 text-left dark:border-slate-600 dark:bg-slate-800"
+                              type="button"
+                              className="flex w-full items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2 text-left transition hover:bg-slate-50 active:scale-[0.99] dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
+                              onClick={() => router.push(`/invoices/${inv.id}/?from=assistant`)}
                             >
                               <span className="text-sm text-slate-800 dark:text-slate-200">
                                 {inv.amountRub.toLocaleString("ru-RU")} ₽
@@ -1379,7 +1421,7 @@ export function AiAssistantScreen() {
                               <span className="text-xs text-slate-500 dark:text-slate-400">
                                 {inv.status === "paid" ? "Оплачен" : inv.status === "pay" ? "Не оплачен" : "В оплате"}
                               </span>
-                            </div>
+                            </button>
                           ))}
                         {(m.invoiceMonth === "февраль" || m.invoiceMonth === "март") ? (
                           <p className="pt-1 text-xs text-slate-600 dark:text-slate-300">

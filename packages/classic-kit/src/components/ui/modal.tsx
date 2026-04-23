@@ -32,7 +32,7 @@ export function Modal({
     <AnimatePresence>
       {open ? (
         <motion.div
-          className="fixed inset-0 z-50"
+          className="fixed inset-0 z-[130]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -46,7 +46,7 @@ export function Modal({
             role="dialog"
             aria-modal="true"
             className={cn(
-              "absolute bottom-0 left-0 right-0 mx-auto w-full max-w-[430px] rounded-t-3xl border border-slate-200 bg-white shadow-soft",
+              "absolute bottom-0 left-0 right-0 mx-auto flex max-h-[calc(100dvh-0.75rem)] w-full max-w-[430px] flex-col rounded-t-3xl border border-slate-200 bg-white shadow-soft",
               "dark:border-slate-700 dark:bg-slate-900",
               className
             )}
@@ -66,7 +66,14 @@ export function Modal({
                 </button>
               </div>
             ) : null}
-            <div className={cn("safe-px pb-6 pt-4", contentClassName)}>{children}</div>
+            <div
+              className={cn(
+                "safe-px overflow-y-auto overscroll-contain pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-4",
+                contentClassName
+              )}
+            >
+              {children}
+            </div>
           </motion.div>
         </motion.div>
       ) : null}

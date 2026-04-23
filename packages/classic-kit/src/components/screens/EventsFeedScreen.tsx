@@ -199,7 +199,7 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
             </button>
             <button
               type="button"
-              onClick={() => selectFilter("invoices")}
+              onClick={() => router.push("/invoices/")}
               className={cn(
                 "snap-start shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-medium transition",
                 feedFilter === "invoices"

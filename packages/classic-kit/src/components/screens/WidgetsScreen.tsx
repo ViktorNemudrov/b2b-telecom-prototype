@@ -309,11 +309,11 @@ export function WidgetsScreen() {
           )}
           onClick={() => {
             if (assistantCustom.dimmedDisabled) return;
-            openDevelopmentStub(
-              assistantCustom.useMock
-                ? "Помощник (мок из кастомизации)."
-                : "Помощник в разработке."
-            );
+            if (assistantCustom.useMock) {
+              openDevelopmentStub("Помощник (мок из кастомизации).");
+              return;
+            }
+            router.push("/assistant/?openChat=1");
           }}
         >
           <Sparkles className="mr-1.5 h-4 w-4" aria-hidden />

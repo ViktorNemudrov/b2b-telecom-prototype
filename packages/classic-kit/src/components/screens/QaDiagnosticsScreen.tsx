@@ -12,6 +12,23 @@ type Check = {
   details: string;
 };
 
+function parseDeviceContext(nav: Navigator) {
+  const ua = nav.userAgent.toLowerCase();
+  const maxTouchPoints = typeof nav.maxTouchPoints === "number" ? nav.maxTouchPoints : 0;
+  const platform = (nav.platform || "").toLowerCase();
+  const isTouchMacLike = platform.includes("mac") && maxTouchPoints > 1;
+  const isIos = /iphone|ipad|ipod/.test(ua) || isTouchMacLike;
+  const isSafari = /safari/.test(ua) && !/crios|fxios|edgios/.test(ua);
+
+  return {
+    ua,
+    isIos,
+    isSafari,
+    maxTouchPoints,
+    isTouchMacLike
+  };
+}
+
 function buildPwaInstallabilityCheck(): Check {
   if (typeof window === "undefined") {
     return {
@@ -29,9 +46,7 @@ function buildPwaInstallabilityCheck(): Check {
   const standalone =
     (window.matchMedia?.("(display-mode: standalone)")?.matches ?? false) ||
     (nav as Navigator & { standalone?: boolean }).standalone === true;
-  const ua = nav.userAgent.toLowerCase();
-  const isIos = /iphone|ipad|ipod/.test(ua);
-  const isSafari = /safari/.test(ua) && !/crios|fxios|edgios/.test(ua);
+  const { isIos, isSafari, isTouchMacLike } = parseDeviceContext(nav);
 
   if (standalone) {
     return {
@@ -65,7 +80,9 @@ function buildPwaInstallabilityCheck(): Check {
       key: "pwa-installability",
       label: "PWA installability",
       ok: true,
-      details: "iOS Safari: установка через «Поделиться» → «На экран Домой»"
+      details: isTouchMacLike
+        ? "iPadOS Safari (desktop UA): установка через «Поделиться» → «На экран Домой»"
+        : "iOS Safari: установка через «Поделиться» → «На экран Домой»"
     };
   }
 
@@ -93,6 +110,7 @@ function buildChecks(): Check[] {
     ];
   }
   const nav = window.navigator;
+  const { isIos, isSafari, maxTouchPoints, isTouchMacLike } = parseDeviceContext(nav);
   const storageOk = (() => {
     try {
       const k = "__qa_storage_test__";
@@ -113,6 +131,16 @@ function buildChecks(): Check[] {
 
   return [
     { key: "platform", label: "Платформа", ok: true, details: platform },
+    {
+      key: "device-detected",
+      label: "Определение устройства",
+      ok: true,
+      details: isIos
+        ? isTouchMacLike
+          ? `iPadOS (desktop UA), Safari=${isSafari ? "да" : "нет"}, touchPoints=${maxTouchPoints}`
+          : `iOS, Safari=${isSafari ? "да" : "нет"}, touchPoints=${maxTouchPoints}`
+        : `Не iOS, Safari=${isSafari ? "да" : "нет"}, touchPoints=${maxTouchPoints}`
+    },
     { key: "storage", label: "Local storage", ok: storageOk, details: storageOk ? "Работает" : "Ограничен/недоступен" },
     { key: "camera", label: "Камера (mediaDevices)", ok: hasCameraApi, details: hasCameraApi ? "getUserMedia доступен" : "Нет доступа к getUserMedia" },
     { key: "speech", label: "Озвучка (speech synthesis)", ok: speechOk, details: speechOk ? "Speech API доступен" : "Speech API не поддерживается" },
@@ -125,6 +153,7 @@ function buildChecks(): Check[] {
 
 export function QaDiagnosticsScreen({ backHref = "/settings/" }: { backHref?: string }) {
   const [checks, setChecks] = React.useState<Check[]>([]);
+  const [lastCheckedAt, setLastCheckedAt] = React.useState<string | null>(null);
   const [aiTrace, setAiTrace] = React.useState<
     Array<{
       at: string;
@@ -154,6 +183,7 @@ export function QaDiagnosticsScreen({ backHref = "/settings/" }: { backHref?: st
 
   const runChecks = React.useCallback(() => {
     setChecks(buildChecks());
+    setLastCheckedAt(new Date().toISOString());
     refreshAiTrace();
   }, [refreshAiTrace]);
 
@@ -186,6 +216,16 @@ export function QaDiagnosticsScreen({ backHref = "/settings/" }: { backHref?: st
           >
             Обновить проверку
           </button>
+          {lastCheckedAt ? (
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Последняя проверка:{" "}
+              {new Date(lastCheckedAt).toLocaleTimeString("ru-RU", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+              })}
+            </p>
+          ) : null}
         </CardContent>
       </Card>
 

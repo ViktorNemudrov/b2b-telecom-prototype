@@ -29,7 +29,7 @@ export function ClassicDocumentsFinanceScreen() {
     <div className="space-y-4" data-testid="documents-finance-screen">
       <div>
         <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Финансы</h1>
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Счета и платежи (демо по макету)</p>
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Счета и платежи</p>
       </div>
 
       {statusFilter === "pay" && tariff ? (

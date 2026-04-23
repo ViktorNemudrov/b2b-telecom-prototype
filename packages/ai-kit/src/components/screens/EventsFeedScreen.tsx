@@ -97,7 +97,7 @@ function FeedCallCard({
   );
 }
 
-export function EventsFeedScreen() {
+export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) {
   const router = useRouter();
   const [dismissDaily, setDismissDaily] = React.useState(false);
   const [speaking, setSpeaking] = React.useState(false);
@@ -121,6 +121,12 @@ export function EventsFeedScreen() {
 
   return (
     <div className="space-y-3 pb-6">
+      {showTitle ? (
+        <h1 className="px-2 text-center text-lg font-bold leading-snug tracking-tight text-[#1F2430] dark:text-slate-100">
+          Лента событий
+        </h1>
+      ) : null}
+
       {!dismissDaily ? (
         <Card className="rounded-[20px] border-[#E5E7EE] bg-white shadow-none">
           <CardContent className="flex items-center gap-3 pb-3 pt-3">
