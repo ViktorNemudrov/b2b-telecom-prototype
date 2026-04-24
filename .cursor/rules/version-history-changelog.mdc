@@ -27,3 +27,4 @@ alwaysApply: true
 
 - После правки убедись, что текст FAQ не противоречит фактическому поведению приложения.
 - Если в той же задаче менялись правила деплоя/доки — следуй отдельным правилам репозитория (например `next-vercel-static-export.mdc`).
+- Для Classic дополнительно синхронизируй строку версии в профиле (`packages/classic-kit/src/components/screens/SettingsScreen.tsx`, блок «Версия продукта») с верхней записью FAQ через единый источник (`packages/classic-kit/src/lib/productVersion.ts`).

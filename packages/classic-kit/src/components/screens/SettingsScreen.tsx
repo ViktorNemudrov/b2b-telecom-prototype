@@ -3,11 +3,12 @@
 import * as React from "react";
 import Link from "next/link";
 import { ChevronLeft, Headphones, Lock, Sliders, Sun } from "lucide-react";
+import { CenteredPageTitleBar } from "@shared/components/CenteredPageTitleBar";
 import { useAppTheme } from "@shared/components/ThemeProvider";
-import { PageBackLink } from "@shared/components/PageBackLink";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
+import { CLASSIC_PRODUCT_VERSION } from "@shared/lib/productVersion";
 import { cn } from "@shared/components/ui/cn";
 import { userProfile } from "@shared/lib/mockData";
 
@@ -36,16 +37,18 @@ export function SettingsScreen({
   };
 
   return (
-    <div className="safe-px mx-auto max-w-[430px] pb-10 pt-0">
-      <div className="space-y-0.5">
-        <div className="relative flex min-h-8 items-center justify-center">
-          <PageBackLink href={backHref} className="absolute left-0 mb-0 h-8 w-8 p-0 leading-none" />
-          <div className="text-center text-lg font-bold text-slate-900 dark:text-slate-100">
+    <div className="safe-px mx-auto max-w-[430px] pb-10 pt-4">
+      <CenteredPageTitleBar
+        backHref={backHref}
+        title={
+          <>
             Билайн <span className="text-accent-yellow">One</span>
-          </div>
-        </div>
-        <div className="text-center text-sm text-slate-600 dark:text-slate-400">{userProfile.legalName}</div>
-      </div>
+          </>
+        }
+        subtitle={userProfile.legalName}
+        titleClassName="font-bold"
+        subtitleClassName="text-sm text-slate-600 dark:text-slate-400"
+      />
 
       <div className="mt-4 space-y-4">
       <Card className="border-violet-200/50 bg-gradient-to-br from-violet-50 to-white dark:border-violet-800/50 dark:from-violet-950/40 dark:to-slate-900">
@@ -149,7 +152,7 @@ export function SettingsScreen({
       </Card>
 
       <div className="space-y-1 px-1 text-[11px] text-slate-500 dark:text-slate-400">
-        <p>Версия продукта: v.0.2.14</p>
+        <p>Версия продукта: {CLASSIC_PRODUCT_VERSION}</p>
         <p>Дизайнер: Балашов Влад</p>
         <p>Создатель: Немудров Виктор</p>
         <p>Владелец продукта: Пальчиков Леонид</p>

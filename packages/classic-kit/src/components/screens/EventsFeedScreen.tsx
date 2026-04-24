@@ -299,7 +299,6 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
           missed
         />
       ) : null}
-
       {v(feedFilter, "assistantAdvice") ? (
         <div
           role="button"

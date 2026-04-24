@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { PageBackLink } from "@shared/components/PageBackLink";
+import { CenteredPageTitleBar } from "@shared/components/CenteredPageTitleBar";
 import { Card, CardContent } from "@shared/components/ui/card";
+import { CLASSIC_PRODUCT_VERSION } from "@shared/lib/productVersion";
 
 const FAQ_VERSION_COMMIT_TIMESTAMPS: Record<string, string> = {
+  "v.0.2.90": "2026-04-24T10:00:00+03:00",
   "v.0.2.88": "2026-04-22T15:19:19+03:00",
   "v.0.2.87": "2026-04-22T14:39:00+03:00",
   "v.0.2.86": "2026-04-22T14:39:00+03:00",
@@ -111,8 +113,10 @@ function formatVersionReleasedAtLabel(versionTag: string): string {
 
 const versions = [
   {
-    tag: "v.0.2.89",
+    tag: CLASSIC_PRODUCT_VERSION,
     items: [
+      "Профиль и FAQ: версия продукта синхронизирована из единого источника, чтобы номер релиза не расходился между экранами",
+      "Classic: стабилизировано перелистывание верхних карточек на главном экране ассистента, уменьшены рывки при свайпе",
       "Главный экран Classic: исправлено написание быстрого запроса «Создать платеж» (раньше было слитно)",
       "Исправлены неточности работы продукта"
     ]
@@ -809,11 +813,10 @@ const versions = [
 export function FaqVersionsScreen({ backHref = "/settings/" }: { backHref?: string }) {
   return (
     <div className="safe-px mx-auto max-w-[760px] space-y-4 pb-8 pt-2">
-      <PageBackLink href={backHref} />
+      <CenteredPageTitleBar title="FAQ и история версий" backHref={backHref} titleClassName="text-base font-semibold" />
 
       <Card>
         <CardContent className="space-y-2 pb-4 pt-4">
-          <h1 className="text-base font-semibold text-slate-900 dark:text-slate-100">FAQ и история версий</h1>
           <p className="text-sm text-slate-600 dark:text-slate-300">
             Здесь собраны основные изменения по версиям продукта.
           </p>

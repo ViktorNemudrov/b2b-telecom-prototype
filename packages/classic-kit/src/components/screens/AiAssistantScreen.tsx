@@ -350,13 +350,11 @@ export function AiAssistantScreen() {
   const [openHistory, setOpenHistory] = React.useState(false);
   const [toast, setToast] = React.useState<string | null>(null);
   const [chipTags, setChipTags] = React.useState<string[]>(() => [...recentQueryChips]);
-  const [showMissedCard, setShowMissedCard] = React.useState(true);
+  const [, setShowMissedCard] = React.useState(true);
   const [showWeeklyCard, setShowWeeklyCard] = React.useState(true);
   const [showAiAssistCard] = React.useState(true);
   const [heroCard, setHeroCard] = React.useState(0);
   const [weeklySpeaking, setWeeklySpeaking] = React.useState(false);
-  const heroSwipeStartX = React.useRef<number | null>(null);
-  const heroWheelLastAt = React.useRef(0);
   const heroScrollRef = React.useRef<HTMLDivElement | null>(null);
   const [heroSlidePx, setHeroSlidePx] = React.useState(0);
   const heroCardRef = React.useRef(0);
@@ -936,12 +934,11 @@ export function AiAssistantScreen() {
 
   const hasChat = messages.length > 0;
   const visibleHeroCards = React.useMemo(() => {
-    const cards: Array<"missed" | "weekly" | "assist"> = [];
+    const cards: Array<"weekly" | "assist"> = [];
     if (showWeeklyCard) cards.push("weekly");
-    if (showMissedCard) cards.push("missed");
     if (showAiAssistCard) cards.push("assist");
     return cards;
-  }, [showAiAssistCard, showMissedCard, showWeeklyCard]);
+  }, [showAiAssistCard, showWeeklyCard]);
 
   const heroStridePx = heroSlidePx + 12;
 
@@ -984,21 +981,6 @@ export function AiAssistantScreen() {
     [heroSlidePx, visibleHeroCards.length]
   );
 
-  const moveHeroCard = (delta: number) => {
-    if (visibleHeroCards.length < 2) return;
-    setHeroCard((prev) => {
-      const next = Math.max(0, Math.min(visibleHeroCards.length - 1, prev + delta));
-      queueMicrotask(() => {
-        const el = heroScrollRef.current;
-        const stride = heroSlidePx + 12;
-        if (el && stride > 0) {
-          el.scrollTo({ left: next * stride, behavior: "smooth" });
-        }
-      });
-      return next;
-    });
-  };
-
   const handleHeroScroll = React.useCallback(() => {
     const el = heroScrollRef.current;
     if (!el) return;
@@ -1009,28 +991,6 @@ export function AiAssistantScreen() {
     setHeroCard(clamped);
   }, [heroSlidePx, visibleHeroCards.length]);
 
-  const onHeroPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    heroSwipeStartX.current = e.clientX;
-  };
-  const onHeroPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    const start = heroSwipeStartX.current;
-    heroSwipeStartX.current = null;
-    if (start === null) return;
-    const delta = e.clientX - start;
-    if (Math.abs(delta) < 40) return;
-    if (delta < 0) moveHeroCard(1);
-    if (delta > 0) moveHeroCard(-1);
-  };
-  const onHeroWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    const now = Date.now();
-    if (now - heroWheelLastAt.current < 220) return;
-    const horizontal = Math.abs(e.deltaX) >= Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    if (Math.abs(horizontal) < 28) return;
-    heroWheelLastAt.current = now;
-    if (horizontal > 0) moveHeroCard(1);
-    if (horizontal < 0) moveHeroCard(-1);
-  };
-
   return (
     <div className="space-y-5 pb-[140px]">
       {!hasChat ? (
@@ -1039,18 +999,12 @@ export function AiAssistantScreen() {
             className="-mx-1 cursor-grab px-1 active:cursor-grabbing"
             data-no-assistant-nav-swipe
             data-testid="assistant-hero-swiper"
-            onPointerDown={onHeroPointerDown}
-            onPointerUp={onHeroPointerUp}
-            onPointerCancel={() => {
-              heroSwipeStartX.current = null;
-            }}
-            onWheel={onHeroWheel}
             style={{ touchAction: "pan-y" }}
           >
             <div
               ref={heroScrollRef}
               data-testid="assistant-hero-slot"
-              className="relative h-[120px] overflow-x-auto overflow-y-hidden scroll-smooth snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              className="relative h-[84px] overflow-x-auto overflow-y-hidden snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               onScroll={handleHeroScroll}
               style={{ touchAction: "pan-x pinch-zoom" }}
             >
@@ -1058,54 +1012,16 @@ export function AiAssistantScreen() {
                 {visibleHeroCards.map((slideKind) => (
                   <div
                     key={slideKind}
-                    className="h-full shrink-0 snap-center snap-always"
+                    className="h-full shrink-0 snap-start snap-always"
                     style={
                       heroSlidePx > 0
                         ? { width: heroSlidePx, minWidth: heroSlidePx, maxWidth: heroSlidePx }
                         : { minWidth: "min(360px, calc(100vw - 2rem))" }
                     }
                   >
-                    {slideKind === "missed" ? (
-                      <button
-                        type="button"
-                        className="block h-full w-full text-left"
-                        onClick={() => {
-                          markMissedCallsSeen();
-                          setShowMissedCard(false);
-                          const firstMissed = standaloneCalls.find((c) => c.missed)?.id ?? "c1";
-                          router.push(`/call/${firstMissed}/`);
-                        }}
-                      >
-                        <Card className="h-full rounded-[24px] border-[#E8EAED] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
-                          <CardContent className="flex h-full items-center gap-3 pb-3 pt-3">
-                            <span className="relative shrink-0">
-                              <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#F2F2F7] dark:bg-slate-700">
-                                <PhoneOff className="h-6 w-6 text-[#E53935]" />
-                              </span>
-                              <span className="absolute -right-1 -top-1 flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#E53935] px-1 text-[11px] font-bold text-white">
-                                x1
-                              </span>
-                            </span>
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-baseline justify-between gap-2">
-                                <div className="mt-0.5 truncate text-[18px] font-semibold leading-tight text-[#1F2430] dark:text-slate-100">
-                                  Доставка офисной техники
-                                </div>
-                                <span className="shrink-0 text-[12px] font-medium tabular-nums text-[#C3C7D4] dark:text-slate-400">
-                                  12:42
-                                </span>
-                              </div>
-                              <div className="mt-1 text-[14px] leading-tight text-[#7C8597] dark:text-slate-300">
-                                Пропущенный
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </button>
-                    ) : null}
                     {slideKind === "weekly" ? (
                       <Card className="h-full rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
-                        <CardContent className="flex h-full items-center gap-3 overflow-hidden pb-2 pt-2">
+                        <CardContent className="flex h-full items-center gap-3 overflow-hidden pb-1.5 pt-1.5">
                           <button
                             type="button"
                             className="flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-full bg-[#ECEAFD]"
@@ -1138,7 +1054,7 @@ export function AiAssistantScreen() {
                           <div className="min-w-0 flex-1">
                             <button
                               type="button"
-                              className="flex items-center gap-1 text-sm font-semibold text-[#343A4A] dark:text-slate-100"
+                              className="flex items-center gap-1 text-xs font-semibold text-[#343A4A] dark:text-slate-100"
                               onClick={() => {
                                 setInput("звонки за неделю");
                                 window.setTimeout(() => send("звонки за неделю"), 60);
@@ -1147,13 +1063,13 @@ export function AiAssistantScreen() {
                               <Sparkles className="h-4 w-4 text-[#9C8AF2]" />
                               Еженедельный отчет
                             </button>
-                            <div className="text-xs text-[#A2A8B8]">за 24 апреля</div>
-                            <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[#6B7280] dark:text-slate-300">
+                            <div className="text-[11px] text-[#A2A8B8]">за 24 апреля</div>
+                            <p className="mt-0.5 line-clamp-1 text-[11px] leading-snug text-[#6B7280] dark:text-slate-300">
                               126 звонков, 1 пропущенный, средняя длительность 2:40. Есть 4 клиента в риске по оплате.
                             </p>
                             <button
                               type="button"
-                              className="mt-1 text-xs font-semibold text-accent-dark underline dark:text-accent-yellow"
+                              className="mt-0.5 text-[11px] font-semibold text-accent-dark underline dark:text-accent-yellow"
                               onClick={() => {
                                 setInput("звонки за неделю");
                                 window.setTimeout(() => send("звонки за неделю"), 60);
@@ -1174,18 +1090,18 @@ export function AiAssistantScreen() {
                     ) : null}
                     {slideKind === "assist" ? (
                       <Card className="h-full rounded-[20px] border-[#DDE4FF] bg-gradient-to-br from-[#F7F9FF] to-white shadow-none dark:border-slate-700 dark:from-slate-800 dark:to-slate-800">
-                        <CardContent className="flex h-full items-center gap-3 pb-3 pt-3">
+                        <CardContent className="flex h-full items-center gap-3 pb-1.5 pt-1.5">
                           <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ECEAFD]">
                             <Bot className="h-4 w-4 text-[#4B5563]" />
                           </span>
                           <div className="min-w-0 flex-1">
-                            <div className="text-sm font-semibold text-[#343A4A] dark:text-slate-100">AI ассистенты подключены</div>
-                            <div className="mt-0.5 text-xs leading-relaxed text-[#6B7280] dark:text-slate-300">
+                            <div className="text-xs font-semibold text-[#343A4A] dark:text-slate-100">AI ассистенты подключены</div>
+                            <div className="mt-0.5 line-clamp-1 text-[11px] leading-snug text-[#6B7280] dark:text-slate-300">
                               У вас подключены AI ассистенты, но вы ими еще не пользовались.
                             </div>
                             <button
                               type="button"
-                              className="mt-1 rounded-full bg-accent-yellow px-4 py-1.5 text-xs font-semibold text-[#2F3141] transition hover:brightness-95"
+                              className="mt-0.5 rounded-full bg-accent-yellow px-3 py-1 text-[11px] font-semibold text-[#2F3141] transition hover:brightness-95"
                               onClick={() => {
                                 const assistantsPrompt = "Вам доступны ИИ ассистенты";
                                 setInput(assistantsPrompt);
