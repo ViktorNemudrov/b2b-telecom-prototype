@@ -11,6 +11,7 @@ import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { cn } from "@shared/components/ui/cn";
 import { appealsListHref } from "@shared/lib/appealsBackFallback";
 import { userProfile } from "@shared/lib/mockData";
+import { AI_PRODUCT_VERSION } from "@shared/lib/productVersion";
 
 export function SettingsScreen({
   appealsHref = appealsListHref("settings"),
@@ -150,7 +151,7 @@ export function SettingsScreen({
         </Card>
 
         <div className="space-y-1 px-1 text-[11px] text-slate-500 dark:text-slate-400">
-          <p>Версия продукта: v.0.2.52</p>
+          <p>Версия продукта: {AI_PRODUCT_VERSION}</p>
           <p>Дизайнер: Балашов Влад</p>
           <p>Создатель: Немудров Виктор</p>
           <p>Владелец продукта: Пальчиков Леонид</p>

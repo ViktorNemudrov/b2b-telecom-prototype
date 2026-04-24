@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { PageBackLink } from "@shared/components/PageBackLink";
 import { Card, CardContent } from "@shared/components/ui/card";
+import { AI_PRODUCT_VERSION } from "@shared/lib/productVersion";
 
 const FAQ_VERSION_ANCHOR_MS = Date.parse("2026-04-18T15:30:00+03:00");
 
@@ -20,6 +21,14 @@ function formatVersionReleasedAtLabel(versionIndex: number): string {
 }
 
 const versions = [
+  {
+    tag: AI_PRODUCT_VERSION,
+    items: [
+      "Чат ассистента: переписка сохраняется на время сессии вкладки; переход на обращения с параметром `from` для предсказуемого «Назад»",
+      "«Назад» и goSmartBack: согласованы с системным стеком; перед автопереходом по сценарию с `navigateTo` снимок чата фиксируется в сессии",
+      "Исправлены неточности работы продукта"
+    ]
+  },
   {
     tag: "v.0.2.52",
     items: [

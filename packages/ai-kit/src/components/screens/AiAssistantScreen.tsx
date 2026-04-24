@@ -57,6 +57,12 @@ import {
 } from "@shared/lib/assistantResponse";
 import { useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
 import { isMissedCallsSeen, markMissedCallsSeen } from "@shared/lib/runtimeFlags";
+import {
+  clearAssistantChatSession,
+  loadAssistantChatSession,
+  persistAssistantChatSession
+} from "@shared/lib/assistantChatSession";
+import { useDemoSession } from "@shared/components/DemoSessionProvider";
 import { getCustomizationButtonClasses, useUiCustomization } from "@shared/lib/uiCustomization";
 
 const sphereSrc = "/mockups/%D0%A8%D0%B0%D1%80.png";
@@ -274,7 +280,9 @@ function buildDataContextSummary(invoices: InvoiceItem[]) {
 export function AiAssistantScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { authenticated } = useDemoSession();
   const [messages, setMessages] = React.useState<ChatMessage[]>(defaultChat);
+  const skipPersistAfterRestore = React.useRef(0);
   const [input, setInput] = React.useState("");
   const [openHistory, setOpenHistory] = React.useState(false);
   const [toast, setToast] = React.useState<string | null>(null);
@@ -410,6 +418,30 @@ export function AiAssistantScreen() {
   }, [baseLiveCandidates, liveProxyUrl]);
 
   React.useEffect(() => {
+    const saved = loadAssistantChatSession();
+    if (saved && saved.length > 0) {
+      skipPersistAfterRestore.current += 1;
+      setMessages(saved);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (skipPersistAfterRestore.current > 0) {
+      skipPersistAfterRestore.current -= 1;
+      return;
+    }
+    persistAssistantChatSession(messages);
+  }, [messages]);
+
+  React.useEffect(() => {
+    if (authenticated) return;
+    clearAssistantChatSession();
+    setMessages(defaultChat);
+    setInput("");
+    setChipTags([...recentQueryChips]);
+  }, [authenticated]);
+
+  React.useEffect(() => {
     setShowMissedCard(!isMissedCallsSeen());
   }, []);
 
@@ -461,6 +493,7 @@ export function AiAssistantScreen() {
 
   React.useEffect(() => {
     if (searchParams.get("reset") !== "1") return;
+    clearAssistantChatSession();
     setMessages(defaultChat);
     setInput("");
     setOpenHistory(false);
@@ -536,7 +569,11 @@ export function AiAssistantScreen() {
       const deterministic = resolveDeterministicResponse(v, runtimeInvoices);
       if (deterministic) {
         const resolved = toAiMessage({ ...deterministic, sourceLabel: getAiSourceLabel("deterministic", primaryLiveProvider) });
-        setMessages((m) => [...m, resolved]);
+        setMessages((m) => {
+          const next = [...m, resolved];
+          if (resolved.navigateTo) persistAssistantChatSession(next);
+          return next;
+        });
         appendChatLog(v, resolved.text, "deterministic");
         traceAiSource(getAiSourceLabel("deterministic", primaryLiveProvider), v);
         if (resolved.navigateTo) {
@@ -677,7 +714,11 @@ export function AiAssistantScreen() {
 
       if (mySeq !== sendSeqRef.current) return;
 
-      setMessages((m) => [...m, resolved]);
+      setMessages((m) => {
+        const next = [...m, resolved];
+        if (resolved.navigateTo) persistAssistantChatSession(next);
+        return next;
+      });
       appendChatLog(v, resolved.text, intentUsed);
       traceAiSource(getAiSourceLabel(intentUsed, resolvedLiveProvider), v);
       if (resolved.navigateTo) {
@@ -1026,6 +1067,7 @@ export function AiAssistantScreen() {
                 router.back();
                 return;
               }
+              clearAssistantChatSession();
               setMessages(defaultChat);
               setInput("");
               setToast(null);
