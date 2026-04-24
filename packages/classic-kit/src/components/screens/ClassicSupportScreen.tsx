@@ -7,6 +7,7 @@ import { CenteredPageTitleBar } from "@shared/components/CenteredPageTitleBar";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { cn } from "@shared/components/ui/cn";
+import { appealsListHref } from "@shared/lib/appealsBackFallback";
 import { appealTopicOptions, getAppealsFiltered } from "@shared/lib/mockData";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
 
@@ -38,7 +39,7 @@ export function ClassicSupportScreen() {
       </Button>
 
       <Link
-        href="/appeals/"
+        href={appealsListHref("support")}
         data-testid="support-appeals-card"
         className="block rounded-2xl outline-none ring-offset-2 ring-offset-white transition hover:brightness-[1.01] focus-visible:ring-2 focus-visible:ring-accent-yellow dark:ring-offset-slate-900"
       >

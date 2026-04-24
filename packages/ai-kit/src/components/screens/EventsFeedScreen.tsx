@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Pause, PhoneCall, PhoneOff, Play, Sparkles, X } from "lucide-react";
 import { RecordingPlayer } from "@shared/components/RecordingPlayer";
 import { Card, CardContent } from "@shared/components/ui/card";
+import { appealsListHref } from "@shared/lib/appealsBackFallback";
 import { getAppealsFiltered, getCallById, missedCallsCount } from "@shared/lib/mockData";
 import { isMissedCallsSeen, markMissedCallsSeen } from "@shared/lib/runtimeFlags";
 
@@ -315,7 +316,7 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
           </p>
           <button
             type="button"
-            onClick={() => router.push("/appeals/")}
+            onClick={() => router.push(appealsListHref("assistant"))}
             className="rounded-2xl bg-[#16181D] px-5 py-3 text-sm font-semibold text-white dark:bg-slate-100 dark:text-slate-900"
           >
             Создать обращение
@@ -327,7 +328,7 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
                 <button
                   key={appeal.id}
                   type="button"
-                  onClick={() => router.push("/appeals/")}
+                  onClick={() => router.push(appealsListHref("assistant"))}
                   className="flex w-full items-center justify-between gap-2 text-left"
                 >
                   <div className="min-w-0">
@@ -349,7 +350,7 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
               ))}
               <button
                 type="button"
-                onClick={() => router.push("/appeals/")}
+                onClick={() => router.push(appealsListHref("assistant"))}
                 className="flex items-center justify-center gap-1 text-sm font-medium text-[#343A4A] dark:text-slate-200"
               >
                 Все обращения
@@ -372,7 +373,7 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
             <button
               key={item}
               type="button"
-              onClick={() => router.push("/appeals/")}
+              onClick={() => router.push(appealsListHref("assistant"))}
               className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-base text-[#1F2430] hover:bg-[#F7F8FB] dark:text-slate-100 dark:hover:bg-slate-700/40"
             >
               {item}

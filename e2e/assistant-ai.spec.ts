@@ -24,6 +24,9 @@ async function sendWithEnter(page: Page, message: string) {
 }
 
 test.describe("assistant AI UX", () => {
+  // Serial mode lowers cross-project contention and reduces flaky mobile setup timeouts in CI.
+  test.describe.configure({ mode: "serial" });
+
   test("pending strip appears then hides after deterministic reply", async ({ page }) => {
     await openAssistant(page);
     await sendWithEnter(page, "привет");

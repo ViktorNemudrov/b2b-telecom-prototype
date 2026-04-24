@@ -1,5 +1,5 @@
-/** Порядок как в BeelineAssistantHeader слева направо: Фид → Главный → Виджеты */
-export const CLASSIC_NAV_SWIPE_SEGMENTS = ["/events", "/assistant", "/widgets"] as const;
+/** Горизонтальный свайп между экранами шапки Classic: Главный ↔ Виджеты (экран «Лента событий» /events скрыт). */
+export const CLASSIC_NAV_SWIPE_SEGMENTS = ["/assistant", "/widgets"] as const;
 
 export function normalizeClassicNavPath(raw: string): string {
   const trimmed = raw.replace(/\/$/, "") || "/";

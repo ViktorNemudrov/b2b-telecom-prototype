@@ -12,6 +12,7 @@
     "mobile:android": "npx cap open android"
   },
   "dependencies": {
+    "@capacitor/app": "^6.0.3",
     "@b2b/classic-kit": "*",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.12",

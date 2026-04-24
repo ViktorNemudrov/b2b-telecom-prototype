@@ -67,7 +67,7 @@ export function isLiveResponseReliable(prompt: string, response: string): boolea
 export function buildSafeLiveFallbackResponse(): AssistantPayload {
   return {
     text:
-      "Сейчас не удалось получить надежный live-ответ. Попробуйте уточнить запрос или выберите быстрый сценарий: счета, звонки, обращения.",
+      "Сейчас не удалось получить надежный live-ответ. Попробуйте уточнить запрос или выберите быстрый сценарий: счета, звонки, обращения. Бесплатные лимиты: Groq (console.groq.com) и OpenRouter с суффиксом :free; ключ лучше задать только на сервере (GROQ_API_KEY / OPENROUTER_API_KEY) и оставить прокси `/api/llm` без CORS.",
     suggested: ["Счета за март", "Звонки за неделю", "Активные обращения"]
   };
 }
@@ -80,7 +80,7 @@ export const LIVE_CHAIN_ALL_FAILED_FOOTER =
 export function buildNoLiveKeysFallbackResponse(): AssistantPayload {
   return {
     text:
-      "ИИ не подключён: в клиентской сборке нет ключей API — не заданы переменные `NEXT_PUBLIC_*` (они подставляются при сборке Next.js). Локально: создайте `apps/classic/.env.local` или корневой `.env.local` в монорепозитории с теми же ключами и перезапустите `npm run dev`. На хостинге задайте переменные в настройках проекта и выполните деплой заново. Пока доступны быстрые сценарии: счета, звонки, обращения.",
+      "ИИ не подключён: нет ключей API ни в публичных (`NEXT_PUBLIC_*`), ни в серверных (`*_API_KEY`) переменных. Локально: создайте `apps/classic/.env.local` или корневой `.env.local` в монорепозитории и перезапустите `npm run dev`. На хостинге задайте переменные проекта и выполните деплой заново. Пока доступны быстрые сценарии: счета, звонки, обращения.",
     suggested: ["Счета за март", "Звонки за неделю", "Активные обращения"]
   };
 }
@@ -625,7 +625,7 @@ export function resolveDeterministicResponse(prompt: string, runtimeInvoices: In
 
   const asksCreateAppealConfirm = hasAny(clean, compact, ["да создать обращение", "да, создать обращение", "создать обращение"]);
   if (asksCreateAppealConfirm) {
-    return { text: "Открываю создание обращения в разделе обращений.", navigateTo: "/appeals/" };
+    return { text: "Открываю создание обращения в разделе обращений.", navigateTo: "/appeals/?from=assistant" };
   }
 
   const asksAppealsDomain = hasAny(clean, compact, ["обращения", "обращение", "тикет", "заявка"]);

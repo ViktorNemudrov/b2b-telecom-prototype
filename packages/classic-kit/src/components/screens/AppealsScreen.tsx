@@ -15,6 +15,7 @@ import {
   type AppealItem,
   type AppealsListFilter
 } from "@shared/lib/mockData";
+import { appealsPathPreservingFrom } from "@shared/lib/appealsBackFallback";
 import { appendRuntimeUserAppeal, useRuntimeUserAppeals } from "@shared/lib/runtimeAppeals";
 
 const APPEALS_UI_SESSION_KEY = "b2b-classic.appealsUi.v1";
@@ -143,7 +144,7 @@ export function AppealsScreen() {
     const found = fromCreated ?? fromMock;
     if (found) {
       setDetail(found);
-      router.replace("/appeals/", { scroll: false });
+      router.replace(appealsPathPreservingFrom(searchParams), { scroll: false });
     }
   }, [searchParams, createdAppeals, router]);
 

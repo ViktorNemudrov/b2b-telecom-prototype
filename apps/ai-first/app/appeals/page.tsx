@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
-import { PageBackLink } from "@shared/components/PageBackLink";
+import { AppealsBackLink } from "@shared/components/AppealsBackLink";
 import { AppealsScreen } from "@shared/components/screens/AppealsScreen";
 
 export default function AppealsPage() {
@@ -10,8 +10,8 @@ export default function AppealsPage() {
       <AppHeader />
       <AppShell>
         <div className="safe-px pt-2">
-          <PageBackLink />
           <Suspense fallback={<div className="py-8 text-center text-sm text-slate-500">Загрузка…</div>}>
+            <AppealsBackLink />
             <AppealsScreen />
           </Suspense>
         </div>

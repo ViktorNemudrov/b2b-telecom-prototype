@@ -13,7 +13,7 @@ import { getCustomizationButtonClasses, useUiCustomization } from "@shared/lib/u
 
 export function CallDetailClient({
   id,
-  backHref = "/communication"
+  backHref = "/communication/"
 }: {
   id: string;
   /** Куда вести «Назад» (AI: /assistant, Classic: /communication). */

@@ -30,7 +30,7 @@ NEXT_PUBLIC_OPENROUTER_API_KEY=your_key_here
 ```bash
 NEXT_PUBLIC_OPENROUTER_MODEL=openrouter/auto
 # или список fallback-моделей через запятую
-# NEXT_PUBLIC_OPENROUTER_MODEL=openrouter/auto,google/gemma-2-9b-it:free,qwen/qwen-2.5-7b-instruct:free
+# NEXT_PUBLIC_OPENROUTER_MODEL=google/gemma-2-9b-it:free,meta-llama/llama-3.2-3b-instruct:free,mistralai/mistral-7b-instruct:free,openrouter/auto
 ```
 
 Без ключа чат продолжит работать в мок-режиме.

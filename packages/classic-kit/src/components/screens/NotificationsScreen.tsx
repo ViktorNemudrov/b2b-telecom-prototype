@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { CircleAlert, FileText, MessageCircleWarning, PhoneMissed, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@shared/components/ui/card";
+import { appealsListHref } from "@shared/lib/appealsBackFallback";
 import { PageBackLink } from "@shared/components/PageBackLink";
 import { getAppealsFiltered, standaloneCalls } from "@shared/lib/mockData";
 import { useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
@@ -40,7 +41,7 @@ export function NotificationsScreen({ backHref = "/settings/" }: { backHref?: st
       title: "Обращения",
       subtitle: `${activeAppeals} активных`,
       icon: <MessageCircleWarning className="h-4 w-4 text-sky-600" />,
-      href: "/appeals/"
+      href: appealsListHref("settings")
     }
   ];
 

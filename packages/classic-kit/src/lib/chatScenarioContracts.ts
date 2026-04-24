@@ -52,7 +52,7 @@ export const deterministicScenarioCases: DeterministicScenarioCase[] = [
   { prompt: "Увеличить срок хранения звонков", contains: "увеличение срока хранения" },
   { prompt: "дай совет от ассистента", contains: "Совет от ассистента:" },
   { prompt: "открыть список счетов", expectWidget: "invoices-summary-inline", expectEmptyText: true },
-  { prompt: "да, создать обращение", expectNavigateTo: "/appeals/", contains: "Открываю создание обращения" },
+  { prompt: "да, создать обращение", expectNavigateTo: "/appeals/?from=assistant", contains: "Открываю создание обращения" },
   { prompt: "позови оператора", contains: "Я в демо режиме и не могу звать людей" },
   { prompt: "Сводка дня", contains: "Сводка дня:" },
   { prompt: "Запусти рассылку", contains: "Подготовил сценарий рассылки" },

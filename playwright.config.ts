@@ -4,6 +4,7 @@ export default defineConfig({
   testDir: "./e2e",
   timeout: 60_000,
   fullyParallel: true,
+  workers: process.env.CI ? 4 : undefined,
   outputDir: "test-results/blob",
   reporter: [
     ["list"],
@@ -18,28 +19,28 @@ export default defineConfig({
   projects: [
     {
       name: "desktop-chromium",
-      testIgnore: /classic-(call-scenarios|onboarding)\.spec\.ts/,
+      testIgnore: /(classic-(call-scenarios|onboarding)|chat-page)\.spec\.ts/,
       use: {
         ...devices["Desktop Chrome"]
       }
     },
     {
       name: "mobile-android-chrome",
-      testIgnore: /classic-(call-scenarios|onboarding)\.spec\.ts/,
+      testIgnore: /(classic-(call-scenarios|onboarding)|chat-page)\.spec\.ts/,
       use: {
         ...devices["Pixel 7"]
       }
     },
     {
       name: "mobile-ios-safari",
-      testIgnore: /classic-(call-scenarios|onboarding)\.spec\.ts/,
+      testIgnore: /(classic-(call-scenarios|onboarding)|chat-page)\.spec\.ts/,
       use: {
         ...devices["iPhone 13"]
       }
     },
     {
       name: "desktop-chromium-classic",
-      testMatch: /classic-(call-scenarios|onboarding)\.spec\.ts/,
+      testMatch: /(classic-(call-scenarios|onboarding)|chat-page)\.spec\.ts/,
       use: {
         baseURL: "http://127.0.0.1:3001",
         ...devices["Desktop Chrome"]

@@ -50,16 +50,18 @@ test("assistant navigates to appeals from deterministic chat intent", async ({ p
   await sendMessage(page, "активные обращения");
   await expect(page.getByText("Активные обращения", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Все обращения" }).click();
-  await expect(page).toHaveURL(/\/appeals\/?$/, { timeout: 15_000 });
+  await expect(page).toHaveURL(/\/appeals\/(\?|$)/, { timeout: 15_000 });
   await expect(page.getByText("Сейчас у вас:", { exact: false })).toBeVisible();
 });
 
 test("assistant opens appeal detail from chat widget via open query", async ({ page }) => {
   await openAssistant(page);
   await sendMessage(page, "активные обращения");
-  await expect(page.getByTestId("appeals-summary-widget")).toBeVisible({ timeout: 25_000 });
-  await page.getByRole("button", { name: /Мне не могут дозвониться/ }).click();
-  await expect(page).toHaveURL(/\/appeals/);
+  const widget = page.getByTestId("appeals-summary-widget");
+  await expect(widget).toBeVisible({ timeout: 25_000 });
+  const appealButton = widget.getByRole("button", { name: /Мне не могут дозвониться/ }).first();
+  await appealButton.scrollIntoViewIfNeeded();
+  await Promise.all([page.waitForURL(/\/appeals\/(\?|$)/, { timeout: 15_000 }), appealButton.click()]);
   await expect(page.getByRole("dialog")).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText("Со стороны абонента не проходят", { exact: false })).toBeVisible();
 });

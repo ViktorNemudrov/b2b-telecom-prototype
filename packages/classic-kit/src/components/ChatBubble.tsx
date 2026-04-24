@@ -11,6 +11,26 @@ function canSpeak() {
 
 let lastSpokenText: string | null = null;
 
+function sourceLabelNeedsDetails(label: string): boolean {
+  return label.length > 140 || label.includes(" · ") || label.includes("(ошибка)") || label.includes("HTTP ");
+}
+
+function AssistantSourceBlock({ sourceLabel }: { sourceLabel: string }) {
+  if (!sourceLabelNeedsDetails(sourceLabel)) {
+    return <div className="mt-2 text-right text-[11px] text-slate-400 dark:text-slate-500">{sourceLabel}</div>;
+  }
+  return (
+    <details className="mt-2 rounded-xl border border-slate-100 bg-slate-50/90 px-2.5 py-1.5 dark:border-slate-600 dark:bg-slate-900/50">
+      <summary className="cursor-pointer list-none text-left text-[11px] font-medium text-slate-600 marker:content-none dark:text-slate-300 [&::-webkit-details-marker]:hidden">
+        Источник и диагностика
+      </summary>
+      <div className="mt-1.5 max-h-40 overflow-y-auto whitespace-pre-wrap break-words text-left text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {sourceLabel}
+      </div>
+    </details>
+  );
+}
+
 export function ChatBubble({
   message,
   onSuggestedClick
@@ -18,20 +38,17 @@ export function ChatBubble({
   message: ChatMessage;
   onSuggestedClick?: (text: string) => void;
 }) {
-  const isDev = process.env.NODE_ENV === "development";
   const isUser = message.role === "user";
   const widgetOnlyAssistant = !isUser && Boolean(message.widget) && !message.text?.trim();
   const hasSuggested = !isUser && Boolean(message.suggested?.length);
-  const hasSource = !isUser && isDev && Boolean(message.sourceLabel);
+  const hasSource = !isUser && Boolean(message.sourceLabel?.trim());
 
   if (widgetOnlyAssistant) {
     if (!hasSuggested && !hasSource) return null;
     return (
       <div className={cn("flex w-full", "justify-start")}>
         <div className="max-w-[86%] w-full space-y-2 text-sm">
-          {hasSource ? (
-            <div className="text-right text-[11px] text-slate-400 dark:text-slate-500">{message.sourceLabel}</div>
-          ) : null}
+          {hasSource ? <AssistantSourceBlock sourceLabel={message.sourceLabel!} /> : null}
           {hasSuggested ? (
             <div className="flex flex-wrap gap-2">
               {message.suggested!.map((s) => (
@@ -61,9 +78,7 @@ export function ChatBubble({
         )}
       >
         <div className="whitespace-pre-wrap">{message.text}</div>
-        {!isUser && hasSource ? (
-          <div className="mt-2 text-right text-[11px] text-slate-400 dark:text-slate-500">{message.sourceLabel}</div>
-        ) : null}
+        {!isUser && hasSource ? <AssistantSourceBlock sourceLabel={message.sourceLabel!} /> : null}
 
         {!isUser ? (
           <div className="mt-3 flex items-center gap-2">

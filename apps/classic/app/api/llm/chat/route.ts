@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readEnvWithMonorepoFallback } from "../_lib/env";
 
 const PROVIDERS: Record<string, { url: string; keyEnv: string; publicKeyEnv: string }> = {
   groq: { url: "https://api.groq.com/openai/v1/chat/completions", keyEnv: "GROQ_API_KEY", publicKeyEnv: "NEXT_PUBLIC_GROQ_API_KEY" },
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest) {
   if (!cfg) {
     return NextResponse.json({ error: "unknown provider" }, { status: 400 });
   }
-  const key = process.env[cfg.keyEnv] ?? process.env[cfg.publicKeyEnv];
+  const key = readEnvWithMonorepoFallback(cfg.keyEnv, cfg.publicKeyEnv);
   if (!key?.trim()) {
     return NextResponse.json({ error: "missing API key for provider" }, { status: 503 });
   }

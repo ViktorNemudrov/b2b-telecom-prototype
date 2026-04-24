@@ -22,7 +22,7 @@ export type ChatWidget =
   | "my-numbers-inline";
 
 /** После ответа ассистента — клиентский переход (демо-навигация по ТЗ). */
-export type ChatNavigateTo = "/missed-calls/" | "/appeals/" | "/invoices/" | "/home/";
+export type ChatNavigateTo = "/missed-calls/" | "/appeals/" | "/appeals/?from=assistant" | "/invoices/" | "/home/";
 
 export type ChatMessage = {
   id: string;

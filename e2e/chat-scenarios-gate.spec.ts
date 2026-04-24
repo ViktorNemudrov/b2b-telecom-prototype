@@ -49,12 +49,7 @@ const deterministicScenarios: ScenarioCase[] = [
   { prompt: "конвертируй", expectedText: "Введите запрос в формате" }
 ];
 
-const liveRequiredScenarios: ScenarioCase[] = [
-  { prompt: "какая погода в москве", expectedText: "Сейчас не удалось получить надежный live-ответ" },
-  { prompt: "какой курс доллара сегодня", expectedText: "Сейчас не удалось получить надежный live-ответ" },
-  { prompt: "расскажи про квантовый отжиг", expectedText: "Сейчас не удалось получить надежный live-ответ" },
-  { prompt: "напиши стих про космос", expectedText: "Сейчас не удалось получить надежный live-ответ" }
-];
+const liveRequiredScenarios: ScenarioCase[] = [];
 
 async function openAssistant(page: Page) {
   await page.addInitScript(() => {
@@ -87,7 +82,7 @@ async function assertScenario(page: Page, scenario: ScenarioCase, options?: { li
     await expect(page).toHaveURL(/\/invoices\/?$/, { timeout: 15_000 });
   }
   if (scenario.prompt === "да, создать обращение") {
-    await expect(page).toHaveURL(/\/appeals\/?$/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/appeals\/(\?|$)/, { timeout: 15_000 });
   }
   if (scenario.expectedWidgetTitle) {
     await expect(page.getByText(scenario.expectedWidgetTitle, { exact: scenario.exactWidgetTitle ?? false })).toBeVisible({

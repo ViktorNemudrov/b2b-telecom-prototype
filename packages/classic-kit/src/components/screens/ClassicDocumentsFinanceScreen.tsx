@@ -7,7 +7,6 @@ import { cn } from "@shared/components/ui/cn";
 import { ClassicInvoicesList } from "@shared/components/invoices/ClassicInvoicesList";
 import type { ClassicInvoicesStatusFilter } from "@shared/components/invoices/classicInvoicesFilter";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
-import { getTariffFromFeed, subscriptionBalanceChatMock } from "@shared/lib/mockData";
 
 const filterChipClass =
   "shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition dark:bg-slate-800/80 dark:text-slate-200";
@@ -24,45 +23,10 @@ const iconButtonClass =
 /** Экран «Документы → Финансы»: вкладка «Счета», мок «Платежи», фильтры по статусу, список счетов как на экране «Счета 2026». */
 export function ClassicDocumentsFinanceScreen() {
   const [statusFilter, setStatusFilter] = React.useState<ClassicInvoicesStatusFilter>("all");
-  const tariff = React.useMemo(() => getTariffFromFeed(), []);
 
   return (
     <div className="space-y-4" data-testid="documents-finance-screen">
       <CenteredPageTitleBar title="Финансы" subtitle="Счета и платежи" backHref="/documents/" />
-
-      {statusFilter === "pay" && tariff ? (
-        <div
-          data-testid="documents-finance-tariff-reminder"
-          className="rounded-2xl border border-slate-200 bg-slate-50/90 px-4 py-3 dark:border-slate-600 dark:bg-slate-800/70"
-        >
-          <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Остаток по тарифу ({subscriptionBalanceChatMock.productName})
-          </div>
-          <div className="mt-2 grid gap-2 text-xs text-slate-700 dark:text-slate-200 sm:grid-cols-3">
-            <div>
-              <span className="block text-[10px] uppercase text-slate-500 dark:text-slate-400">Интернет</span>
-              <span className="font-semibold tabular-nums">
-                {Math.max(0, tariff.gbTotal - tariff.gbUsed)} из {tariff.gbTotal} ГБ
-              </span>
-            </div>
-            <div>
-              <span className="block text-[10px] uppercase text-slate-500 dark:text-slate-400">Минуты</span>
-              <span className="font-semibold tabular-nums">
-                {Math.max(0, tariff.minutesTotal - tariff.minutesUsed)} из {tariff.minutesTotal}
-              </span>
-            </div>
-            <div>
-              <span className="block text-[10px] uppercase text-slate-500 dark:text-slate-400">SMS</span>
-              <span className="font-semibold tabular-nums">
-                {Math.max(0, tariff.smsTotal - tariff.smsUsed)} из {tariff.smsTotal}
-              </span>
-            </div>
-          </div>
-          <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
-            Действует до {subscriptionBalanceChatMock.validUntilLabel}. {subscriptionBalanceChatMock.renewalNote}
-          </p>
-        </div>
-      ) : null}
 
       <div className="flex rounded-full bg-slate-100 p-1 dark:bg-slate-800/90">
         <span

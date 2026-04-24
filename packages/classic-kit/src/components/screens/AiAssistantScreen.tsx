@@ -29,7 +29,11 @@ import {
   type ChatMessage,
   type InvoiceItem
 } from "@shared/lib/mockData";
-import { LIVE_FETCH_TIMEOUT_MS } from "@shared/lib/aiLiveConfig";
+import {
+  DEFAULT_GROQ_FALLBACK_MODELS,
+  DEFAULT_OPENROUTER_FREE_FALLBACK_MODELS,
+  LIVE_FETCH_TIMEOUT_MS
+} from "@shared/lib/aiLiveConfig";
 import { emitAiMetric } from "@shared/lib/aiClientMetrics";
 import { getLiveAiText, type LiveAiMessage } from "@shared/lib/liveAi";
 import {
@@ -42,6 +46,8 @@ import {
   writeStoredRank
 } from "@shared/lib/liveAiProviderRank";
 import { safeParseLiveUserPrompt } from "@shared/lib/liveUserPromptSchema";
+import { appealsListHref } from "@shared/lib/appealsBackFallback";
+import { shouldDelegateBackToHistory } from "@shared/lib/smartBack";
 import {
   buildNoLiveKeysFallbackResponse,
   buildSafeLiveFallbackResponse,
@@ -329,7 +335,7 @@ function buildLiveCandidates(args: {
     }
   }
   if (args.openRouterApiKey) {
-    for (const model of parseModelList(args.openRouterModel, ["openrouter/auto", "google/gemma-2-9b-it:free", "qwen/qwen-2.5-7b-instruct:free"])) {
+    for (const model of parseModelList(args.openRouterModel, [...DEFAULT_OPENROUTER_FREE_FALLBACK_MODELS])) {
       candidates.push({
         provider: "openrouter",
         apiKey: args.openRouterApiKey,
@@ -343,7 +349,7 @@ function buildLiveCandidates(args: {
     }
   }
   if (args.groqApiKey) {
-    for (const model of parseModelList(args.groqModel, ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "gemma2-9b-it"])) {
+    for (const model of parseModelList(args.groqModel, [...DEFAULT_GROQ_FALLBACK_MODELS])) {
       candidates.push({ provider: "groq", apiKey: args.groqApiKey, model });
     }
   }
@@ -364,7 +370,6 @@ function buildDataContextSummary(invoices: InvoiceItem[]) {
 }
 
 export function AiAssistantScreen() {
-  const isDev = process.env.NODE_ENV === "development";
   const router = useRouter();
   const searchParams = useSearchParams();
   const [messages, setMessages] = React.useState<ChatMessage[]>(defaultChat);
@@ -893,14 +898,15 @@ export function AiAssistantScreen() {
             }
             if (!liveResolved) {
               const baseFb = buildSafeLiveFallbackResponse();
-              const foot = isDev && failureLabels.length > 0 ? LIVE_CHAIN_ALL_FAILED_FOOTER : "";
-              const sourceCombined =
+              const errLines =
                 failureLabels.length > 0
                   ? compactLiveFailureLabels(failureLabels)
                   : lastErrorLabel ?? getAiSourceLabel("live-unavailable", resolvedLiveProvider);
+              const sourceCombined =
+                failureLabels.length > 0 ? `${errLines}\n\n${LIVE_CHAIN_ALL_FAILED_FOOTER.trim()}` : errLines;
               resolved = toAiMessage({
                 ...baseFb,
-                text: baseFb.text + foot,
+                text: baseFb.text,
                 sourceLabel: sourceCombined
               });
               intentUsed = failureLabels.length > 0 || lastErrorLabel ? "live-error" : "live-unavailable";
@@ -1249,7 +1255,8 @@ export function AiAssistantScreen() {
             aria-label="Назад"
             className="mb-3 inline-flex items-center text-sm font-semibold text-[#3C4858] transition hover:text-[#212529] dark:text-slate-200 dark:hover:text-white"
             onClick={() => {
-              if (window.history.length > 1) {
+              // Та же эвристика, что и у PageBackLink: не смешиваем сброс чата с «ложным» history.length.
+              if (shouldDelegateBackToHistory()) {
                 router.back();
                 return;
               }
@@ -1420,7 +1427,7 @@ export function AiAssistantScreen() {
                         <Button
                           type="button"
                           className="w-full rounded-xl bg-slate-900 text-sm font-semibold text-white dark:bg-slate-100 dark:text-slate-900"
-                          onClick={() => router.push("/appeals/")}
+                          onClick={() => router.push(appealsListHref("assistant"))}
                         >
                           Создать обращение
                         </Button>
@@ -1432,7 +1439,7 @@ export function AiAssistantScreen() {
                                 key={appeal.id}
                                 type="button"
                                 className="flex w-full items-center justify-between gap-2 text-left"
-                                onClick={() => router.push("/appeals/")}
+                                onClick={() => router.push(appealsListHref("assistant"))}
                               >
                                 <div className="min-w-0 flex-1">
                                   <div className="truncate text-sm text-slate-900 dark:text-slate-100">{appeal.title}</div>
@@ -1457,7 +1464,7 @@ export function AiAssistantScreen() {
                           <button
                             type="button"
                             className="mt-3 flex w-full items-center justify-center gap-1 text-sm font-semibold text-slate-700 dark:text-slate-200"
-                            onClick={() => router.push("/appeals/")}
+                            onClick={() => router.push(appealsListHref("assistant"))}
                           >
                             Все обращения
                           </button>
@@ -1468,10 +1475,10 @@ export function AiAssistantScreen() {
                         <Card className="border-slate-200 dark:border-slate-700">
                           <CardContent className="divide-y divide-slate-100 p-0 dark:divide-slate-700">
                             {[
-                              { label: "Создать обращение", onClick: () => router.push("/appeals/") },
-                              { label: "Список обращений", onClick: () => router.push("/appeals/") },
-                              { label: "Выполненные", onClick: () => router.push("/appeals/") },
-                              { label: "Отклонённые", onClick: () => router.push("/appeals/") }
+                              { label: "Создать обращение", onClick: () => router.push(appealsListHref("assistant")) },
+                              { label: "Список обращений", onClick: () => router.push(appealsListHref("assistant")) },
+                              { label: "Выполненные", onClick: () => router.push(appealsListHref("assistant")) },
+                              { label: "Отклонённые", onClick: () => router.push(appealsListHref("assistant")) }
                             ].map((item) => (
                               <button
                                 key={item.label}

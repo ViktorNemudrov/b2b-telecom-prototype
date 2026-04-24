@@ -30,10 +30,9 @@ test.describe("AI-first user actions", () => {
 test.describe("Classic user actions", () => {
   test.use({ baseURL: "http://127.0.0.1:3001" });
 
-  test("assistant header: profile, feed / main / widgets, notifications", async ({ page }) => {
+  test("assistant header: profile, main / widgets, notifications", async ({ page }) => {
     await page.goto("/assistant/");
     await expect(page.getByRole("link", { name: "Профиль" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Фид" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Главный экран" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Виджеты" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Уведомления" })).toBeVisible();
@@ -44,7 +43,7 @@ test.describe("Classic user actions", () => {
     await expect(page.getByText(/Записи разговоров/)).toBeVisible();
   });
 
-  test("assistant: horizontal swipe navigates between feed / main / widgets without navbar tap first", async ({
+  test("assistant: horizontal swipe navigates between main / widgets without navbar tap first", async ({
     page
   }) => {
     await page.goto("/assistant/");
@@ -103,21 +102,10 @@ test.describe("Classic user actions", () => {
     await expect(page).toHaveURL(/\/widgets\/?$/);
   });
 
-  test("events feed shows title and daily report in stream", async ({ page }) => {
+  test("скрытая лента событий: /events/ перенаправляет на ассистента", async ({ page }) => {
     await page.goto("/events/");
-    await expect(page.getByRole("heading", { name: "Лента событий", level: 1 })).toBeVisible();
-    await expect(page.getByText("Ежедневный отчет", { exact: true })).toBeVisible();
-  });
-
-  test("events feed chips filter content", async ({ page }) => {
-    await page.goto("/events/");
-    await expect(page.getByRole("toolbar", { name: "Фильтры ленты" })).toBeVisible();
-    await page.getByRole("button", { name: "Фильтр: советы от ассистента" }).click();
-    await expect(page.getByText("Ежедневный отчет", { exact: true })).toBeVisible();
-    await expect(page.getByText("Пополните пакет минут", { exact: true })).toBeVisible();
-    await expect(page.getByText("Активные обращения", { exact: true })).toBeHidden();
-    await page.getByRole("button", { name: "Фильтр: советы от ассистента" }).click();
-    await expect(page.getByText("Активные обращения", { exact: true })).toBeVisible();
+    await expect(page).toHaveURL(/\/assistant\/?$/);
+    await expect(page.getByRole("link", { name: "Главный экран" })).toBeVisible();
   });
 
   test("customization screen shows Classic toggles for Feed, Widgets and widgets screen", async ({ page }) => {
@@ -208,7 +196,7 @@ test.describe("Classic user actions", () => {
     await page.goto("/support/");
     await expect(page.getByTestId("support-appeals-card")).toBeVisible();
     await page.getByRole("link", { name: "Список обращений" }).click();
-    await expect(page).toHaveURL(/\/appeals\/?$/);
+    await expect(page).toHaveURL(/\/appeals\/(\?|$)/);
     await expect(page.getByRole("button", { name: "Создать обращение" })).toBeVisible();
     await page.getByRole("button", { name: "Мне не могут дозвониться" }).first().click();
     const dialog = page.getByRole("dialog");

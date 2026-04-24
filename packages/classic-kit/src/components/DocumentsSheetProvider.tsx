@@ -4,6 +4,7 @@ import * as React from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { ClassicDocumentsScreen } from "@shared/components/screens/ClassicDocumentsScreen";
+import { pushNativeBackHandler } from "@shared/lib/nativeBackOverlayStack";
 
 type DocumentsSheetContextValue = {
   open: boolean;
@@ -197,6 +198,14 @@ export function DocumentsSheetProvider({ children }: { children: React.ReactNode
   const closeDocumentsSheet = React.useCallback(() => setOpen(false), []);
   const openDocumentsSheet = React.useCallback(() => setOpen(true), []);
   const toggleDocumentsSheet = React.useCallback(() => setOpen((v) => !v), []);
+
+  React.useEffect(() => {
+    if (!open) return;
+    return pushNativeBackHandler(() => {
+      closeDocumentsSheet();
+      return true;
+    });
+  }, [open, closeDocumentsSheet]);
 
   React.useEffect(() => {
     setOpen(false);

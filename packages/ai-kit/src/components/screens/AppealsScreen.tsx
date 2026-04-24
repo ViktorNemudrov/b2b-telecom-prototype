@@ -15,6 +15,7 @@ import {
   type AppealItem,
   type AppealsListFilter
 } from "@shared/lib/mockData";
+import { appealsPathPreservingFrom } from "@shared/lib/appealsBackFallback";
 
 function AppealRow({ a, onOpen }: { a: AppealItem; onOpen: () => void }) {
   return (
@@ -88,7 +89,7 @@ export function AppealsScreen() {
     const found = fromCreated ?? fromMock;
     if (found) {
       setDetail(found);
-      router.replace("/appeals/", { scroll: false });
+      router.replace(appealsPathPreservingFrom(searchParams), { scroll: false });
     }
   }, [searchParams, createdAppeals, router]);
 

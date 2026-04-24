@@ -14,8 +14,7 @@ type Props = {
 };
 
 /**
- * Кнопка «Назад»: сначала router.back (согласовано с аппаратной кнопкой «Назад» при цепочке переходов),
- * иначе — переход на href (по умолчанию ассистент). Внешний вид — только иконка (без подписи у края).
+ * Кнопка «Назад»: через goSmartBack — тот же стек, что и у системной кнопки (см. smartBack.ts).
  */
 export function PageBackLink({ href = "/assistant/", label, className }: Props) {
   const router = useRouter();

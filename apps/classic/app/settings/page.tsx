@@ -9,7 +9,7 @@ export default function SettingsPage() {
       <AppHeader />
       <AppShell>
         <div className="pb-24">
-          <SettingsScreen appealsHref="/appeals/" backHref="/assistant/" />
+          <SettingsScreen backHref="/assistant/" />
         </div>
       </AppShell>
       <ClassicBottomTabBar />

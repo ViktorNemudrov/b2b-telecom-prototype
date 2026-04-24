@@ -9,10 +9,11 @@ import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { cn } from "@shared/components/ui/cn";
+import { appealsListHref } from "@shared/lib/appealsBackFallback";
 import { userProfile } from "@shared/lib/mockData";
 
 export function SettingsScreen({
-  appealsHref = "/appeals/",
+  appealsHref = appealsListHref("settings"),
   backHref = "/assistant/",
   faqHref = "/settings/faq/",
   qaHref = "/qa/",

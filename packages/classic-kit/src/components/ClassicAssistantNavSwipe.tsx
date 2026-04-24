@@ -35,7 +35,7 @@ function shouldIgnoreSwipeTarget(target: EventTarget | null): boolean {
 }
 
 /**
- * Горизонтальный свайп между основными вкладками шапки Classic (Фид / Главный / Виджеты).
+ * Горизонтальный свайп между основными вкладками шапки Classic (Главный / Виджеты).
  * При отпускании использует `window.location.pathname`, чтобы индекс вкладки был верен уже при первом заходе (cold start).
  */
 export function ClassicAssistantNavSwipeContainer({ children }: { children: React.ReactNode }) {

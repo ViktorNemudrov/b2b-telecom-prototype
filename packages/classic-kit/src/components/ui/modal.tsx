@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import * as React from "react";
 import { cn } from "@shared/components/ui/cn";
+import { useOverlayNativeBack } from "@shared/lib/nativeBackOverlayStack";
 
 export function Modal({
   open,
@@ -27,6 +28,8 @@ export function Modal({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open, onClose]);
+
+  useOverlayNativeBack(open, onClose);
 
   return (
     <AnimatePresence>

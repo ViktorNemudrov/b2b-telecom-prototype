@@ -36,14 +36,10 @@ export function InvoiceDetailClient({
   const qrCustom = useUiCustomization("invoice.pay.qr");
   const cardCustom = useUiCustomization("invoice.pay.card");
   const requisitesCustom = useUiCustomization("invoice.pay.requisites");
-  const shouldForceBackToAssistant = backHref === "/assistant/";
+  // Всегда goSmartBack: не подменяем LIFO на router.push (иначе пропускаются промежуточные экраны).
   const handleBack = React.useCallback(() => {
-    if (shouldForceBackToAssistant) {
-      router.push(backHref);
-      return;
-    }
     goSmartBack(router, backHref);
-  }, [backHref, router, shouldForceBackToAssistant]);
+  }, [backHref, router]);
 
   if (!inv) {
     return (

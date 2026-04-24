@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
+import { readEnvWithMonorepoFallback } from "../_lib/env";
 
 export const runtime = "nodejs";
 
 type ProviderId = "gemini" | "together" | "openrouter" | "grok" | "groq";
 
 function hasAnyEnv(primary: string, pub: string): boolean {
-  const val = process.env[primary] ?? process.env[pub];
+  const val = readEnvWithMonorepoFallback(primary, pub);
   return Boolean(val?.trim());
 }
 
