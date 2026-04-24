@@ -2,16 +2,103 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ChevronLeft, Headphones, Lock, Sliders, Sun } from "lucide-react";
+import { ChevronDown, ChevronLeft, Headphones, Lock, Sliders, Sun } from "lucide-react";
 import { CenteredPageTitleBar } from "@shared/components/CenteredPageTitleBar";
 import { useAppTheme } from "@shared/components/ThemeProvider";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { appealsListHref } from "@shared/lib/appealsBackFallback";
+import { clearAssistantChatSession } from "@shared/lib/assistantChatSession";
 import { CLASSIC_PRODUCT_VERSION } from "@shared/lib/productVersion";
 import { cn } from "@shared/components/ui/cn";
 import { userProfile } from "@shared/lib/mockData";
+
+const THEME_OPTIONS: { value: "light" | "dark" | "system"; label: string }[] = [
+  { value: "light", label: "Светлая" },
+  { value: "dark", label: "Тёмная" },
+  { value: "system", label: "Системная" }
+];
+
+function AppThemeSelect({
+  mode,
+  setMode
+}: {
+  mode: "light" | "dark" | "system";
+  setMode: (next: "light" | "dark" | "system") => void;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const rootRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const currentLabel = THEME_OPTIONS.find((o) => o.value === mode)?.label ?? mode;
+
+  return (
+    <div ref={rootRef} className="relative shrink-0">
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label="Тема приложения"
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex min-w-[7.5rem] items-center justify-between gap-1 rounded-2xl border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-slate-900 shadow-softSm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+      >
+        <span>{currentLabel}</span>
+        <ChevronDown
+          className={cn("h-3.5 w-3.5 shrink-0 text-slate-500 transition-transform dark:text-slate-400", open && "rotate-180")}
+          aria-hidden
+        />
+      </button>
+      {open ? (
+        <ul
+          role="listbox"
+          aria-label="Тема приложения"
+          className="absolute right-0 top-[calc(100%+6px)] z-[80] min-w-[10.5rem] overflow-hidden rounded-3xl border border-slate-200 bg-white p-1.5 shadow-soft dark:border-slate-600 dark:bg-slate-900"
+        >
+          {THEME_OPTIONS.map((opt) => {
+            const selected = opt.value === mode;
+            return (
+              <li key={opt.value} role="presentation">
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={selected}
+                  className={cn(
+                    "flex w-full items-center rounded-2xl px-3 py-2 text-left text-xs font-medium transition",
+                    selected
+                      ? "bg-slate-100 text-slate-900 dark:bg-slate-700 dark:text-slate-100"
+                      : "text-slate-900 hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-slate-800"
+                  )}
+                  onClick={() => {
+                    setMode(opt.value);
+                    setOpen(false);
+                  }}
+                >
+                  {opt.label}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
 
 export function SettingsScreen({
   appealsHref = appealsListHref("settings"),
@@ -34,6 +121,7 @@ export function SettingsScreen({
   const [notificationsOn, setNotificationsOn] = React.useState(true);
 
   const onExit = () => {
+    clearAssistantChatSession();
     window.location.href = "/";
   };
 
@@ -90,18 +178,10 @@ export function SettingsScreen({
             <span className="flex-1 text-sm font-medium text-slate-900 dark:text-slate-100">Поддержка</span>
             <ChevronLeft className="h-4 w-4 rotate-180 text-slate-400" />
           </Link>
-          <div className="flex items-center gap-3 px-4 py-3">
+          <div className="relative z-10 flex items-center gap-3 px-4 py-3">
             <Sun className="h-5 w-5 text-slate-500" />
             <span className="flex-1 text-sm font-medium text-slate-900 dark:text-slate-100">Тема приложения</span>
-            <select
-              className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
-              value={mode}
-              onChange={(e) => setMode(e.target.value as "light" | "dark" | "system")}
-            >
-              <option value="light">Светлая</option>
-              <option value="dark">Тёмная</option>
-              <option value="system">Системная</option>
-            </select>
+            <AppThemeSelect mode={mode} setMode={setMode} />
           </div>
           <button
             type="button"

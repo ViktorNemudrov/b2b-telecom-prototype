@@ -10,6 +10,7 @@ import { Card, CardContent } from "@shared/components/ui/card";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { cn } from "@shared/components/ui/cn";
 import { appealsListHref } from "@shared/lib/appealsBackFallback";
+import { clearAssistantChatSession } from "@shared/lib/assistantChatSession";
 import { userProfile } from "@shared/lib/mockData";
 import { AI_PRODUCT_VERSION } from "@shared/lib/productVersion";
 
@@ -34,6 +35,7 @@ export function SettingsScreen({
   const [notificationsOn, setNotificationsOn] = React.useState(true);
 
   const onExit = () => {
+    clearAssistantChatSession();
     window.location.href = "/";
   };
 

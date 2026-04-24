@@ -43,3 +43,11 @@ export function clearAssistantChatSession(): void {
     /* ignore */
   }
 }
+
+/** Если в UI тред пустой, но в sessionStorage ещё лежит история (например после «Назад» на главный экран ассистента). */
+export function hydrateThreadIfEmptyInUi(uiMessages: ChatMessage[]): ChatMessage[] {
+  if (uiMessages.length > 0) return uiMessages;
+  const saved = loadAssistantChatSession();
+  if (saved && saved.length > 0) return saved;
+  return uiMessages;
+}

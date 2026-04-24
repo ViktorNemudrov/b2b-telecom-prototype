@@ -29,8 +29,8 @@ import {
 } from "@shared/lib/mockData";
 import {
   DEFAULT_GROQ_FALLBACK_MODELS,
-  DEFAULT_OPENROUTER_FREE_FALLBACK_MODELS,
-  LIVE_FETCH_TIMEOUT_MS
+  LIVE_FETCH_TIMEOUT_MS,
+  parseOpenRouterModelChain
 } from "@shared/lib/aiLiveConfig";
 import { emitAiMetric } from "@shared/lib/aiClientMetrics";
 import { getLiveAiText, type LiveAiMessage } from "@shared/lib/liveAi";
@@ -59,6 +59,7 @@ import { useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
 import { isMissedCallsSeen, markMissedCallsSeen } from "@shared/lib/runtimeFlags";
 import {
   clearAssistantChatSession,
+  hydrateThreadIfEmptyInUi,
   loadAssistantChatSession,
   persistAssistantChatSession
 } from "@shared/lib/assistantChatSession";
@@ -243,7 +244,7 @@ function buildLiveCandidates(args: {
     }
   }
   if (args.openRouterApiKey) {
-    for (const model of parseModelList(args.openRouterModel, [...DEFAULT_OPENROUTER_FREE_FALLBACK_MODELS])) {
+    for (const model of parseOpenRouterModelChain(args.openRouterModel)) {
       candidates.push({
         provider: "openrouter",
         apiKey: args.openRouterApiKey,
@@ -283,6 +284,7 @@ export function AiAssistantScreen() {
   const { authenticated } = useDemoSession();
   const [messages, setMessages] = React.useState<ChatMessage[]>(defaultChat);
   const skipPersistAfterRestore = React.useRef(0);
+  const skipPersistAfterEmptyDismiss = React.useRef(0);
   const [input, setInput] = React.useState("");
   const [openHistory, setOpenHistory] = React.useState(false);
   const [toast, setToast] = React.useState<string | null>(null);
@@ -430,6 +432,10 @@ export function AiAssistantScreen() {
       skipPersistAfterRestore.current -= 1;
       return;
     }
+    if (skipPersistAfterEmptyDismiss.current > 0 && messages.length === 0) {
+      skipPersistAfterEmptyDismiss.current -= 1;
+      return;
+    }
     persistAssistantChatSession(messages);
   }, [messages]);
 
@@ -535,7 +541,9 @@ export function AiAssistantScreen() {
     const mySeq = ++sendSeqRef.current;
 
     const userMsg: ChatMessage = { id: id(), role: "user", text: v, createdAt: nowIso() };
-    setMessages((m) => [...m, userMsg]);
+    const baseThread = hydrateThreadIfEmptyInUi(messages);
+    const threadAfterUser = [...baseThread, userMsg];
+    setMessages(threadAfterUser);
     setInput("");
     setPending(true);
 
@@ -585,7 +593,7 @@ export function AiAssistantScreen() {
 
       const sessionMemory = resolveSessionMemoryResponse(
         v,
-        [...messages, userMsg].filter((m) => m.role === "user").map((m) => m.text)
+        threadAfterUser.filter((m) => m.role === "user").map((m) => m.text)
       );
       if (sessionMemory) {
         const resolved = toAiMessage({ ...sessionMemory, sourceLabel: getAiSourceLabel("session-memory", primaryLiveProvider) });
@@ -613,7 +621,7 @@ export function AiAssistantScreen() {
             controller.abort();
           }, LIVE_FETCH_TIMEOUT_MS);
           try {
-            const history: LiveAiMessage[] = [...messages, userMsg]
+            const history: LiveAiMessage[] = threadAfterUser
               .slice(-6)
               .map((m) => ({ role: m.role === "ai" ? "assistant" : "user", content: m.text }));
             let liveResolved = false;
@@ -1067,7 +1075,7 @@ export function AiAssistantScreen() {
                 router.back();
                 return;
               }
-              clearAssistantChatSession();
+              skipPersistAfterEmptyDismiss.current += 1;
               setMessages(defaultChat);
               setInput("");
               setToast(null);
@@ -1384,7 +1392,7 @@ export function AiAssistantScreen() {
       {toast ? (
         <div className="fixed bottom-[120px] left-0 right-0 z-40 mx-auto w-full max-w-[430px]">
           <div className="safe-px">
-            <Card className="border-[#E8EAED] dark:border-slate-600">
+            <Card className="border-[#E8EAED] bg-white/75 shadow-lg backdrop-blur-xl backdrop-saturate-150 dark:border-slate-600 dark:bg-slate-900/75 dark:backdrop-blur-xl">
               <CardContent className="pb-3 pt-3">
                 <div className="text-sm text-[#212529] dark:text-slate-100">{toast}</div>
               </CardContent>

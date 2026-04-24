@@ -31,8 +31,8 @@ import {
 } from "@shared/lib/mockData";
 import {
   DEFAULT_GROQ_FALLBACK_MODELS,
-  DEFAULT_OPENROUTER_FREE_FALLBACK_MODELS,
-  LIVE_FETCH_TIMEOUT_MS
+  LIVE_FETCH_TIMEOUT_MS,
+  parseOpenRouterModelChain
 } from "@shared/lib/aiLiveConfig";
 import { emitAiMetric } from "@shared/lib/aiClientMetrics";
 import { getLiveAiText, type LiveAiMessage } from "@shared/lib/liveAi";
@@ -47,7 +47,6 @@ import {
 } from "@shared/lib/liveAiProviderRank";
 import { safeParseLiveUserPrompt } from "@shared/lib/liveUserPromptSchema";
 import { appealsListHref } from "@shared/lib/appealsBackFallback";
-import { shouldDelegateBackToHistory } from "@shared/lib/smartBack";
 import {
   buildNoLiveKeysFallbackResponse,
   buildSafeLiveFallbackResponse,
@@ -61,6 +60,7 @@ import { useRuntimeInvoices } from "@shared/lib/runtimeInvoices";
 import { isMissedCallsSeen, markMissedCallsSeen } from "@shared/lib/runtimeFlags";
 import {
   clearAssistantChatSession,
+  hydrateThreadIfEmptyInUi,
   loadAssistantChatSession,
   persistAssistantChatSession
 } from "@shared/lib/assistantChatSession";
@@ -230,16 +230,19 @@ function parseModelList(primary: string | undefined, fallbacks: string[]): strin
 
 function shouldDisableProviderForSession(err: unknown): boolean {
   const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
-  if (msg.includes("model_not_available") || msg.includes("model not found") || msg.includes("no endpoints found")) {
+  if (
+    msg.includes("no endpoints found") ||
+    msg.includes("model_not_available") ||
+    msg.includes("model not found") ||
+    msg.includes("not a valid model")
+  ) {
     return false;
   }
-  if (
-    msg.includes("http 401") ||
-    msg.includes("http 402") ||
-    msg.includes("http 403") ||
-    msg.includes("http 404")
-  ) {
+  if (msg.includes("http 401") || msg.includes("http 402") || msg.includes("http 403")) {
     return true;
+  }
+  if (msg.includes("http 404")) {
+    return false;
   }
   if (
     msg.includes("http 429") &&
@@ -249,10 +252,8 @@ function shouldDisableProviderForSession(err: unknown): boolean {
   }
   return (
     msg.includes("invalid api key") ||
+    msg.includes("user not found") ||
     msg.includes("credit limit exceeded") ||
-    msg.includes("model_not_available") ||
-    msg.includes("model not found") ||
-    msg.includes("no endpoints found") ||
     msg.includes("doesn't have any credits") ||
     msg.includes("does not have permission")
   );
@@ -341,7 +342,7 @@ function buildLiveCandidates(args: {
     }
   }
   if (args.openRouterApiKey) {
-    for (const model of parseModelList(args.openRouterModel, [...DEFAULT_OPENROUTER_FREE_FALLBACK_MODELS])) {
+    for (const model of parseOpenRouterModelChain(args.openRouterModel)) {
       candidates.push({
         provider: "openrouter",
         apiKey: args.openRouterApiKey,
@@ -382,6 +383,8 @@ export function AiAssistantScreen() {
   const [messages, setMessages] = React.useState<ChatMessage[]>(defaultChat);
   /** Пропустить одну запись в sessionStorage после восстановления, чтобы не затереть снимок дефолтом. */
   const skipPersistAfterRestore = React.useRef(0);
+  /** Не затирать историю в sessionStorage пустым UI после «Назад» на главный экран ассистента. */
+  const skipPersistAfterEmptyDismiss = React.useRef(0);
   const [input, setInput] = React.useState("");
   const [openHistory, setOpenHistory] = React.useState(false);
   const [toast, setToast] = React.useState<string | null>(null);
@@ -448,6 +451,10 @@ export function AiAssistantScreen() {
   React.useEffect(() => {
     if (skipPersistAfterRestore.current > 0) {
       skipPersistAfterRestore.current -= 1;
+      return;
+    }
+    if (skipPersistAfterEmptyDismiss.current > 0 && messages.length === 0) {
+      skipPersistAfterEmptyDismiss.current -= 1;
       return;
     }
     persistAssistantChatSession(messages);
@@ -699,6 +706,20 @@ export function AiAssistantScreen() {
   }, [router, searchParams]);
 
   React.useEffect(() => {
+    if (searchParams.get("resetLive") !== "1") return;
+    try {
+      window.sessionStorage.removeItem(LIVE_BAD_PROVIDERS_SESSION_KEY);
+      window.sessionStorage.removeItem(LIVE_BAD_PROVIDERS_REASON_SESSION_KEY);
+    } catch {
+      // private mode / quota
+    }
+    setSessionDisabledProviders([]);
+    setSessionDisabledProviderReasons({});
+    setToast("Блокировка live-провайдеров в этой вкладке сброшена");
+    router.replace("/assistant/");
+  }, [router, searchParams]);
+
+  React.useEffect(() => {
     const q = searchParams.get("q");
     if (!q || handledQueryRef.current === q) return;
     handledQueryRef.current = q;
@@ -746,7 +767,9 @@ export function AiAssistantScreen() {
     const mySeq = ++sendSeqRef.current;
 
     const userMsg: ChatMessage = { id: id(), role: "user", text: v, createdAt: nowIso() };
-    setMessages((m) => [...m, userMsg]);
+    const baseThread = hydrateThreadIfEmptyInUi(messages);
+    const threadAfterUser = [...baseThread, userMsg];
+    setMessages(threadAfterUser);
     setInput("");
     setPending(true);
 
@@ -796,7 +819,7 @@ export function AiAssistantScreen() {
 
       const sessionMemory = resolveSessionMemoryResponse(
         v,
-        [...messages, userMsg].filter((m) => m.role === "user").map((m) => m.text)
+        threadAfterUser.filter((m) => m.role === "user").map((m) => m.text)
       );
       if (sessionMemory) {
         const resolved = toAiMessage({ ...sessionMemory, sourceLabel: getAiSourceLabel("session-memory", primaryLiveProvider) });
@@ -856,7 +879,7 @@ export function AiAssistantScreen() {
             controller.abort();
           }, LIVE_FETCH_TIMEOUT_MS);
           try {
-            const history: LiveAiMessage[] = [...messages, userMsg]
+            const history: LiveAiMessage[] = threadAfterUser
               .slice(-6)
               .map((m) => ({ role: m.role === "ai" ? "assistant" : "user", content: m.text }));
             let liveResolved = false;
@@ -1111,16 +1134,16 @@ export function AiAssistantScreen() {
                           <div className="min-w-0 flex-1">
                             <button
                               type="button"
-                              className="flex items-center gap-1 text-xs font-semibold text-[#343A4A] dark:text-slate-100"
+                              className="flex min-w-0 flex-nowrap items-center gap-1.5 text-left text-xs font-semibold text-[#343A4A] dark:text-slate-100"
                               onClick={() => {
                                 setInput("звонки за неделю");
                                 window.setTimeout(() => send("звонки за неделю"), 60);
                               }}
                             >
-                              <Sparkles className="h-4 w-4 text-[#9C8AF2]" />
-                              Еженедельный отчет
+                              <Sparkles className="h-4 w-4 shrink-0 text-[#9C8AF2]" />
+                              <span className="min-w-0 truncate">Еженедельный отчет</span>
+                              <span className="shrink-0 text-[11px] font-normal text-[#A2A8B8]">за 24 апреля</span>
                             </button>
-                            <div className="text-[11px] text-[#A2A8B8]">за 24 апреля</div>
                             <p className="mt-0.5 line-clamp-1 text-[11px] leading-snug text-[#6B7280] dark:text-slate-300">
                               126 звонков, 1 пропущенный, средняя длительность 2:40. Есть 4 клиента в риске по оплате.
                             </p>
@@ -1297,16 +1320,16 @@ export function AiAssistantScreen() {
             aria-label="Назад"
             className="mb-3 inline-flex items-center text-sm font-semibold text-[#3C4858] transition hover:text-[#212529] dark:text-slate-200 dark:hover:text-white"
             onClick={() => {
-              // Та же эвристика, что и у PageBackLink: не смешиваем сброс чата с «ложным» history.length.
-              if (shouldDelegateBackToHistory()) {
-                router.back();
-                return;
-              }
-              clearAssistantChatSession();
+              // «Назад» в чате = главный экран ассистента, не history.back (иначе Виджеты → Ассистент → чип → назад уводил на /widgets/).
+              // Историю в sessionStorage не трогаем — переписка живёт до обновления вкладки или «Выход».
+              skipPersistAfterEmptyDismiss.current += 1;
               setMessages(defaultChat);
               setInput("");
+              setOpenHistory(false);
               setToast(null);
               setChipTags([...recentQueryChips]);
+              handledQueryRef.current = "";
+              router.replace("/assistant/");
             }}
           >
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F2F2F7] dark:bg-slate-700">
@@ -1443,12 +1466,6 @@ export function AiAssistantScreen() {
                             Пропущенных звонков не найдено.
                           </div>
                         )}
-                        {otherMissedCalls.length > 0 ? (
-                          <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-600 dark:bg-slate-800/60 dark:text-slate-300">
-                            Ещё пропущенных: {otherMissedCalls.length}.{" "}
-                            {otherMissedCalls.map((c) => c.title ?? c.phone).join(", ")}.
-                          </div>
-                        ) : null}
                         {otherMissedCalls
                           .map((c) => (
                             <button
@@ -1646,7 +1663,7 @@ export function AiAssistantScreen() {
       {toast ? (
         <div className="fixed bottom-[120px] left-0 right-0 z-40 mx-auto w-full max-w-[430px]">
           <div className="safe-px">
-            <Card className="border-[#E8EAED] dark:border-slate-600">
+            <Card className="border-[#E8EAED] bg-white/75 shadow-lg backdrop-blur-xl backdrop-saturate-150 dark:border-slate-600 dark:bg-slate-900/75 dark:backdrop-blur-xl">
               <CardContent className="pb-3 pt-3">
                 <div className="text-sm text-[#212529] dark:text-slate-100">{toast}</div>
               </CardContent>
