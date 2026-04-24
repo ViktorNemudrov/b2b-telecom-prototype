@@ -6,6 +6,7 @@ import { Card, CardContent } from "@shared/components/ui/card";
 import { CLASSIC_PRODUCT_VERSION } from "@shared/lib/productVersion";
 
 const FAQ_VERSION_COMMIT_TIMESTAMPS: Record<string, string> = {
+  "v.0.2.96": "2026-04-25T18:00:00+03:00",
   "v.0.2.95": "2026-04-25T12:00:00+03:00",
   "v.0.2.94": "2026-04-24T23:30:00+03:00",
   "v.0.2.93": "2026-04-24T21:15:00+03:00",
@@ -119,6 +120,13 @@ function formatVersionReleasedAtLabel(versionTag: string): string {
 const versions = [
   {
     tag: CLASSIC_PRODUCT_VERSION,
+    items: [
+      "Профиль (настройки): из списка убрана строка «Поддержка», чтобы не дублировать нижний таб — поддержка и обращения открываются через таб «Поддержка»",
+      "Исправлены неточности работы продукта"
+    ]
+  },
+  {
+    tag: "v.0.2.95",
     items: [
       "Навигация: убрана строка текущего раздела мелким шрифтом над таб-баром (остаются заголовок экрана и «Назад»)",
       "Исправлены неточности работы продукта"

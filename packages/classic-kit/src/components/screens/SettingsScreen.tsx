@@ -2,13 +2,12 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronLeft, Headphones, Lock, Sliders, Sun } from "lucide-react";
+import { ChevronDown, ChevronLeft, Lock, Sliders, Sun } from "lucide-react";
 import { CenteredPageTitleBar } from "@shared/components/CenteredPageTitleBar";
 import { useAppTheme } from "@shared/components/ThemeProvider";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
-import { appealsListHref } from "@shared/lib/appealsBackFallback";
 import { clearAssistantChatSession } from "@shared/lib/assistantChatSession";
 import { CLASSIC_PRODUCT_VERSION } from "@shared/lib/productVersion";
 import { cn } from "@shared/components/ui/cn";
@@ -101,7 +100,6 @@ function AppThemeSelect({
 }
 
 export function SettingsScreen({
-  appealsHref = appealsListHref("settings"),
   backHref = "/assistant/",
   faqHref = "/settings/faq/",
   qaHref = "/qa/",
@@ -109,7 +107,6 @@ export function SettingsScreen({
   subscriptionHref = "/settings/subscription/",
   customizationHref = "/settings/customization/"
 }: {
-  appealsHref?: string;
   backHref?: string;
   faqHref?: string;
   qaHref?: string;
@@ -173,11 +170,6 @@ export function SettingsScreen({
             <span className="flex-1 text-sm font-medium text-slate-900 dark:text-slate-100">Управление профилем</span>
             <ChevronLeft className="h-4 w-4 rotate-180 text-slate-400" />
           </button>
-          <Link href={appealsHref} className="flex items-center gap-3 px-4 py-3">
-            <Headphones className="h-5 w-5 text-slate-500" />
-            <span className="flex-1 text-sm font-medium text-slate-900 dark:text-slate-100">Поддержка</span>
-            <ChevronLeft className="h-4 w-4 rotate-180 text-slate-400" />
-          </Link>
           <div className="relative z-10 flex items-center gap-3 px-4 py-3">
             <Sun className="h-5 w-5 text-slate-500" />
             <span className="flex-1 text-sm font-medium text-slate-900 dark:text-slate-100">Тема приложения</span>
