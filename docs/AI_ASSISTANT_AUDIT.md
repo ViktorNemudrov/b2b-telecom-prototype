@@ -70,6 +70,7 @@
 - **Параметры API:** `OPENROUTER_COMPLETION_DEFAULTS` — `temperature`, `top_p`, `max_tokens`, `frequency_penalty`, `presence_penalty`.
 - **Клиент:** `fetch` + `cache: "no-store"`; тело включает `...OPENROUTER_COMPLETION_DEFAULTS`.
 - **Пост-гейт:** `shouldRejectModelOutput` → `null` → экран даёт `buildSafeLiveFallbackResponse()`.
+- **Текст fallback (AI-first и Classic):** в основном пузыре — короткая фраза `DEMO_CHAT_NO_AI_MESSAGE` («В демо-версии ИИ не подключены.»); длинная техническая сводка в подписи источника к этому пузырю не выводится (E2E `assistant-routing` ожидает эту фразу).
 
 ---
 

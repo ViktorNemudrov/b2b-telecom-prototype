@@ -56,22 +56,25 @@ function AppealRow({ a, onOpen }: { a: AppealItem; onOpen: () => void }) {
       className="flex w-full items-start justify-between gap-2 border-b border-slate-100 py-3 text-left last:border-0 dark:border-slate-700"
       onClick={onOpen}
     >
-      <div>
+      <div className="min-w-0 flex-1">
         <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{a.title}</div>
         <div className="text-xs text-slate-500 dark:text-slate-400">
           {a.category} · ID от {a.dateLabel}
         </div>
       </div>
-      <span
-        className={cn(
-          "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold",
-          a.badgeLabel.includes("работе") && "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200",
-          a.badgeLabel.includes("подпис") && "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100",
-          a.badgeLabel === "Выполнено" && "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200",
-          a.badgeLabel === "Отклонено" && "bg-slate-200 text-slate-700 dark:bg-slate-600 dark:text-slate-200"
-        )}
-      >
-        {a.badgeLabel}
+      <span className="flex shrink-0 items-center gap-1">
+        <span
+          className={cn(
+            "rounded-full px-2 py-0.5 text-[10px] font-bold",
+            a.badgeLabel.includes("работе") && "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200",
+            a.badgeLabel.includes("подпис") && "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100",
+            a.badgeLabel === "Выполнено" && "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200",
+            a.badgeLabel === "Отклонено" && "bg-slate-200 text-slate-700 dark:bg-slate-600 dark:text-slate-200"
+          )}
+        >
+          {a.badgeLabel}
+        </span>
+        <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-500" aria-hidden />
       </span>
     </button>
   );

@@ -229,7 +229,7 @@ describe("assistantResponse routing", () => {
 
   it("builds safe live fallback response", () => {
     const fallback = buildSafeLiveFallbackResponse();
-    expect(fallback.text).toContain("не удалось получить надежный live-ответ");
+    expect(fallback.text).toBe("В демо-версии ИИ не подключены.");
     expect(fallback.suggested?.length).toBeGreaterThanOrEqual(3);
   });
 

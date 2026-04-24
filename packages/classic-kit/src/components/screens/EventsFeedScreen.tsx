@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Pause, PhoneCall, PhoneOff, Play, Sparkles, X } from "lucide-react";
+import { ChevronRight, Pause, PhoneCall, PhoneOff, Play, Sparkles, X } from "lucide-react";
 import { RecordingPlayer } from "@shared/components/RecordingPlayer";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { cn } from "@shared/components/ui/cn";
@@ -397,29 +397,33 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
                     onClick={() => router.push(appealsListHref("assistant"))}
                     className="flex w-full items-center justify-between gap-2 text-left"
                   >
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="truncate text-base font-medium text-[#1F2430] dark:text-slate-100">{appeal.title}</div>
                       <div className="truncate text-sm text-[#9CA3B5] dark:text-slate-400">
                         {appeal.category} — {appeal.id}
                       </div>
                     </div>
-                    <span
-                      className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-                        appeal.badgeLabel.includes("работе")
-                          ? "bg-[#E8F1FF] text-[#2B6CE0] dark:bg-sky-900/40 dark:text-sky-200"
-                          : "bg-[#FFF2DC] text-[#D97706] dark:bg-amber-900/40 dark:text-amber-200"
-                      }`}
-                    >
-                      {appeal.badgeLabel}
+                    <span className="flex shrink-0 items-center gap-1">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                          appeal.badgeLabel.includes("работе")
+                            ? "bg-[#E8F1FF] text-[#2B6CE0] dark:bg-sky-900/40 dark:text-sky-200"
+                            : "bg-[#FFF2DC] text-[#D97706] dark:bg-amber-900/40 dark:text-amber-200"
+                        }`}
+                      >
+                        {appeal.badgeLabel}
+                      </span>
+                      <ChevronRight className="h-4 w-4 text-[#9CA3B5] dark:text-slate-500" aria-hidden />
                     </span>
                   </button>
                 ))}
                 <button
                   type="button"
                   onClick={() => router.push(appealsListHref("assistant"))}
-                  className="flex items-center justify-center gap-1 text-sm font-medium text-[#343A4A] dark:text-slate-200"
+                  className="flex w-full items-center justify-center gap-1 text-sm font-medium text-[#343A4A] dark:text-slate-200"
                 >
                   Все обращения
+                  <ChevronRight className="h-4 w-4 text-[#9CA3B5] dark:text-slate-400" aria-hidden />
                 </button>
               </CardContent>
             </Card>

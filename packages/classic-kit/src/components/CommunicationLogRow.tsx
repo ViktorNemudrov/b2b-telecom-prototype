@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import type { CommLogRow } from "@shared/lib/dashboardMock";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { cn } from "@shared/components/ui/cn";
@@ -19,11 +20,17 @@ export function CommunicationLogRow({ row }: { row: CommLogRow }) {
         <div className="text-[15px] font-semibold leading-snug text-slate-900 dark:text-slate-100">{row.title}</div>
         <div className={cn("mt-1 text-sm", subCls)}>{row.subtitle}</div>
       </div>
-      <div className="shrink-0 text-right">
-        <div className="flex items-center justify-end gap-1.5">
-          <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{row.duration}</span>
+      <div className="flex shrink-0 items-start gap-1.5">
+        <div className="text-right">
+          <div className="flex items-center justify-end gap-1.5">
+            <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{row.duration}</span>
+          </div>
+          <div className="mt-1 text-xs font-semibold text-slate-800 dark:text-slate-200">{row.time}</div>
         </div>
-        <div className="mt-1 text-xs font-semibold text-slate-800 dark:text-slate-200">{row.time}</div>
+        <ChevronRight
+          className="mt-0.5 h-4 w-4 shrink-0 text-slate-300 dark:text-slate-500"
+          aria-hidden
+        />
       </div>
     </div>
   );

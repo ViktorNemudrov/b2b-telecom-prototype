@@ -64,10 +64,12 @@ export function isLiveResponseReliable(prompt: string, response: string): boolea
   return true;
 }
 
+/** Сообщение в чате и в ассистенте, когда ИИ недоступен (нет ключей, ошибка API, пустой ответ). */
+export const DEMO_CHAT_NO_AI_MESSAGE = "В демо-версии ИИ не подключены.";
+
 export function buildSafeLiveFallbackResponse(): AssistantPayload {
   return {
-    text:
-      "Сейчас не удалось получить надежный live-ответ. Попробуйте уточнить запрос или выберите быстрый сценарий: счета, звонки, обращения. Бесплатные лимиты: Groq (console.groq.com) и OpenRouter с суффиксом :free; ключ лучше задать только на сервере (GROQ_API_KEY / OPENROUTER_API_KEY) и оставить прокси `/api/llm` без CORS.",
+    text: DEMO_CHAT_NO_AI_MESSAGE,
     suggested: ["Счета за март", "Звонки за неделю", "Активные обращения"]
   };
 }
@@ -75,9 +77,6 @@ export function buildSafeLiveFallbackResponse(): AssistantPayload {
 /** Добавляется к тексту fallback, когда перепробованы все live-провайдеры с ключами. */
 export const LIVE_CHAIN_ALL_FAILED_FOOTER =
   "\n\nПерепробованы все модели с ключами. Если в Dev раньше отключились провайдеры из‑за ошибок, откройте `/assistant?resetLive=1` в этой же вкладке. Прямые запросы из браузера к внешним API часто блокируются (CORS): оставьте прокси `/api/llm` и серверные ключи (`GROQ_API_KEY` и т.д.). Проверьте вкладку «Сеть» в инструментах разработчика.";
-
-/** Сообщение в чате и в ассистенте, когда ИИ недоступен (нет ключей, ошибка API, пустой ответ). */
-export const DEMO_CHAT_NO_AI_MESSAGE = "В демо-версии ИИ не подключены.";
 
 /** Когда в клиентской сборке нет ни одного `NEXT_PUBLIC_*` ключа — live-цикл не вызывается. */
 export function buildNoLiveKeysFallbackResponse(): AssistantPayload {

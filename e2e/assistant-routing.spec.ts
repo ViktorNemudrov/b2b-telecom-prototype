@@ -32,7 +32,7 @@ test("assistant routing smoke: special -> deterministic -> live/fallback", async
   // .first() — избегаем strict mode, если видны и текст ответа, и подпись «ответ от …».
   await expect(
     page
-      .getByText("Сейчас не удалось получить надежный live-ответ.", { exact: false })
+      .getByText("В демо-версии ИИ не подключены.", { exact: false })
       .or(page.getByText(/ответ от /))
       .first()
   ).toBeVisible({ timeout: 25_000 });

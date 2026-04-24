@@ -50,7 +50,6 @@ import {
   buildNoLiveKeysFallbackResponse,
   buildSafeLiveFallbackResponse,
   isLiveResponseReliable,
-  LIVE_CHAIN_ALL_FAILED_FOOTER,
   resolveDeterministicResponse,
   resolveSessionMemoryResponse,
   resolveSpecialMockResponse
@@ -168,13 +167,10 @@ function getAiSourceLabel(intentUsed: string, liveProvider: LiveProvider) {
     case "live-rejected":
       return "live ответ отклонен (ненадежный)";
     case "live-unavailable":
-      return "live недоступен → fallback";
     case "live-error":
-      return "live ошибка → fallback";
     case "fallback-no-live":
-      return "без live (fallback)";
     case "no-live-keys":
-      return "ИИ не настроен (нет ключей в сборке)";
+      return "";
     default:
       return intentUsed;
   }
@@ -204,12 +200,6 @@ function liveProviderShort(p: LiveProvider): string {
     default:
       return "Groq";
   }
-}
-
-function compactLiveFailureLabels(labels: string[]): string {
-  if (labels.length === 0) return "";
-  const joined = labels.map((l) => l.slice(0, 100)).join(" · ");
-  return joined.length > 360 ? `${joined.slice(0, 357)}…` : joined;
 }
 
 function parseModelList(primary: string | undefined, fallbacks: string[]): string[] {
@@ -683,16 +673,9 @@ export function AiAssistantScreen() {
             }
             if (!liveResolved) {
               const baseFb = buildSafeLiveFallbackResponse();
-              const errLines =
-                failureLabels.length > 0
-                  ? compactLiveFailureLabels(failureLabels)
-                  : lastErrorLabel ?? getAiSourceLabel("live-unavailable", resolvedLiveProvider);
-              const sourceCombined =
-                failureLabels.length > 0 ? `${errLines}\n\n${LIVE_CHAIN_ALL_FAILED_FOOTER.trim()}` : errLines;
               resolved = toAiMessage({
                 ...baseFb,
-                text: baseFb.text,
-                sourceLabel: sourceCombined
+                sourceLabel: ""
               });
               intentUsed = failureLabels.length > 0 || lastErrorLabel ? "live-error" : "live-unavailable";
             }
@@ -708,7 +691,7 @@ export function AiAssistantScreen() {
             }
             resolved = toAiMessage({
               ...buildSafeLiveFallbackResponse(),
-              sourceLabel: formatLiveErrorLabel(e, resolvedLiveProvider)
+              sourceLabel: ""
             });
             intentUsed = "live-error";
           } finally {

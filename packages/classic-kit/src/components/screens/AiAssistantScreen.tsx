@@ -51,7 +51,6 @@ import {
   buildNoLiveKeysFallbackResponse,
   buildSafeLiveFallbackResponse,
   isLiveResponseReliable,
-  LIVE_CHAIN_ALL_FAILED_FOOTER,
   resolveDeterministicResponse,
   resolveSessionMemoryResponse,
   resolveSpecialMockResponse
@@ -174,15 +173,11 @@ function getAiSourceLabel(intentUsed: string, liveProvider: LiveProvider) {
     case "live-rejected":
       return "live ответ отклонен (ненадежный)";
     case "live-unavailable":
-      return "live недоступен → fallback";
     case "live-error":
-      return "live ошибка → fallback";
     case "fallback-no-live":
-      return "без live (fallback)";
     case "no-live-keys":
-      return "ИИ не настроен (нет ключей в сборке)";
     case "live-providers-disabled":
-      return "live временно отключен (провайдеры заблокированы в сессии)";
+      return "";
     default:
       return intentUsed;
   }
@@ -212,12 +207,6 @@ function liveProviderShort(p: LiveProvider): string {
     default:
       return "Groq";
   }
-}
-
-function compactLiveFailureLabels(labels: string[]): string {
-  if (labels.length === 0) return "";
-  const joined = labels.map((l) => l.slice(0, 100)).join(" · ");
-  return joined.length > 360 ? `${joined.slice(0, 357)}…` : joined;
 }
 
 function parseModelList(primary: string | undefined, fallbacks: string[]): string[] {
@@ -959,16 +948,9 @@ export function AiAssistantScreen() {
             }
             if (!liveResolved) {
               const baseFb = buildSafeLiveFallbackResponse();
-              const errLines =
-                failureLabels.length > 0
-                  ? compactLiveFailureLabels(failureLabels)
-                  : lastErrorLabel ?? getAiSourceLabel("live-unavailable", resolvedLiveProvider);
-              const sourceCombined =
-                failureLabels.length > 0 ? `${errLines}\n\n${LIVE_CHAIN_ALL_FAILED_FOOTER.trim()}` : errLines;
               resolved = toAiMessage({
                 ...baseFb,
-                text: baseFb.text,
-                sourceLabel: sourceCombined
+                sourceLabel: ""
               });
               intentUsed = failureLabels.length > 0 || lastErrorLabel ? "live-error" : "live-unavailable";
             }
@@ -984,7 +966,7 @@ export function AiAssistantScreen() {
             }
             resolved = toAiMessage({
               ...buildSafeLiveFallbackResponse(),
-              sourceLabel: formatLiveErrorLabel(e, resolvedLiveProvider)
+              sourceLabel: ""
             });
             intentUsed = "live-error";
           } finally {
@@ -1388,14 +1370,17 @@ export function AiAssistantScreen() {
                             <button
                               key={inv.id}
                               type="button"
-                              className="flex w-full items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2 text-left transition hover:bg-slate-50 active:scale-[0.99] dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
+                              className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-100 bg-white px-3 py-2 text-left transition hover:bg-slate-50 active:scale-[0.99] dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
                               onClick={() => router.push(`/invoices/${inv.id}/?from=assistant`)}
                             >
                               <span className="text-sm text-slate-800 dark:text-slate-200">
                                 {inv.amountRub.toLocaleString("ru-RU")} ₽
                               </span>
-                              <span className="text-xs text-slate-500 dark:text-slate-400">
-                                {inv.status === "paid" ? "Оплачен" : inv.status === "pay" ? "Не оплачен" : "В оплате"}
+                              <span className="flex shrink-0 items-center gap-1">
+                                <span className="text-xs text-slate-500 dark:text-slate-400">
+                                  {inv.status === "paid" ? "Оплачен" : inv.status === "pay" ? "Не оплачен" : "В оплате"}
+                                </span>
+                                <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-500" aria-hidden />
                               </span>
                             </button>
                           ))}
@@ -1428,13 +1413,16 @@ export function AiAssistantScreen() {
                             <button
                               key={inv.id}
                               type="button"
-                              className="flex w-full items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2 text-left dark:border-slate-600 dark:bg-slate-800"
+                              className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-100 bg-white px-3 py-2 text-left dark:border-slate-600 dark:bg-slate-800"
                               onClick={() => router.push(`/invoices/${inv.id}/`)}
                             >
                               <span className="text-sm text-slate-800 dark:text-slate-200">
                                 {inv.amountRub.toLocaleString("ru-RU")} ₽
                               </span>
-                              <span className="text-xs text-rose-700 dark:text-rose-300">Не оплачен</span>
+                              <span className="flex shrink-0 items-center gap-1">
+                                <span className="text-xs text-rose-700 dark:text-rose-300">Не оплачен</span>
+                                <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-500" aria-hidden />
+                              </span>
                             </button>
                           ))}
                       </CardContent>
@@ -1453,13 +1441,16 @@ export function AiAssistantScreen() {
                           <button
                             key={primaryMissedCall.id}
                             type="button"
-                            className="flex w-full items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2 text-left dark:border-slate-600 dark:bg-slate-800"
+                            className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-100 bg-white px-3 py-2 text-left dark:border-slate-600 dark:bg-slate-800"
                             onClick={() => router.push(`/call/${primaryMissedCall.id}/`)}
                           >
-                            <span className="text-sm text-slate-800 dark:text-slate-200">
+                            <span className="min-w-0 flex-1 truncate text-left text-sm text-slate-800 dark:text-slate-200">
                               {primaryMissedCall.title ?? primaryMissedCall.phone}
                             </span>
-                            <span className="text-xs text-slate-500 dark:text-slate-400">{primaryMissedCall.time}</span>
+                            <span className="flex shrink-0 items-center gap-1">
+                              <span className="text-xs text-slate-500 dark:text-slate-400">{primaryMissedCall.time}</span>
+                              <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-500" aria-hidden />
+                            </span>
                           </button>
                         ) : (
                           <div className="rounded-xl border border-slate-100 bg-white px-3 py-2 text-sm text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300">
@@ -1471,11 +1462,16 @@ export function AiAssistantScreen() {
                             <button
                               key={c.id}
                               type="button"
-                              className="flex w-full items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2 text-left dark:border-slate-600 dark:bg-slate-800"
+                              className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-100 bg-white px-3 py-2 text-left dark:border-slate-600 dark:bg-slate-800"
                               onClick={() => router.push(`/call/${c.id}/`)}
                             >
-                              <span className="text-sm text-slate-800 dark:text-slate-200">{c.title ?? c.phone}</span>
-                              <span className="text-xs text-slate-500 dark:text-slate-400">{c.time}</span>
+                              <span className="min-w-0 flex-1 truncate text-left text-sm text-slate-800 dark:text-slate-200">
+                                {c.title ?? c.phone}
+                              </span>
+                              <span className="flex shrink-0 items-center gap-1">
+                                <span className="text-xs text-slate-500 dark:text-slate-400">{c.time}</span>
+                                <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-500" aria-hidden />
+                              </span>
                             </button>
                           ))}
                       </CardContent>
@@ -1507,16 +1503,19 @@ export function AiAssistantScreen() {
                                     {appeal.category} — от {appeal.dateLabel}
                                   </div>
                                 </div>
-                                <span
-                                  className={cn(
-                                    "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold",
-                                    appeal.badgeLabel.includes("работе") &&
-                                      "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200",
-                                    appeal.badgeLabel.includes("подпис") &&
-                                      "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100"
-                                  )}
-                                >
-                                  {appeal.badgeLabel}
+                                <span className="flex shrink-0 items-center gap-1">
+                                  <span
+                                    className={cn(
+                                      "rounded-full px-2 py-0.5 text-[10px] font-bold",
+                                      appeal.badgeLabel.includes("работе") &&
+                                        "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200",
+                                      appeal.badgeLabel.includes("подпис") &&
+                                        "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100"
+                                    )}
+                                  >
+                                    {appeal.badgeLabel}
+                                  </span>
+                                  <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-500" aria-hidden />
                                 </span>
                               </button>
                             ))}
@@ -1527,6 +1526,7 @@ export function AiAssistantScreen() {
                             onClick={() => router.push(appealsListHref("assistant"))}
                           >
                             Все обращения
+                            <ChevronRight className="h-4 w-4 text-slate-400" aria-hidden />
                           </button>
                         </div>
                         <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
