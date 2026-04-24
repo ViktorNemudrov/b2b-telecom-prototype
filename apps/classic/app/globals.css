@@ -24,6 +24,11 @@ body {
   height: 100%;
 }
 
+html {
+  /* Prevent horizontal layout jump when vertical scrollbar appears/disappears between screens. */
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   color: rgb(var(--text));

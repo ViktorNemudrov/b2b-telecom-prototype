@@ -28,7 +28,9 @@ NEXT_PUBLIC_OPENROUTER_API_KEY=your_key_here
 2) Опционально выбери модель:
 
 ```bash
-NEXT_PUBLIC_OPENROUTER_MODEL=mistralai/mistral-small-3.2-24b-instruct:free
+NEXT_PUBLIC_OPENROUTER_MODEL=openrouter/auto
+# или список fallback-моделей через запятую
+# NEXT_PUBLIC_OPENROUTER_MODEL=openrouter/auto,google/gemma-2-9b-it:free,qwen/qwen-2.5-7b-instruct:free
 ```
 
 Без ключа чат продолжит работать в мок-режиме.
@@ -54,4 +56,9 @@ npm run chat:e2e:report
 файл: `test-results/chat-failures-summary.md`.
 
 В CI тот же гейт обязателен: ветка не зелёная, если `predeploy:chat` не прошёл. По расписанию (и вручную) запускается workflow **Chat nightly** (`.github/workflows/chat-nightly.yml`).
+
+## Документация по диагностике Classic
+
+- Сценарий `Профиль -> Проверка устройства (QA)` и API-проверки AI-провайдеров описаны в `docs/QA_AI_DIAGNOSTICS_CLASSIC.md`.
+- Для релизной проверки перед деплоем используй `npm run verify`, затем `npm run build:ai` и/или `npm run build:classic` для целевого проекта.
 

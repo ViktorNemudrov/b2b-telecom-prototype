@@ -1,0 +1,12 @@
+---
+description: For mobile apps, do not use Tailwind CSS
+globs: apps/{classic,ai-first}/**
+alwaysApply: false
+---
+
+# Mobile Apps: No Tailwind CSS
+
+- For `apps/classic` and `apps/ai-first`, do not use Tailwind CSS utilities or Tailwind-based styling patterns.
+- Do not introduce new Tailwind dependencies, config usage, or utility-class refactors in mobile app code.
+- Prefer CSS Modules, plain CSS, or the existing local styling approach already used in the target file/app.
+- If a task explicitly asks for Tailwind, ask for confirmation before proceeding because this rule forbids it by default.

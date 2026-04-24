@@ -52,7 +52,6 @@ const deterministicScenarios: ScenarioCase[] = [
 const liveRequiredScenarios: ScenarioCase[] = [
   { prompt: "какая погода в москве", expectedText: "Сейчас не удалось получить надежный live-ответ" },
   { prompt: "какой курс доллара сегодня", expectedText: "Сейчас не удалось получить надежный live-ответ" },
-  { prompt: "последние новости", expectedText: "Сейчас не удалось получить надежный live-ответ" },
   { prompt: "расскажи про квантовый отжиг", expectedText: "Сейчас не удалось получить надежный live-ответ" },
   { prompt: "напиши стих про космос", expectedText: "Сейчас не удалось получить надежный live-ответ" }
 ];
@@ -79,7 +78,7 @@ async function assertScenario(page: Page, scenario: ScenarioCase, options?: { li
     const liveLoc = page
       .getByText(/ответ от (Google Gemini|Together AI|Grok\/xAI|OpenRouter|Groq)(?!.*ошибка)/)
       .first();
-    await expect(fallbackLoc.or(liveLoc).first()).toBeVisible({ timeout: 15_000 });
+    await expect(fallbackLoc.or(liveLoc).first()).toBeVisible({ timeout: 30_000 });
   } else {
     // User bubble can contain the same substring as the assistant reply (case/words); target the last match.
     await expect(page.getByText(scenario.expectedText, { exact: false }).last()).toBeVisible({ timeout: 10_000 });

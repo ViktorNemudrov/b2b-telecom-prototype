@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { ChevronDown } from "lucide-react";
-import { PageBackLink } from "@shared/components/PageBackLink";
+import { CenteredPageTitleBar } from "@shared/components/CenteredPageTitleBar";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { cn } from "@shared/components/ui/cn";
 import {
@@ -97,11 +97,10 @@ export function AppCustomizationScreen({
 
   return (
     <div className="safe-px mx-auto max-w-[760px] space-y-4 pb-8 pt-2">
-      <PageBackLink href={backHref} />
+      <CenteredPageTitleBar title="Кастомизация приложения" backHref={backHref} titleClassName="text-base font-semibold" />
 
       <Card>
         <CardContent className="space-y-2 pb-4 pt-4">
-          <h1 className="text-base font-semibold text-slate-900 dark:text-slate-100">Кастомизация приложения</h1>
           <p className="text-sm text-slate-600 dark:text-slate-300">
             Для каждого элемента доступны два режима: мок-действие и визуальное отключение без клика.
           </p>

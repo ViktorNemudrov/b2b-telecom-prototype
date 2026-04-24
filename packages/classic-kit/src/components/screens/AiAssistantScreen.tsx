@@ -208,8 +208,19 @@ function compactLiveFailureLabels(labels: string[]): string {
   return joined.length > 360 ? `${joined.slice(0, 357)}…` : joined;
 }
 
+function parseModelList(primary: string | undefined, fallbacks: string[]): string[] {
+  const raw = (primary ?? "")
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
+  return Array.from(new Set([...raw, ...fallbacks]));
+}
+
 function shouldDisableProviderForSession(err: unknown): boolean {
   const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+  if (msg.includes("model_not_available") || msg.includes("model not found") || msg.includes("no endpoints found")) {
+    return false;
+  }
   if (
     msg.includes("http 401") ||
     msg.includes("http 402") ||
@@ -308,23 +319,33 @@ function buildLiveCandidates(args: {
 }): LiveCandidate[] {
   const candidates: LiveCandidate[] = [];
   if (args.geminiApiKey) {
-    candidates.push({ provider: "gemini", apiKey: args.geminiApiKey, model: args.geminiModel });
+    for (const model of parseModelList(args.geminiModel, ["gemini-2.0-flash", "gemini-2.0-flash-lite"])) {
+      candidates.push({ provider: "gemini", apiKey: args.geminiApiKey, model });
+    }
   }
   if (args.togetherApiKey) {
-    candidates.push({ provider: "together", apiKey: args.togetherApiKey, model: args.togetherModel });
+    for (const model of parseModelList(args.togetherModel, ["meta-llama/Llama-3.3-70B-Instruct-Turbo"])) {
+      candidates.push({ provider: "together", apiKey: args.togetherApiKey, model });
+    }
   }
   if (args.openRouterApiKey) {
-    candidates.push({
-      provider: "openrouter",
-      apiKey: args.openRouterApiKey,
-      model: args.openRouterModel || "mistralai/mistral-small-3.2-24b-instruct:free"
-    });
+    for (const model of parseModelList(args.openRouterModel, ["openrouter/auto", "google/gemma-2-9b-it:free", "qwen/qwen-2.5-7b-instruct:free"])) {
+      candidates.push({
+        provider: "openrouter",
+        apiKey: args.openRouterApiKey,
+        model
+      });
+    }
   }
   if (args.grokApiKey) {
-    candidates.push({ provider: "grok", apiKey: args.grokApiKey, model: args.grokModel });
+    for (const model of parseModelList(args.grokModel, ["grok-3-mini"])) {
+      candidates.push({ provider: "grok", apiKey: args.grokApiKey, model });
+    }
   }
   if (args.groqApiKey) {
-    candidates.push({ provider: "groq", apiKey: args.groqApiKey, model: args.groqModel });
+    for (const model of parseModelList(args.groqModel, ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "gemma2-9b-it"])) {
+      candidates.push({ provider: "groq", apiKey: args.groqApiKey, model });
+    }
   }
   return candidates;
 }
@@ -343,6 +364,7 @@ function buildDataContextSummary(invoices: InvoiceItem[]) {
 }
 
 export function AiAssistantScreen() {
+  const isDev = process.env.NODE_ENV === "development";
   const router = useRouter();
   const searchParams = useSearchParams();
   const [messages, setMessages] = React.useState<ChatMessage[]>(defaultChat);
@@ -396,19 +418,6 @@ export function AiAssistantScreen() {
   const [sessionDisabledProviderReasons, setSessionDisabledProviderReasons] = React.useState<
     Partial<Record<LiveProvider, string>>
   >({});
-  const resetDisabledProviders = React.useCallback(() => {
-    setSessionDisabledProviders([]);
-    setSessionDisabledProviderReasons({});
-    if (typeof window !== "undefined") {
-      try {
-        window.sessionStorage.removeItem(LIVE_BAD_PROVIDERS_SESSION_KEY);
-        window.sessionStorage.removeItem(LIVE_BAD_PROVIDERS_REASON_SESSION_KEY);
-      } catch {
-        // ignore
-      }
-    }
-  }, []);
-
   React.useEffect(() => {
     setSessionDisabledProviders(readSessionDisabledProviders());
     setSessionDisabledProviderReasons(readSessionDisabledProviderReasons());
@@ -884,7 +893,7 @@ export function AiAssistantScreen() {
             }
             if (!liveResolved) {
               const baseFb = buildSafeLiveFallbackResponse();
-              const foot = failureLabels.length > 0 ? LIVE_CHAIN_ALL_FAILED_FOOTER : "";
+              const foot = isDev && failureLabels.length > 0 ? LIVE_CHAIN_ALL_FAILED_FOOTER : "";
               const sourceCombined =
                 failureLabels.length > 0
                   ? compactLiveFailureLabels(failureLabels)
@@ -1234,28 +1243,6 @@ export function AiAssistantScreen() {
       ) : null}
 
       <div className="space-y-3">
-        {process.env.NODE_ENV === "development" && sessionDisabledProviders.length > 0 ? (
-          <Card className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
-            <CardContent className="space-y-1.5 pb-3 pt-3">
-              <div className="text-xs font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-200">
-                Dev: отключены live-провайдеры (текущая сессия)
-              </div>
-              <button
-                type="button"
-                className="inline-flex rounded-full border border-amber-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-amber-900 transition hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-100 dark:hover:bg-amber-900/40"
-                onClick={resetDisabledProviders}
-              >
-                Сбросить отключения
-              </button>
-              {sessionDisabledProviders.map((p) => (
-                <div key={`disabled-provider-${p}`} className="text-xs text-amber-900 dark:text-amber-100">
-                  <span className="font-semibold">{liveProviderShort(p)}:</span>{" "}
-                  {sessionDisabledProviderReasons[p] ?? "ошибка провайдера"}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        ) : null}
         {hasChat ? (
           <button
             type="button"

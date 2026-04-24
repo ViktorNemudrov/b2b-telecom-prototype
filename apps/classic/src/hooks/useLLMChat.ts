@@ -37,7 +37,7 @@ async function fetchGroqNonStreaming(args: {
 function getDefaultModel(provider: LiveProvider): string {
   if (provider === "gemini") return process.env.NEXT_PUBLIC_GEMINI_MODEL ?? "gemini-2.0-flash";
   if (provider === "together") return process.env.NEXT_PUBLIC_TOGETHER_MODEL ?? "meta-llama/Llama-3.3-70B-Instruct-Turbo";
-  if (provider === "openrouter") return process.env.NEXT_PUBLIC_OPENROUTER_MODEL ?? "mistralai/mistral-small-3.2-24b-instruct:free";
+  if (provider === "openrouter") return process.env.NEXT_PUBLIC_OPENROUTER_MODEL ?? "openrouter/auto";
   if (provider === "grok") return process.env.NEXT_PUBLIC_GROK_MODEL ?? "grok-3-mini";
   return process.env.NEXT_PUBLIC_GROQ_MODEL ?? "llama-3.1-8b-instant";
 }

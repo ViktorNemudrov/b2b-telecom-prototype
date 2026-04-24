@@ -18,10 +18,11 @@ export function ChatBubble({
   message: ChatMessage;
   onSuggestedClick?: (text: string) => void;
 }) {
+  const isDev = process.env.NODE_ENV === "development";
   const isUser = message.role === "user";
   const widgetOnlyAssistant = !isUser && Boolean(message.widget) && !message.text?.trim();
   const hasSuggested = !isUser && Boolean(message.suggested?.length);
-  const hasSource = !isUser && Boolean(message.sourceLabel);
+  const hasSource = !isUser && isDev && Boolean(message.sourceLabel);
 
   if (widgetOnlyAssistant) {
     if (!hasSuggested && !hasSource) return null;
@@ -60,7 +61,7 @@ export function ChatBubble({
         )}
       >
         <div className="whitespace-pre-wrap">{message.text}</div>
-        {!isUser && message.sourceLabel ? (
+        {!isUser && hasSource ? (
           <div className="mt-2 text-right text-[11px] text-slate-400 dark:text-slate-500">{message.sourceLabel}</div>
         ) : null}
 

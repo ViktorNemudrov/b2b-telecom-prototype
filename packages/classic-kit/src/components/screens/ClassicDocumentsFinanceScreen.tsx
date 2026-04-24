@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Calendar, Lock, Search } from "lucide-react";
+import { CenteredPageTitleBar } from "@shared/components/CenteredPageTitleBar";
 import { cn } from "@shared/components/ui/cn";
 import { ClassicInvoicesList } from "@shared/components/invoices/ClassicInvoicesList";
 import type { ClassicInvoicesStatusFilter } from "@shared/components/invoices/classicInvoicesFilter";
@@ -27,10 +28,7 @@ export function ClassicDocumentsFinanceScreen() {
 
   return (
     <div className="space-y-4" data-testid="documents-finance-screen">
-      <div>
-        <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Финансы</h1>
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Счета и платежи</p>
-      </div>
+      <CenteredPageTitleBar title="Финансы" subtitle="Счета и платежи" backHref="/documents/" />
 
       {statusFilter === "pay" && tariff ? (
         <div

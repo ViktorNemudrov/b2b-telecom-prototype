@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { FileText, Settings } from "lucide-react";
+import { CenteredPageTitleBar } from "@shared/components/CenteredPageTitleBar";
 import { RecordingPlayer } from "@shared/components/RecordingPlayer";
-import { PageBackLink } from "@shared/components/PageBackLink";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
@@ -32,7 +32,7 @@ export function CallDetailClient({
   if (!call) {
     return (
       <div className="safe-px mx-auto min-h-dvh max-w-[430px] pb-8 pt-4">
-        <PageBackLink href={backHref} />
+        <CenteredPageTitleBar title="Звонок" backHref={backHref} />
         <p className="mt-8 text-center text-sm text-slate-500">Звонок не найден (демо).</p>
       </div>
     );
@@ -45,25 +45,28 @@ export function CallDetailClient({
 
   return (
     <div className="safe-px mx-auto min-h-dvh max-w-[430px] pb-8 pt-3">
-      <div className="flex items-center justify-between gap-2">
-        <PageBackLink href={backHref} />
-        <button
-          type="button"
-          onClick={() =>
-            openDevelopmentStub(
-              settingsCustom.useMock ? "Настройки записи звонка (мок из кастомизации)." : "Настройки записи звонка."
-            )
-          }
-          className={[
-            "flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700",
-            getCustomizationButtonClasses(settingsCustom.dimmedDisabled)
-          ].join(" ")}
-          aria-label="Настройки"
-          disabled={settingsCustom.dimmedDisabled}
-        >
-          <Settings className="h-5 w-5" />
-        </button>
-      </div>
+      <CenteredPageTitleBar
+        title="Звонок"
+        backHref={backHref}
+        rightSlot={
+          <button
+            type="button"
+            onClick={() =>
+              openDevelopmentStub(
+                settingsCustom.useMock ? "Настройки записи звонка (мок из кастомизации)." : "Настройки записи звонка."
+              )
+            }
+            className={[
+              "flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700",
+              getCustomizationButtonClasses(settingsCustom.dimmedDisabled)
+            ].join(" ")}
+            aria-label="Настройки"
+            disabled={settingsCustom.dimmedDisabled}
+          >
+            <Settings className="h-4 w-4" />
+          </button>
+        }
+      />
 
       <div className="mt-4">
         <h1 className="text-xl font-semibold leading-tight text-slate-900 dark:text-slate-100">{title}</h1>

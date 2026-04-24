@@ -4,6 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronLeft } from "lucide-react";
+import { CenteredPageTitleBar } from "@shared/components/CenteredPageTitleBar";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { Modal } from "@shared/components/ui/modal";
@@ -93,16 +94,11 @@ export function InvoiceDetailClient({
 
   return (
     <div className="space-y-4 pb-8">
-      <button
-        type="button"
-        aria-label="Назад"
-        className="mb-3 inline-flex items-center text-sm font-semibold text-[#3C4858] transition hover:text-[#212529] dark:text-slate-200 dark:hover:text-white"
-        onClick={handleBack}
-      >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F2F2F7] dark:bg-slate-700">
-          <ChevronLeft className="h-4 w-4" aria-hidden />
-        </span>
-      </button>
+      <CenteredPageTitleBar
+        title="Счёт"
+        backHref={backHref}
+        className="mb-1"
+      />
 
       <Card className="dark:border-slate-700">
         <CardContent className="space-y-2 pb-5 pt-5">

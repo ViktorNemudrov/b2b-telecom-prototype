@@ -3,6 +3,7 @@
 import Link from "next/link";
 import * as React from "react";
 import { ChevronRight, ClipboardList, MessageCircle } from "lucide-react";
+import { CenteredPageTitleBar } from "@shared/components/CenteredPageTitleBar";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { cn } from "@shared/components/ui/cn";
@@ -21,10 +22,11 @@ export function ClassicSupportScreen() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Поддержка</h1>
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Выберите тему или напишите нам (демо)</p>
-      </div>
+      <CenteredPageTitleBar
+        title="Поддержка"
+        subtitle="Выберите тему или напишите нам (демо)"
+        backHref="/assistant/"
+      />
 
       <Button
         type="button"

@@ -199,6 +199,14 @@ function compactLiveFailureLabels(labels: string[]): string {
   return joined.length > 360 ? `${joined.slice(0, 357)}…` : joined;
 }
 
+function parseModelList(primary: string | undefined, fallbacks: string[]): string[] {
+  const raw = (primary ?? "")
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
+  return Array.from(new Set([...raw, ...fallbacks]));
+}
+
 function buildLiveCandidates(args: {
   geminiApiKey?: string;
   geminiModel: string;
@@ -213,23 +221,33 @@ function buildLiveCandidates(args: {
 }): LiveCandidate[] {
   const candidates: LiveCandidate[] = [];
   if (args.geminiApiKey) {
-    candidates.push({ provider: "gemini", apiKey: args.geminiApiKey, model: args.geminiModel });
+    for (const model of parseModelList(args.geminiModel, ["gemini-2.0-flash", "gemini-2.0-flash-lite"])) {
+      candidates.push({ provider: "gemini", apiKey: args.geminiApiKey, model });
+    }
   }
   if (args.togetherApiKey) {
-    candidates.push({ provider: "together", apiKey: args.togetherApiKey, model: args.togetherModel });
+    for (const model of parseModelList(args.togetherModel, ["meta-llama/Llama-3.3-70B-Instruct-Turbo"])) {
+      candidates.push({ provider: "together", apiKey: args.togetherApiKey, model });
+    }
   }
   if (args.openRouterApiKey) {
-    candidates.push({
-      provider: "openrouter",
-      apiKey: args.openRouterApiKey,
-      model: args.openRouterModel || "mistralai/mistral-small-3.2-24b-instruct:free"
-    });
+    for (const model of parseModelList(args.openRouterModel, ["openrouter/auto", "google/gemma-2-9b-it:free", "qwen/qwen-2.5-7b-instruct:free"])) {
+      candidates.push({
+        provider: "openrouter",
+        apiKey: args.openRouterApiKey,
+        model
+      });
+    }
   }
   if (args.grokApiKey) {
-    candidates.push({ provider: "grok", apiKey: args.grokApiKey, model: args.grokModel });
+    for (const model of parseModelList(args.grokModel, ["grok-3-mini"])) {
+      candidates.push({ provider: "grok", apiKey: args.grokApiKey, model });
+    }
   }
   if (args.groqApiKey) {
-    candidates.push({ provider: "groq", apiKey: args.groqApiKey, model: args.groqModel });
+    for (const model of parseModelList(args.groqModel, ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "gemma2-9b-it"])) {
+      candidates.push({ provider: "groq", apiKey: args.groqApiKey, model });
+    }
   }
   return candidates;
 }

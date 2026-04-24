@@ -1,6 +1,6 @@
 "use client";
 
-import { PageBackLink } from "@shared/components/PageBackLink";
+import { CenteredPageTitleBar } from "@shared/components/CenteredPageTitleBar";
 import { Card, CardContent } from "@shared/components/ui/card";
 import { ChevronRight } from "lucide-react";
 import { subscriptionProductsMock } from "@shared/lib/mockData";
@@ -9,11 +9,10 @@ import { openDevelopmentStub } from "@shared/lib/developmentStub";
 export function SubscriptionManagementScreen({ backHref = "/settings/" }: { backHref?: string }) {
   return (
     <div className="safe-px mx-auto max-w-[760px] space-y-4 pb-8 pt-2">
-      <PageBackLink href={backHref} />
+      <CenteredPageTitleBar title="Управление подпиской" backHref={backHref} titleClassName="text-base font-semibold" />
 
       <Card className="border-slate-200 dark:border-slate-700">
         <CardContent className="space-y-2 pb-4 pt-4">
-          <h1 className="text-base font-semibold text-slate-900 dark:text-slate-100">Управление подпиской</h1>
           <p className="text-sm text-slate-600 dark:text-slate-300">
             В подписку входят следующие продукты:
           </p>

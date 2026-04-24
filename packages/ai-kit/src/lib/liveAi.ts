@@ -85,7 +85,7 @@ function resolveModel(provider: LiveAiProviderId, explicit?: string): string {
     case "grok":
       return "grok-3-mini";
     default:
-      return "mistralai/mistral-small-3.2-24b-instruct:free";
+      return "openrouter/auto";
   }
 }
 

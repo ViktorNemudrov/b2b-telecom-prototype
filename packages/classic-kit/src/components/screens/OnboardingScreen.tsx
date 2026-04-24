@@ -9,10 +9,9 @@ const PWA_PROMPT_READY_AFTER_ONBOARDING_KEY = "b2b_pwa_prompt_ready_after_onboar
 const onboardingSlides = [
   "generated-onboarding-1",
   "generated-onboarding-2",
-  "generated-onboarding-3",
   "generated-onboarding-4"
 ];
-const onboardingReferenceImages = ["/mockups/onboarding-2-user.png", "/mockups/onboarding-3-user.png", "/mockups/onboarding-4-user.png"] as const;
+const onboardingReferenceImages = ["/mockups/onboarding-2-user.png", "/mockups/onboarding-4-user.png"] as const;
 const animatedPrompts = ["Покажи инсайты по звонкам", "Запустить таргет рассылку", "Открой записи разговоров"];
 const typingCharMsByPhrase = [57, 54, 56];
 const deletingCharMsByPhrase = [29, 27, 30];
@@ -236,7 +235,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
     const navHeightPx = Math.max(68, Math.round(imageFrame.height * 0.1));
     return (
       <div
-        className="fixed inset-x-0 bottom-0 z-40 pointer-events-auto"
+        className="fixed bottom-0 left-0 z-40 w-screen pointer-events-auto"
         style={{
           height: `${navHeightPx}px`
         }}
@@ -315,7 +314,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
                 <img
                   src={onboardingReferenceImages[0]}
                   alt="Референс онбординга 2"
-                  className="h-full w-full scale-[1.12] object-cover"
+                  className="h-full w-full object-cover md:object-contain md:scale-100"
                   style={{ objectPosition: "center 40%" }}
                   draggable={false}
                 />
@@ -323,40 +322,6 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
             </div>
             <p className="mt-3 text-[21px] font-normal leading-[1.12] tracking-normal text-[#222222] dark:text-slate-100">
               Ежедневная сводка о состоянии вашего бизнеса и умный помощник в одном окне
-            </p>
-          </div>
-        </div>
-      );
-    }
-
-    if (index === 2) {
-      return (
-        <div className="h-[90%] w-full overflow-hidden bg-[rgb(var(--bg))] px-4 pb-2 pt-8">
-          <div className="mx-auto flex h-full max-w-[360px] min-h-0 flex-col">
-            <h2 className="text-[24px] font-normal leading-[1.15] tracking-[-0.03em] text-[#222222] dark:text-slate-100">
-              Только актуальные события
-              <br />
-              требующие вашего внимания
-            </h2>
-            <p className="mt-2 text-[11px] leading-[1.3] text-[#8F93A2] dark:text-slate-400">
-              Не беспокойтесь пропустить, что-то важное, мы подскажем
-              <br />
-              когда вам нужно заниматься рутинными делами
-            </p>
-            <div className="mt-4 min-h-0 flex-1 rounded-2xl bg-[#E8EAF1] p-2">
-              <div className="h-full w-full overflow-hidden rounded-xl">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={onboardingReferenceImages[1]}
-                  alt="Референс онбординга 3"
-                  className="h-full w-full scale-[1.06] object-cover"
-                  style={{ objectPosition: "center 50%" }}
-                  draggable={false}
-                />
-              </div>
-            </div>
-            <p className="mt-3 text-[21px] font-normal leading-[1.12] tracking-normal text-[#222222] dark:text-slate-100">
-              Важные события, активности и оповещения без лишней воды
             </p>
           </div>
         </div>
@@ -376,9 +341,9 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
             <div className="h-full w-full overflow-hidden rounded-xl">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={onboardingReferenceImages[2]}
+                src={onboardingReferenceImages[1]}
                 alt="Референс онбординга 4"
-                className="h-full w-full scale-[1.12] object-cover"
+                className="h-full w-full object-cover md:object-contain md:scale-100"
                 style={{ objectPosition: "center 40%" }}
                 draggable={false}
               />

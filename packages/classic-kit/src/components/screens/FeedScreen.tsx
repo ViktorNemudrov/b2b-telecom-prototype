@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, ChevronLeft, Search, Settings } from "lucide-react";
+import { Calendar, Search, Settings } from "lucide-react";
 import { CommunicationLogRow } from "@shared/components/CommunicationLogRow";
+import { CenteredPageTitleBar } from "@shared/components/CenteredPageTitleBar";
 import { DatePickerModal } from "@shared/components/DatePickerModal";
 import { FeedItem } from "@shared/components/FeedItem";
 import { SegmentedControl } from "@shared/components/SegmentedControl";
@@ -13,7 +14,6 @@ import { communicationLogMock } from "@shared/lib/dashboardMock";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { isFeedMissedSeen, markFeedMissedSeen } from "@shared/lib/runtimeFlags";
 import { feedDateLabel, feedItems } from "@shared/lib/mockData";
-import { goSmartBack } from "@shared/lib/smartBack";
 import { getCustomizationButtonClasses, useUiCustomization } from "@shared/lib/uiCustomization";
 
 type CommTab = "records" | "secretary";
@@ -83,22 +83,11 @@ export function FeedScreen({
   return (
     <div className="space-y-4 pb-6">
       {leadingBack ? (
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-slate-700 shadow-softSm transition hover:brightness-95 dark:bg-slate-700 dark:text-slate-100"
-            aria-label="Назад"
-            onClick={() => goSmartBack(router, leadingBack.href)}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-        </div>
-      ) : null}
-
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Коммуникация</h1>
+        <CenteredPageTitleBar
+          title="Коммуникация"
+          subtitle={feedDateLabel}
+          backHref={leadingBack.href}
+          rightSlot={
             <button
               type="button"
               onClick={() =>
@@ -112,10 +101,33 @@ export function FeedScreen({
             >
               <Settings className="h-4 w-4" />
             </button>
+          }
+        />
+      ) : null}
+
+      {!leadingBack ? (
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Коммуникация</h1>
+              <button
+                type="button"
+                onClick={() =>
+                  openDevelopmentStub(
+                    settingsCustom.useMock ? "Настройки ленты коммуникаций (мок из кастомизации)." : "Настройки ленты коммуникаций."
+                  )
+                }
+                className={["flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700", getCustomizationButtonClasses(settingsCustom.dimmedDisabled)].join(" ")}
+                aria-label="Настройки"
+                disabled={settingsCustom.dimmedDisabled}
+              >
+                <Settings className="h-4 w-4" />
+              </button>
+            </div>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{feedDateLabel}</p>
           </div>
-          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{feedDateLabel}</p>
         </div>
-      </div>
+      ) : null}
 
       <SegmentedControl value={commTab} options={commTabs} onChange={setCommTab} />
 

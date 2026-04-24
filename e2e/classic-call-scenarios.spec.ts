@@ -56,7 +56,7 @@ test("Classic: «Мои обращения» остаётся в чате без
   await expect(page).toHaveURL(/\/assistant\/?$/, { timeout: 15_000 });
 });
 
-test("Classic: карточка пропущенного (2-й слайд hero) ведёт в карточку звонка", async ({ page }) => {
+test("Classic: второй слайд hero (AI ассистенты) открывает сценарий в чате", async ({ page }) => {
   await openClassicAssistant(page);
   await page.getByTestId("assistant-hero-swiper").waitFor({ state: "visible", timeout: 30_000 });
   const slot = page.getByTestId("assistant-hero-slot");
@@ -64,6 +64,7 @@ test("Classic: карточка пропущенного (2-й слайд hero) 
     const slideW = Math.round(el.clientWidth * 0.88);
     el.scrollTo({ left: slideW + 12, behavior: "instant" });
   });
-  await page.getByRole("button", { name: /Доставка офисной техники/ }).click();
-  await expect(page).toHaveURL(/\/call\/c1\/?$/, { timeout: 20_000 });
+  await page.getByRole("button", { name: "Начать" }).click();
+  await expect(page.getByText("Вам доступны", { exact: false })).toBeVisible({ timeout: 20_000 });
+  await expect(page).toHaveURL(/\/assistant\/?$/, { timeout: 20_000 });
 });

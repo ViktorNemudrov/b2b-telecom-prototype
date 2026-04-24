@@ -110,7 +110,7 @@ if (env.NEXT_PUBLIC_TOGETHER_API_KEY) {
 if (env.NEXT_PUBLIC_OPENROUTER_API_KEY) {
   const model =
     env.NEXT_PUBLIC_OPENROUTER_MODEL?.trim() ||
-    "mistralai/mistral-small-3.2-24b-instruct:free";
+    "openrouter/auto";
   jobs.push({
     name: "openrouter",
     run: () =>

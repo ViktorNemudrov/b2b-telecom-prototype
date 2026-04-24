@@ -28,8 +28,8 @@ function getSystemDark(): boolean {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<AppThemeMode>("light");
-  const [systemDark, setSystemDark] = useState(false);
+  const [mode, setModeState] = useState<AppThemeMode>("system");
+  const [systemDark, setSystemDark] = useState(getSystemDark);
 
   useEffect(() => {
     try {

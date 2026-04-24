@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, Headphones, Home, LayoutGrid, Sparkles } from "lucide-react";
+import { FileText, Headphones, LayoutGrid } from "lucide-react";
 import { cn } from "@shared/components/ui/cn";
 import { useDocumentsSheet } from "@shared/components/DocumentsSheetProvider";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
@@ -19,10 +19,8 @@ export function ClassicBottomTabBar() {
   const pathname = usePathname() ?? "";
   const documentsSheet = useDocumentsSheet();
 
-  const homeNav = useUiCustomization("classic.widgets.bottom.home");
   const servicesNav = useUiCustomization("classic.widgets.bottom.services");
   const documentsNav = useUiCustomization("classic.widgets.bottom.documents");
-  const sphereNav = useUiCustomization("classic.widgets.bottom.sphere");
   const supportNav = useUiCustomization("classic.widgets.bottom.support");
 
   const pathNorm = pathname.replace(/\/$/, "") || "/";
@@ -40,41 +38,24 @@ export function ClassicBottomTabBar() {
       <div className="mx-auto flex max-w-lg items-stretch justify-between px-1">
         <Link
           href="/widgets/"
-          data-testid="classic-bottom-nav-home"
-          className={cn(tabClass(isWidgets), getCustomizationButtonClasses(homeNav.dimmedDisabled))}
+          data-testid="classic-bottom-nav-services"
+          className={cn(tabClass(isWidgets), getCustomizationButtonClasses(servicesNav.dimmedDisabled))}
           aria-current={isWidgets ? "page" : undefined}
           onClick={(e) => {
             documentsSheet.closeDocumentsSheet();
-            if (homeNav.dimmedDisabled) {
+            if (servicesNav.dimmedDisabled) {
               e.preventDefault();
               return;
             }
-            if (homeNav.useMock) {
+            if (servicesNav.useMock) {
               e.preventDefault();
-              openDevelopmentStub("Главная (мок из кастомизации).");
+              openDevelopmentStub("Раздел «Сервисы» (мок из кастомизации).");
             }
-          }}
-        >
-          <Home className="h-5 w-5 shrink-0" aria-hidden />
-          <span className="truncate">Главная</span>
-        </Link>
-        <button
-          type="button"
-          data-testid="classic-bottom-nav-services"
-          className={cn(tabClass(false), getCustomizationButtonClasses(servicesNav.dimmedDisabled))}
-          onClick={() => {
-            documentsSheet.closeDocumentsSheet();
-            if (servicesNav.dimmedDisabled) return;
-            openDevelopmentStub(
-              servicesNav.useMock
-                ? "Раздел «Сервисы» (мок из кастомизации)."
-                : "Раздел «Сервисы» в разработке."
-            );
           }}
         >
           <LayoutGrid className="h-5 w-5 shrink-0" aria-hidden />
           <span className="truncate">Сервисы</span>
-        </button>
+        </Link>
         <Link
           href="/documents/"
           data-testid="classic-bottom-nav-documents"
@@ -98,21 +79,6 @@ export function ClassicBottomTabBar() {
           <FileText className="h-5 w-5 shrink-0" aria-hidden />
           <span className="truncate">Документы</span>
         </Link>
-        <button
-          type="button"
-          data-testid="classic-bottom-nav-sphere"
-          className={cn(tabClass(false), getCustomizationButtonClasses(sphereNav.dimmedDisabled))}
-          onClick={() => {
-            documentsSheet.closeDocumentsSheet();
-            if (sphereNav.dimmedDisabled) return;
-            openDevelopmentStub(
-              sphereNav.useMock ? "Раздел «Сфера» (мок из кастомизации)." : "Раздел «Сфера» в разработке."
-            );
-          }}
-        >
-          <Sparkles className="h-5 w-5 shrink-0" aria-hidden />
-          <span className="truncate">Сфера</span>
-        </button>
         <Link
           href="/support/"
           data-testid="classic-bottom-nav-support"
