@@ -196,7 +196,7 @@ test.describe("Classic user actions", () => {
     await page.goto("/support/");
     await expect(page.getByTestId("support-appeals-card")).toBeVisible();
     await page.getByRole("link", { name: "Список обращений" }).click();
-    await expect(page).toHaveURL(/\/appeals\/(\?|$)/);
+    await expect(page).toHaveURL(/\/appeals(\/|\?)/);
     await expect(page.getByRole("button", { name: "Создать обращение" })).toBeVisible();
     await page.getByRole("button", { name: "Мне не могут дозвониться" }).first().click();
     const dialog = page.getByRole("dialog");

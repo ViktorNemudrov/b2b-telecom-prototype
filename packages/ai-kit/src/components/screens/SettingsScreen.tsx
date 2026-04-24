@@ -150,7 +150,7 @@ export function SettingsScreen({
         </Card>
 
         <div className="space-y-1 px-1 text-[11px] text-slate-500 dark:text-slate-400">
-          <p>Версия продукта: v.0.2.14</p>
+          <p>Версия продукта: v.0.2.52</p>
           <p>Дизайнер: Балашов Влад</p>
           <p>Создатель: Немудров Виктор</p>
           <p>Владелец продукта: Пальчиков Леонид</p>
