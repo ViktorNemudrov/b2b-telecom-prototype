@@ -6,6 +6,7 @@ import { Card, CardContent } from "@shared/components/ui/card";
 import { CLASSIC_PRODUCT_VERSION } from "@shared/lib/productVersion";
 
 const FAQ_VERSION_COMMIT_TIMESTAMPS: Record<string, string> = {
+  "v.0.2.95": "2026-04-25T12:00:00+03:00",
   "v.0.2.94": "2026-04-24T23:30:00+03:00",
   "v.0.2.93": "2026-04-24T21:15:00+03:00",
   "v.0.2.92": "2026-04-24T16:30:00+03:00",
@@ -118,6 +119,13 @@ function formatVersionReleasedAtLabel(versionTag: string): string {
 const versions = [
   {
     tag: CLASSIC_PRODUCT_VERSION,
+    items: [
+      "Навигация: убрана строка текущего раздела мелким шрифтом над таб-баром (остаются заголовок экрана и «Назад»)",
+      "Исправлены неточности работы продукта"
+    ]
+  },
+  {
+    tag: "v.0.2.94",
     items: [
       "Чат ассистента: переписка сохраняется на время сессии вкладки (возврат с обращений и других экранов без потери диалога)",
       "«Назад» и системная кнопка: стек браузера/WebView (Navigation API + goSmartBack); обращения — осмысленный fallback по параметру `from` в ссылке",

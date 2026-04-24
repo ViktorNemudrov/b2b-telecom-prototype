@@ -1,4 +1,8 @@
-import { LIVE_AI_SYSTEM_PROMPT, OPENROUTER_COMPLETION_DEFAULTS } from "./aiLiveConfig";
+import {
+  DEFAULT_OPENROUTER_FREE_FALLBACK_MODELS,
+  LIVE_AI_SYSTEM_PROMPT,
+  OPENROUTER_COMPLETION_DEFAULTS
+} from "./aiLiveConfig";
 import { emitAiMetric } from "./aiClientMetrics";
 import { shouldRejectModelOutput } from "./liveAiGuards";
 
@@ -85,7 +89,7 @@ function resolveModel(provider: LiveAiProviderId, explicit?: string): string {
     case "grok":
       return "grok-3-mini";
     default:
-      return "openrouter/auto";
+      return DEFAULT_OPENROUTER_FREE_FALLBACK_MODELS[0];
   }
 }
 

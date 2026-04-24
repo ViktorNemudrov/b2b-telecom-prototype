@@ -150,6 +150,30 @@ test.describe("Classic user actions", () => {
     await expect(page.getByRole("link", { name: "Главный экран" })).toBeVisible();
   });
 
+  test("ассистент: Назад после чипа остаётся на главном экране, если зашли с виджетов", async ({ page }) => {
+    await page.goto("/widgets/");
+    await page.getByRole("link", { name: "Главный экран" }).click();
+    await expect(page).toHaveURL(/\/assistant/);
+    await page.getByRole("button", { name: "Что ты умеешь" }).click();
+    await expect(page.getByRole("button", { name: "Назад" })).toBeVisible({ timeout: 30_000 });
+    await page.getByRole("button", { name: "Назад" }).click();
+    await expect(page).toHaveURL(/\/assistant/);
+    await expect(page.getByRole("heading", { name: "Ваш бизнес ассистент" })).toBeVisible();
+  });
+
+  test("ассистент: Назад после «Счета на оплату» остаётся на главном экране, если зашли с виджетов", async ({
+    page
+  }) => {
+    await page.goto("/widgets/");
+    await page.getByRole("link", { name: "Главный экран" }).click();
+    await expect(page).toHaveURL(/\/assistant/);
+    await page.getByRole("button", { name: "Счета на оплату" }).click();
+    await expect(page.getByRole("button", { name: "Назад" })).toBeVisible({ timeout: 30_000 });
+    await page.getByRole("button", { name: "Назад" }).click();
+    await expect(page).toHaveURL(/\/assistant/);
+    await expect(page.getByRole("heading", { name: "Ваш бизнес ассистент" })).toBeVisible();
+  });
+
   test("записи разговоров: Назад возвращает на виджеты после перехода с виджетов", async ({ page }) => {
     await page.goto("/widgets/");
     await page.getByTestId("widgets-recordings-card").click();

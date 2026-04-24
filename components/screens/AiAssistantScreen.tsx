@@ -217,9 +217,9 @@ export function AiAssistantScreen() {
       {toast ? (
         <div className="fixed bottom-24 left-0 right-0 z-40 mx-auto w-full max-w-[430px]">
           <div className="safe-px">
-            <Card className="border-slate-200">
+            <Card className="border-slate-200 bg-white/75 shadow-lg backdrop-blur-xl backdrop-saturate-150 dark:border-slate-600 dark:bg-slate-900/75 dark:backdrop-blur-xl">
               <CardContent className="pb-3 pt-3">
-                <div className="text-sm text-slate-800">{toast}</div>
+                <div className="text-sm text-slate-800 dark:text-slate-100">{toast}</div>
               </CardContent>
             </Card>
           </div>

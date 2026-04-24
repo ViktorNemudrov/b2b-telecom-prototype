@@ -24,15 +24,23 @@ export const OPENROUTER_COMPLETION_DEFAULTS = {
 export const LIVE_FETCH_TIMEOUT_MS = 25_000;
 
 /**
- * Цепочка OpenRouter по умолчанию: сначала явные :free, затем auto.
- * (Старые slug вроде qwen/qwen-2.5-7b-instruct:free периодически дают 404 «No endpoints found».)
+ * Цепочка OpenRouter по умолчанию: сначала явные :free, в конце `openrouter/auto`.
+ * Slug'и без эндпоинтов периодически отваливаются — см. `parseOpenRouterModelChain` (сначала эти модели).
  */
 export const DEFAULT_OPENROUTER_FREE_FALLBACK_MODELS = [
   "google/gemma-2-9b-it:free",
   "meta-llama/llama-3.2-3b-instruct:free",
-  "mistralai/mistral-7b-instruct:free",
   "openrouter/auto"
 ] as const;
+
+/** Модели из `NEXT_PUBLIC_OPENROUTER_MODEL` идут после проверенных :free, чтобы мёртвый slug не блокировал цепочку. */
+export function parseOpenRouterModelChain(primary: string | undefined): string[] {
+  const raw = (primary ?? "")
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
+  return Array.from(new Set([...DEFAULT_OPENROUTER_FREE_FALLBACK_MODELS, ...raw]));
+}
 
 /** Groq: без decommissioned `gemma2-9b-it` — только актуальные production-модели. */
 export const DEFAULT_GROQ_FALLBACK_MODELS = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile"] as const;

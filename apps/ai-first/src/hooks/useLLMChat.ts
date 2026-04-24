@@ -1,13 +1,10 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { buildNoLiveKeysFallbackResponse } from "@shared/lib/assistantResponse";
+import { DEMO_CHAT_NO_AI_MESSAGE } from "@shared/lib/assistantResponse";
 import { parseOpenAiSseLine } from "@shared/lib/openAiSseParse";
 
 type Message = { role: "user" | "assistant" | "system"; content: string };
-
-const EMPTY_REPLY_FALLBACK =
-  "Не удалось получить текст ответа (пустой поток или неверный формат). Проверьте ключ Groq, настройте NEXT_PUBLIC_LLM_PROXY_URL при блокировке CORS в браузере или попробуйте позже.";
 
 async function fetchGroqNonStreaming(args: {
   url: string;
@@ -50,7 +47,7 @@ export function useLLMChat() {
         const userMsg: Message = { role: "user", content };
         const assistantMsg: Message = {
           role: "assistant",
-          content: buildNoLiveKeysFallbackResponse().text
+          content: DEMO_CHAT_NO_AI_MESSAGE
         };
         const next = [...messagesRef.current, userMsg, assistantMsg];
         messagesRef.current = next;
@@ -161,10 +158,10 @@ export function useLLMChat() {
           } else {
             setMessages((prev) => {
               const copy = [...prev];
-              copy[copy.length - 1] = { role: "assistant", content: EMPTY_REPLY_FALLBACK };
+              copy[copy.length - 1] = { role: "assistant", content: DEMO_CHAT_NO_AI_MESSAGE };
               return copy;
             });
-            assistantContent = EMPTY_REPLY_FALLBACK;
+            assistantContent = DEMO_CHAT_NO_AI_MESSAGE;
           }
         }
 
@@ -183,19 +180,15 @@ export function useLLMChat() {
             return copy;
           });
         } else {
-          const msg = err instanceof Error ? err.message : "Unknown error";
           setError(null);
           setMessages((prev) => {
             if (prev.length === 0) return prev;
             const copy = [...prev];
             const last = copy[copy.length - 1];
             if (last.role === "assistant") {
-              copy[copy.length - 1] = {
-                role: "assistant",
-                content: last.content.trim() ? last.content : `Ошибка: ${msg}`
-              };
+              copy[copy.length - 1] = { role: "assistant", content: DEMO_CHAT_NO_AI_MESSAGE };
             } else {
-              copy.push({ role: "assistant", content: `Ошибка: ${msg}` });
+              copy.push({ role: "assistant", content: DEMO_CHAT_NO_AI_MESSAGE });
             }
             messagesRef.current = copy;
             return copy;

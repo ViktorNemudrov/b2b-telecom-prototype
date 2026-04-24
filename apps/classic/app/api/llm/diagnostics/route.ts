@@ -1,4 +1,6 @@
+import { DEFAULT_OPENROUTER_FREE_FALLBACK_MODELS } from "@shared/lib/aiLiveConfig";
 import { NextResponse } from "next/server";
+import { readEnvWithMonorepoFallback } from "../_lib/env";
 
 export const runtime = "nodejs";
 
@@ -20,18 +22,19 @@ const OPENAI_ENDPOINTS: Record<Exclude<ProviderId, "gemini">, string> = {
   groq: "https://api.groq.com/openai/v1/chat/completions"
 };
 
-const DEFAULT_MODELS: Record<ProviderId, string> = {
-  gemini: process.env.NEXT_PUBLIC_GEMINI_MODEL?.trim() || "gemini-2.0-flash",
-  together: process.env.NEXT_PUBLIC_TOGETHER_MODEL?.trim() || "meta-llama/Llama-3.3-70B-Instruct-Turbo",
-  openrouter: process.env.NEXT_PUBLIC_OPENROUTER_MODEL?.trim() || "openrouter/auto",
-  grok: process.env.NEXT_PUBLIC_GROK_MODEL?.trim() || "grok-3-mini",
-  groq: process.env.NEXT_PUBLIC_GROQ_MODEL?.trim() || "llama-3.1-8b-instant"
-};
+function defaultModels(): Record<ProviderId, string> {
+  return {
+    gemini: readEnvWithMonorepoFallback("NEXT_PUBLIC_GEMINI_MODEL") || "gemini-2.0-flash",
+    together: readEnvWithMonorepoFallback("NEXT_PUBLIC_TOGETHER_MODEL") || "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+    openrouter:
+      readEnvWithMonorepoFallback("NEXT_PUBLIC_OPENROUTER_MODEL") || DEFAULT_OPENROUTER_FREE_FALLBACK_MODELS[0],
+    grok: readEnvWithMonorepoFallback("NEXT_PUBLIC_GROK_MODEL") || "grok-3-mini",
+    groq: readEnvWithMonorepoFallback("NEXT_PUBLIC_GROQ_MODEL") || "llama-3.1-8b-instant"
+  };
+}
 
 function getKey(primary: string, pub: string): string | null {
-  const value = process.env[primary] ?? process.env[pub];
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : null;
+  return readEnvWithMonorepoFallback(primary, pub);
 }
 
 function withTimeout(ms: number) {
@@ -119,6 +122,7 @@ async function probeGemini(key: string, model: string): Promise<ProbeResult> {
 }
 
 export async function GET() {
+  const DEFAULT_MODELS = defaultModels();
   const providers: ProviderId[] = ["gemini", "together", "openrouter", "grok", "groq"];
   const keys: Record<ProviderId, string | null> = {
     gemini: getKey("GEMINI_API_KEY", "NEXT_PUBLIC_GEMINI_API_KEY"),

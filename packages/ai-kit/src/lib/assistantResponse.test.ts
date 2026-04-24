@@ -235,8 +235,7 @@ describe("assistantResponse routing", () => {
 
   it("builds no-live-keys fallback when NEXT_PUBLIC keys are absent from bundle", () => {
     const noKeys = buildNoLiveKeysFallbackResponse();
-    expect(noKeys.text).toContain("нет ключей API");
-    expect(noKeys.text).toContain("NEXT_PUBLIC");
+    expect(noKeys.text).toBe("В демо-версии ИИ не подключены.");
     expect(noKeys.suggested?.length).toBeGreaterThanOrEqual(3);
   });
 

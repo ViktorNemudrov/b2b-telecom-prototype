@@ -67,7 +67,7 @@ function CustomizationRow({
       ) : null}
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1 rounded-lg border border-slate-100 p-2 dark:border-slate-700">
-          <span className="text-[11px] text-slate-500 dark:text-slate-300">Мок вместо перехода</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-200">Мок вместо перехода</span>
           <Toggle value={customization.useMock} onChange={customization.setUseMock} label={`${label}: мок`} />
         </div>
         <div className="flex flex-col gap-1 rounded-lg border border-slate-100 p-2 dark:border-slate-700">

@@ -283,8 +283,8 @@ export function FeedScreen({
       ) : (
         <Card>
           <CardContent className="pb-5 pt-5">
-            <div className="text-sm font-semibold text-slate-900">Секретарь</div>
-            <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Секретарь</div>
+            <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
               Принимает пропущенные, фиксирует суть и ставит задачи. В демо — заглушка; сценарии можно подключить к
               CRM.
             </p>

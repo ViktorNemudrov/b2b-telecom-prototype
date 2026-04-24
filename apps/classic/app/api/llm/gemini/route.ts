@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readEnvWithMonorepoFallback } from "../_lib/env";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
-  const key = (process.env.GEMINI_API_KEY ?? process.env.NEXT_PUBLIC_GEMINI_API_KEY)?.trim();
+  const key = readEnvWithMonorepoFallback("GEMINI_API_KEY", "NEXT_PUBLIC_GEMINI_API_KEY");
   if (!key) {
     return NextResponse.json({ error: "missing Gemini key" }, { status: 503 });
   }

@@ -124,7 +124,7 @@ function buildPwaInstallabilityCheck(): Check {
       key: "pwa-installability",
       label: "PWA installability",
       ok: true,
-      details: "Уже установлено: приложение запущено в standalone-режиме"
+      details: "Уже установлено: приложение запущено с PWA"
     };
   }
 
@@ -217,7 +217,12 @@ function buildChecks(): Check[] {
     { key: "speech", label: "Озвучка (speech synthesis)", ok: speechOk, details: speechOk ? "Speech API доступен" : "Speech API не поддерживается" },
     { key: "service-worker", label: "Service Worker", ok: swOk, details: swOk ? "Поддерживается" : "Не поддерживается" },
     { key: "pwa-prompt", label: "PWA install prompt", ok: pwaPromptOk, details: pwaPromptOk ? "beforeinstallprompt поддерживается" : "Обычно недоступно в Safari (используется iOS hint)" },
-    { key: "standalone", label: "Режим standalone", ok: standalone, details: standalone ? "Приложение запущено как PWA" : "Запущено в браузере" },
+    {
+      key: "standalone",
+      label: "Запуск приложения",
+      ok: standalone,
+      details: standalone ? "Приложение запущено с PWA" : "Приложение запущено не с PWA"
+    },
     buildPwaInstallabilityCheck()
   ];
 }

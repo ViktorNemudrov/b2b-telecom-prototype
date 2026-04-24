@@ -1,28 +1,31 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { buildNoLiveKeysFallbackResponse } from "@shared/lib/assistantResponse";
+import {
+  DEFAULT_OPENROUTER_FREE_FALLBACK_MODELS,
+  OPENROUTER_COMPLETION_DEFAULTS
+} from "@shared/lib/aiLiveConfig";
+import { DEMO_CHAT_NO_AI_MESSAGE } from "@shared/lib/assistantResponse";
+import { extractGeminiText } from "@shared/lib/liveAi";
 import { parseOpenAiSseLine } from "@shared/lib/openAiSseParse";
 
 type Message = { role: "user" | "assistant" | "system"; content: string };
 type LiveProvider = "gemini" | "together" | "openrouter" | "grok" | "groq";
 type ProvidersProbeResponse = { enabled?: LiveProvider[] };
 
-const EMPTY_REPLY_FALLBACK =
-  "Не удалось получить текст ответа (пустой поток или неверный формат). Проверьте ключ Groq, настройте NEXT_PUBLIC_LLM_PROXY_URL при блокировке CORS в браузере или попробуйте позже.";
-
 async function fetchGroqNonStreaming(args: {
   url: string;
   headers: Record<string, string>;
   messages: Message[];
   signal: AbortSignal;
+  model: string;
 }): Promise<string | null> {
   const res = await fetch(args.url, {
     method: "POST",
     headers: args.headers,
     signal: args.signal,
     body: JSON.stringify({
-      model: "llama-3.1-8b-instant",
+      model: args.model,
       messages: [{ role: "system", content: "Ты полезный ассистент." }, ...args.messages],
       stream: false,
       max_tokens: 1024
@@ -34,10 +37,51 @@ async function fetchGroqNonStreaming(args: {
   return text && text.length > 0 ? text : null;
 }
 
+function providersFromClientPublicEnv(): LiveProvider[] {
+  const out: LiveProvider[] = [];
+  if (process.env.NEXT_PUBLIC_GEMINI_API_KEY?.trim()) out.push("gemini");
+  if (process.env.NEXT_PUBLIC_TOGETHER_API_KEY?.trim()) out.push("together");
+  if (process.env.NEXT_PUBLIC_OPENROUTER_API_KEY?.trim()) out.push("openrouter");
+  if (process.env.NEXT_PUBLIC_GROK_API_KEY?.trim()) out.push("grok");
+  if (process.env.NEXT_PUBLIC_GROQ_API_KEY?.trim()) out.push("groq");
+  return out;
+}
+
+function firstOpenAiCompatible(enabled: LiveProvider[]): LiveProvider | null {
+  const hit = enabled.find((p) => p !== "gemini");
+  return hit ?? null;
+}
+
+function messagesToGeminiProxyPayload(messages: Message[], model: string): { model: string; body: Record<string, unknown> } {
+  const systemChunks: string[] = [];
+  const contents: Array<{ role: "user" | "model"; parts: { text: string }[] }> = [];
+  for (const m of messages) {
+    if (m.role === "system") {
+      systemChunks.push(m.content);
+      continue;
+    }
+    const role = m.role === "assistant" ? "model" : "user";
+    contents.push({ role, parts: [{ text: m.content }] });
+  }
+  const body: Record<string, unknown> = {
+    contents,
+    generationConfig: {
+      temperature: OPENROUTER_COMPLETION_DEFAULTS.temperature,
+      topP: OPENROUTER_COMPLETION_DEFAULTS.top_p,
+      maxOutputTokens: 1024
+    }
+  };
+  if (systemChunks.length) {
+    body.systemInstruction = { parts: [{ text: systemChunks.join("\n\n") }] };
+  }
+  return { model, body };
+}
+
 function getDefaultModel(provider: LiveProvider): string {
   if (provider === "gemini") return process.env.NEXT_PUBLIC_GEMINI_MODEL ?? "gemini-2.0-flash";
   if (provider === "together") return process.env.NEXT_PUBLIC_TOGETHER_MODEL ?? "meta-llama/Llama-3.3-70B-Instruct-Turbo";
-  if (provider === "openrouter") return process.env.NEXT_PUBLIC_OPENROUTER_MODEL ?? "openrouter/auto";
+  if (provider === "openrouter")
+    return process.env.NEXT_PUBLIC_OPENROUTER_MODEL?.trim() || DEFAULT_OPENROUTER_FREE_FALLBACK_MODELS[0];
   if (provider === "grok") return process.env.NEXT_PUBLIC_GROK_MODEL ?? "grok-3-mini";
   return process.env.NEXT_PUBLIC_GROQ_MODEL ?? "llama-3.1-8b-instant";
 }
@@ -81,18 +125,17 @@ export function useLLMChat() {
     async (content: string) => {
       if (!content.trim() || isLoading) return;
 
-      const providers =
-        serverEnabledProviders.length > 0
-          ? serverEnabledProviders
-          : !hasPublicAnyKey
-            ? await probeProviders()
-            : [];
+      let providers =
+        serverEnabledProviders.length > 0 ? serverEnabledProviders : await probeProviders();
+      if (providers.length === 0) {
+        providers = providersFromClientPublicEnv();
+      }
       const hasLiveViaServer = providers.length > 0;
       if (!envProxy && !groqApiKey && !hasPublicAnyKey && !hasLiveViaServer) {
         const userMsg: Message = { role: "user", content };
         const assistantMsg: Message = {
           role: "assistant",
-          content: buildNoLiveKeysFallbackResponse().text
+          content: DEMO_CHAT_NO_AI_MESSAGE
         };
         const next = [...messagesRef.current, userMsg, assistantMsg];
         messagesRef.current = next;
@@ -112,12 +155,20 @@ export function useLLMChat() {
       abortRef.current = controller;
 
       const hasExplicitProxy = Boolean(envProxy);
+      const openAiProvider = firstOpenAiCompatible(providers);
+      const geminiOnly = !openAiProvider && providers.includes("gemini");
+
       const targetUrl = hasExplicitProxy
         ? envProxy!.startsWith("/api/llm")
           ? `${envProxy!.replace(/\/$/, "")}/chat`
           : envProxy!
         : "/api/llm/chat";
-      const preferredProvider: LiveProvider = providers[0] ?? "groq";
+      const geminiUrl =
+        hasExplicitProxy && envProxy!.startsWith("/api/llm")
+          ? `${envProxy!.replace(/\/$/, "")}/gemini`
+          : "/api/llm/gemini";
+
+      const preferredProvider: LiveProvider = openAiProvider ?? "groq";
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
         "Cache-Control": "no-store",
@@ -125,6 +176,67 @@ export function useLLMChat() {
       };
       if (!hasExplicitProxy || envProxy!.startsWith("/api/llm")) {
         headers["X-LLM-Provider"] = preferredProvider;
+      }
+
+      if (geminiOnly) {
+        try {
+          setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+          const payload = messagesToGeminiProxyPayload(
+            [{ role: "system", content: "Ты полезный ассистент." }, ...updated],
+            getDefaultModel("gemini")
+          );
+          const res = await fetch(geminiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Cache-Control": "no-store", Pragma: "no-cache" },
+            body: JSON.stringify(payload),
+            signal: controller.signal
+          });
+          if (!res.ok) {
+            const errText = await res.text().catch(() => "");
+            throw new Error(`API error: ${res.status}${errText ? ` — ${errText.slice(0, 200)}` : ""}`);
+          }
+          const data = (await res.json()) as Parameters<typeof extractGeminiText>[0];
+          let assistantContent = (extractGeminiText(data) ?? "").trim();
+          if (!assistantContent) assistantContent = DEMO_CHAT_NO_AI_MESSAGE;
+          setMessages((prev) => {
+            const copy = [...prev];
+            copy[copy.length - 1] = { role: "assistant", content: assistantContent };
+            return copy;
+          });
+          messagesRef.current = [...updated, { role: "assistant", content: assistantContent }];
+        } catch (err) {
+          if (err instanceof DOMException && err.name === "AbortError") {
+            setError(null);
+            setMessages((prev) => {
+              if (prev.length === 0) return prev;
+              const copy = [...prev];
+              const last = copy[copy.length - 1];
+              if (last.role === "assistant" && !last.content.trim()) {
+                copy[copy.length - 1] = { role: "assistant", content: "Генерация остановлена." };
+              }
+              messagesRef.current = copy;
+              return copy;
+            });
+          } else {
+            setError(null);
+            setMessages((prev) => {
+              if (prev.length === 0) return prev;
+              const copy = [...prev];
+              const last = copy[copy.length - 1];
+              if (last.role === "assistant") {
+                copy[copy.length - 1] = { role: "assistant", content: DEMO_CHAT_NO_AI_MESSAGE };
+              } else {
+                copy.push({ role: "assistant", content: DEMO_CHAT_NO_AI_MESSAGE });
+              }
+              messagesRef.current = copy;
+              return copy;
+            });
+          }
+        } finally {
+          setIsLoading(false);
+          abortRef.current = null;
+        }
+        return;
       }
 
       try {
@@ -192,7 +304,8 @@ export function useLLMChat() {
             url: targetUrl,
             headers,
             messages: updated,
-            signal: controller.signal
+            signal: controller.signal,
+            model: getDefaultModel(preferredProvider)
           });
           if (fallback) {
             assistantContent = fallback;
@@ -204,10 +317,10 @@ export function useLLMChat() {
           } else {
             setMessages((prev) => {
               const copy = [...prev];
-              copy[copy.length - 1] = { role: "assistant", content: EMPTY_REPLY_FALLBACK };
+              copy[copy.length - 1] = { role: "assistant", content: DEMO_CHAT_NO_AI_MESSAGE };
               return copy;
             });
-            assistantContent = EMPTY_REPLY_FALLBACK;
+            assistantContent = DEMO_CHAT_NO_AI_MESSAGE;
           }
         }
 
@@ -226,19 +339,15 @@ export function useLLMChat() {
             return copy;
           });
         } else {
-          const msg = err instanceof Error ? err.message : "Unknown error";
           setError(null);
           setMessages((prev) => {
             if (prev.length === 0) return prev;
             const copy = [...prev];
             const last = copy[copy.length - 1];
             if (last.role === "assistant") {
-              copy[copy.length - 1] = {
-                role: "assistant",
-                content: last.content.trim() ? last.content : `Ошибка: ${msg}`
-              };
+              copy[copy.length - 1] = { role: "assistant", content: DEMO_CHAT_NO_AI_MESSAGE };
             } else {
-              copy.push({ role: "assistant", content: `Ошибка: ${msg}` });
+              copy.push({ role: "assistant", content: DEMO_CHAT_NO_AI_MESSAGE });
             }
             messagesRef.current = copy;
             return copy;
