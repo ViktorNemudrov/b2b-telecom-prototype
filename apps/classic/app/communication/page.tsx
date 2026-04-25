@@ -1,6 +1,5 @@
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
-import { ClassicBottomTabBar } from "@shared/components/ClassicBottomTabBar";
 import { FeedScreen } from "@shared/components/screens/FeedScreen";
 
 export default function CommunicationPage() {
@@ -12,7 +11,6 @@ export default function CommunicationPage() {
           <FeedScreen leadingBack={{ href: "/widgets/" }} omitFeedBelowCalls />
         </div>
       </AppShell>
-      <ClassicBottomTabBar />
     </>
   );
 }

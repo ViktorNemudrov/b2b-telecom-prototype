@@ -2,7 +2,6 @@
 
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
-import { ClassicBottomTabBar } from "@shared/components/ClassicBottomTabBar";
 import { ClassicSupportScreen } from "@shared/components/screens/ClassicSupportScreen";
 
 export default function SupportPage() {
@@ -14,7 +13,6 @@ export default function SupportPage() {
           <ClassicSupportScreen />
         </div>
       </AppShell>
-      <ClassicBottomTabBar />
     </>
   );
 }

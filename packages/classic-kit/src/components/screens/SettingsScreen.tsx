@@ -145,11 +145,7 @@ export function SettingsScreen({
           <div className="text-2xl font-bold text-slate-900 dark:text-slate-50">Связь для бизнеса</div>
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-3xl font-bold text-slate-900 dark:text-slate-50">1 999 ₽</span>
-            <span className="text-right text-xs text-slate-500 dark:text-slate-400">
-              списание
-              <br />
-              25.04
-            </span>
+            <span className="whitespace-nowrap text-right text-xs text-slate-500 dark:text-slate-400">{"списание\u00A025.04"}</span>
           </div>
           <Link href={subscriptionHref}>
             <Button variant="secondary" className="w-full rounded-2xl">

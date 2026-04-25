@@ -2,7 +2,6 @@
 
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
-import { ClassicBottomTabBar } from "@shared/components/ClassicBottomTabBar";
 import { PageBackLink } from "@shared/components/PageBackLink";
 import { Button } from "@shared/components/ui/button";
 import { Card, CardContent } from "@shared/components/ui/card";
@@ -30,7 +29,6 @@ export default function SpherePage() {
           </Card>
         </div>
       </AppShell>
-      <ClassicBottomTabBar />
     </>
   );
 }

@@ -1,6 +1,5 @@
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
-import { ClassicBottomTabBar } from "@shared/components/ClassicBottomTabBar";
 import { CallDetailClient } from "@shared/components/screens/CallDetailClient";
 import { allCallIds } from "@shared/lib/mockData";
 
@@ -17,7 +16,6 @@ export default function CallDetailPage({ params }: { params: { id: string } }) {
           <CallDetailClient id={params.id} backHref="/communication/" />
         </div>
       </AppShell>
-      <ClassicBottomTabBar />
     </>
   );
 }

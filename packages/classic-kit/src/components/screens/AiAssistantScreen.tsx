@@ -388,6 +388,8 @@ export function AiAssistantScreen() {
   const heroCardRef = React.useRef(0);
   heroCardRef.current = heroCard;
   const chatEndRef = React.useRef<HTMLDivElement | null>(null);
+  const hasAutoScrolledOnRestoreRef = React.useRef(false);
+  const prevMessagesLengthRef = React.useRef(0);
   const handledQueryRef = React.useRef<string>("");
   const sendSeqRef = React.useRef(0);
   const liveAbortRef = React.useRef<AbortController | null>(null);
@@ -675,12 +677,10 @@ export function AiAssistantScreen() {
   }, []);
 
   React.useEffect(() => {
-    const scrollToEnd = (behavior: ScrollBehavior) => {
-      chatEndRef.current?.scrollIntoView({ behavior, block: "end" });
-    };
-    scrollToEnd("auto");
-    const t = window.setTimeout(() => scrollToEnd("smooth"), 180);
-    return () => window.clearTimeout(t);
+    const shouldSmooth = hasAutoScrolledOnRestoreRef.current && messages.length > prevMessagesLengthRef.current;
+    chatEndRef.current?.scrollIntoView({ behavior: shouldSmooth ? "smooth" : "auto", block: "end" });
+    hasAutoScrolledOnRestoreRef.current = true;
+    prevMessagesLengthRef.current = messages.length;
   }, [messages]);
 
   React.useEffect(() => {

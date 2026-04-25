@@ -2,7 +2,6 @@
 
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
-import { ClassicBottomTabBar } from "@shared/components/ClassicBottomTabBar";
 import { ClassicDocumentsFinanceScreen } from "@shared/components/screens/ClassicDocumentsFinanceScreen";
 
 export default function DocumentsFinancePage() {
@@ -14,7 +13,6 @@ export default function DocumentsFinancePage() {
           <ClassicDocumentsFinanceScreen />
         </div>
       </AppShell>
-      <ClassicBottomTabBar />
     </>
   );
 }

@@ -30,6 +30,8 @@ export function ClassicBottomTabBar() {
     documentsSheet.open || pathname === "/documents" || pathname.startsWith("/documents/");
   const isSupport = pathname === "/support" || pathname.startsWith("/support/");
 
+  if (!isWidgets) return null;
+
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-[90] border-t border-slate-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur dark:border-slate-700/80 dark:bg-slate-900/95"

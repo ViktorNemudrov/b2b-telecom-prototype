@@ -17,6 +17,25 @@ async function openAssistant(page: Page) {
   await page.getByRole("button", { name: "Понятно" }).click({ timeout: 8000 }).catch(() => {});
 }
 
+function buildLongChatSession(totalPairs = 80) {
+  const messages: Array<{ id: string; role: "user" | "ai"; text: string; createdAt: string }> = [];
+  for (let i = 1; i <= totalPairs; i += 1) {
+    messages.push({
+      id: `u-${i}`,
+      role: "user",
+      text: `E2E long history user ${i}`,
+      createdAt: `2026-04-25T20:${String(i % 60).padStart(2, "0")}:00.000Z`
+    });
+    messages.push({
+      id: `a-${i}`,
+      role: "ai",
+      text: `E2E long history ai ${i}`,
+      createdAt: `2026-04-25T20:${String(i % 60).padStart(2, "0")}:30.000Z`
+    });
+  }
+  return messages;
+}
+
 async function sendWithEnter(page: Page, message: string) {
   const input = page.getByTestId("assistant-chat-input");
   await input.fill(message);
@@ -139,5 +158,27 @@ test.describe("assistant AI UX", () => {
         /ответ от (Google Gemini|Together AI|Grok\/xAI|OpenRouter|Groq)( \(без строгой верификации\))?/
       )
     ).toBeVisible({ timeout: 20_000 });
+  });
+
+  test("restored long chat opens near latest messages without replay scrolling from top", async ({
+    page
+  }) => {
+    const longSession = buildLongChatSession();
+    await page.addInitScript((session) => {
+      window.localStorage.setItem("b2b_pwa_install_dismissed_v1", "1");
+      window.localStorage.setItem("b2b_chat_logs_v1", "[]");
+      const serialized = JSON.stringify(session);
+      window.sessionStorage.setItem("b2b_classic.assistantChat.v1", serialized);
+      window.sessionStorage.setItem("b2b_ai.assistantChat.v1", serialized);
+    }, longSession);
+
+    await page.goto("/assistant/");
+    await page.getByRole("button", { name: "Понятно" }).click({ timeout: 8000 }).catch(() => {});
+
+    const firstMessage = page.getByText("E2E long history user 1", { exact: true });
+    const lastMessage = page.getByText("E2E long history ai 80", { exact: true });
+
+    await expect(lastMessage).toBeVisible({ timeout: 10_000 });
+    await expect(firstMessage).not.toBeInViewport();
   });
 });

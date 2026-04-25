@@ -1,6 +1,5 @@
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
-import { ClassicBottomTabBar } from "@shared/components/ClassicBottomTabBar";
 import { NotificationsScreen } from "@shared/components/screens/NotificationsScreen";
 
 export default function NotificationsPage() {
@@ -12,7 +11,6 @@ export default function NotificationsPage() {
           <NotificationsScreen />
         </div>
       </AppShell>
-      <ClassicBottomTabBar />
     </>
   );
 }

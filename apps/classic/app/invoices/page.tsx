@@ -3,7 +3,6 @@
 import * as React from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
-import { ClassicBottomTabBar } from "@shared/components/ClassicBottomTabBar";
 import { ClassicInvoicesList } from "@shared/components/invoices/ClassicInvoicesList";
 import { PageBackLink } from "@shared/components/PageBackLink";
 import type { InvoiceSortKey } from "@shared/lib/invoiceListSort";
@@ -38,7 +37,6 @@ export default function InvoicesListPage() {
           <ClassicInvoicesList sortBy={sortBy} getInvoiceHref={(id) => `/invoices/${id}/`} />
         </div>
       </AppShell>
-      <ClassicBottomTabBar />
     </>
   );
 }

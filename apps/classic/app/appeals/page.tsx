@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
-import { ClassicBottomTabBar } from "@shared/components/ClassicBottomTabBar";
 import { AppealsBackLink } from "@shared/components/AppealsBackLink";
 import { AppealsScreen } from "@shared/components/screens/AppealsScreen";
 
@@ -17,7 +16,6 @@ export default function AppealsPage() {
           </Suspense>
         </div>
       </AppShell>
-      <ClassicBottomTabBar />
     </>
   );
 }

@@ -9,10 +9,18 @@ export function ChatInterface() {
   const [input, setInput] = useState("");
   const { messages, isLoading, error, sendMessage, stopGeneration } = useLLMChat();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const hasInitialScrollRef = useRef(false);
+  const prevMessagesLengthRef = useRef(0);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    const shouldSmooth = hasInitialScrollRef.current && messages.length > prevMessagesLengthRef.current;
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: shouldSmooth ? "smooth" : "auto"
+    });
+    hasInitialScrollRef.current = true;
+    prevMessagesLengthRef.current = messages.length;
   }, [messages]);
 
   const handleSubmit = (e: FormEvent) => {

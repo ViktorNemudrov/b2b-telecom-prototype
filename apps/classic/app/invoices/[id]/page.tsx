@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
-import { ClassicBottomTabBar } from "@shared/components/ClassicBottomTabBar";
 import { InvoiceDetailRouteClient } from "@shared/components/screens/InvoiceDetailRouteClient";
 import { allInvoiceIds } from "@shared/lib/mockData";
 
@@ -24,7 +23,6 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
           </Suspense>
         </div>
       </AppShell>
-      <ClassicBottomTabBar />
     </>
   );
 }

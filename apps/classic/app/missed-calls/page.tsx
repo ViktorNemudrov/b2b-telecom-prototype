@@ -1,6 +1,5 @@
 import { AppHeader } from "@/components/layout/AppHeader";
 import { AppShell } from "@/components/layout/AppShell";
-import { ClassicBottomTabBar } from "@shared/components/ClassicBottomTabBar";
 import { PageBackLink } from "@shared/components/PageBackLink";
 import { MissedCallsListScreen } from "@shared/components/screens/MissedCallsListScreen";
 
@@ -14,7 +13,6 @@ export default function MissedCallsPage() {
           <MissedCallsListScreen />
         </div>
       </AppShell>
-      <ClassicBottomTabBar />
     </>
   );
 }
