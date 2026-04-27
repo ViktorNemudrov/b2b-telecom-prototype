@@ -73,7 +73,7 @@ export function BottomInputBar({
         className={cn(
           "safe-px backdrop-blur",
           variant === "assistant" &&
-            "rounded-t-[28px] border-t border-[#E8EAED] bg-white pb-[max(14px,env(safe-area-inset-bottom))] pt-4 shadow-[0_-8px_32px_rgba(0,0,0,0.06)] dark:border-slate-700 dark:bg-slate-900",
+            "rounded-t-[28px] border-t border-[#E8EAED] bg-white pb-[calc(12px+clamp(0px,env(safe-area-inset-bottom),14px))] pt-4 shadow-[0_-8px_32px_rgba(0,0,0,0.06)] dark:border-slate-700 dark:bg-slate-900",
           variant === "default" && "bg-[rgb(var(--bg))]/85",
           placement === "fixedBottom" && variant === "default" && "border-t border-slate-100 pb-4 pt-3",
           placement === "inline" && variant === "default" && "pb-2 pt-1"
