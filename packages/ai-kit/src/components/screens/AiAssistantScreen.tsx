@@ -87,7 +87,7 @@ function toAiMessage(payload: Pick<ChatMessage, "text" | "widget" | "invoiceMont
 }
 
 const pillBase =
-  "inline-flex items-center gap-2 rounded-full bg-white px-[14px] py-[10px] text-[13px] font-medium text-[#3C4858] shadow-[0_2px_10px_rgba(0,0,0,0.07)] transition hover:brightness-[1.02] active:scale-[0.99] dark:border dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100";
+  "inline-flex items-center gap-2 rounded-full bg-white px-[13px] py-[8px] text-[13px] font-medium text-[#3C4858] shadow-[0_2px_10px_rgba(0,0,0,0.07)] transition hover:brightness-[1.02] active:scale-[0.99] dark:border dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100";
 
 function appendChatLog(userText: string, aiText: string, intent: string) {
   if (typeof window === "undefined") return;
@@ -771,7 +771,7 @@ export function AiAssistantScreen() {
   };
 
   return (
-    <div className="space-y-5 pb-[140px]">
+    <div className="space-y-4 pb-[140px]">
       {!hasChat ? (
         <>
           <div
@@ -948,7 +948,7 @@ export function AiAssistantScreen() {
             ) : null}
           </div>
 
-          <div className="flex flex-col items-center px-1 pt-1 text-center">
+          <div className="flex flex-col items-center px-1 pt-0.5 text-center">
             <div className="flex items-center justify-center gap-1.5">
               <span className="text-[22px] font-semibold tracking-tight text-[#212529] dark:text-slate-100">
                 Билайн
@@ -962,14 +962,14 @@ export function AiAssistantScreen() {
               />
               <span className="text-[22px] font-semibold tracking-tight text-accent-yellow">One</span>
             </div>
-            <h1 className="mt-3 max-w-[18rem] text-[26px] font-semibold leading-[1.15] tracking-tight text-[#212529] dark:text-slate-100">
+            <h1 className="mt-2 max-w-[18rem] text-[26px] font-semibold leading-[1.15] tracking-tight text-[#212529] dark:text-slate-100">
               Ваш бизнес ассистент
             </h1>
-            <p className="mt-2 text-[13px] text-[#8E8E93] dark:text-slate-400">{userProfile.legalName}</p>
+            <p className="mt-1 text-[13px] text-[#8E8E93] dark:text-slate-400">{userProfile.legalName}</p>
           </div>
 
-          <div className="flex flex-col items-center gap-2.5">
-            <div className="flex w-full max-w-[360px] justify-center gap-2.5">
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex w-full max-w-[360px] justify-center gap-2">
               <button
                 type="button"
                 className={cn(pillBase, getCustomizationButtonClasses(missedChipCustom.dimmedDisabled))}
@@ -1007,7 +1007,7 @@ export function AiAssistantScreen() {
                 <span>Обращения</span>
               </button>
             </div>
-            <div className="flex w-full max-w-[360px] flex-wrap justify-center gap-2.5">
+            <div className="flex w-full max-w-[360px] flex-wrap justify-center gap-2">
               <button
                 type="button"
                 className={cn(pillBase, getCustomizationButtonClasses(invoicesChipCustom.dimmedDisabled))}
@@ -1302,7 +1302,7 @@ export function AiAssistantScreen() {
       </div>
 
       {!hasChat && chipTags.length > 0 ? (
-        <div className="fixed bottom-[104px] left-0 right-0 z-30 mx-auto w-full max-w-[430px]">
+        <div className="fixed bottom-[122px] left-0 right-0 z-30 mx-auto w-full max-w-[430px]">
           <div className="safe-px">
             <div className="flex flex-wrap gap-2">
               {chipTags.map((label) => (

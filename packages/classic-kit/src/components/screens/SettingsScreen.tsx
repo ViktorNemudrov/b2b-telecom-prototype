@@ -123,7 +123,7 @@ export function SettingsScreen({
   };
 
   return (
-    <div className="safe-px mx-auto max-w-[430px] pb-10 pt-4">
+    <div className="safe-px mx-auto max-w-[430px] pb-2 pt-4">
       <CenteredPageTitleBar
         backHref={backHref}
         title={

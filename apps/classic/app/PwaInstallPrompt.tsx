@@ -10,6 +10,7 @@ type BeforeInstallPromptEvent = Event & {
 
 const PWA_INSTALL_COMPLETED_KEY = "b2b_pwa_install_completed_v1";
 const PWA_PROMPT_READY_AFTER_ONBOARDING_KEY = "b2b_pwa_prompt_ready_after_onboarding_v1";
+const PWA_INSTALL_PROMPT_SHOWN_SESSION_KEY = "b2b_pwa_install_prompt_shown_session_v1";
 
 /** Сохраняем событие между пересозданием эффекта (React Strict Mode) и не теряем prompt. */
 let capturedDeferredInstall: BeforeInstallPromptEvent | null = null;
@@ -35,11 +36,21 @@ export function PwaInstallPrompt() {
   const [showInstall, setShowInstall] = React.useState(false);
   /** «Позже» скрывает баннер только до перезагрузки страницы — без записи в localStorage. */
   const [dismissedSession, setDismissedSession] = React.useState(false);
-  const showInstallOncePerPageSession = React.useCallback(() => {
-    if (installPromptShownInPageSession) return;
-    installPromptShownInPageSession = true;
-    setShowInstall(true);
+  const wasInstallPromptShownInTabSession = React.useCallback(() => {
+    if (typeof window === "undefined") return installPromptShownInPageSession;
+    return (
+      installPromptShownInPageSession ||
+      window.sessionStorage.getItem(PWA_INSTALL_PROMPT_SHOWN_SESSION_KEY) === "1"
+    );
   }, []);
+  const showInstallOncePerPageSession = React.useCallback(() => {
+    if (wasInstallPromptShownInTabSession()) return;
+    installPromptShownInPageSession = true;
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem(PWA_INSTALL_PROMPT_SHOWN_SESSION_KEY, "1");
+    }
+    setShowInstall(true);
+  }, [wasInstallPromptShownInTabSession]);
 
   React.useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
@@ -58,7 +69,7 @@ export function PwaInstallPrompt() {
     const isAssistantRoute = pathname === "/assistant" || pathname === "/assistant/";
     const canShowInstallPrompt = promptReadyAfterOnboarding && isAssistantRoute;
 
-    if (completed || dismissedSession || installPromptShownInPageSession) return;
+    if (completed || dismissedSession || wasInstallPromptShownInTabSession()) return;
 
     if (capturedDeferredInstall) {
       setDeferredPrompt(capturedDeferredInstall);
@@ -104,7 +115,7 @@ export function PwaInstallPrompt() {
       window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
       window.removeEventListener("appinstalled", onAppInstalled);
     };
-  }, [dismissedSession, pathname, showInstallOncePerPageSession]);
+  }, [dismissedSession, pathname, showInstallOncePerPageSession, wasInstallPromptShownInTabSession]);
 
   const dismiss = () => {
     setDismissedSession(true);

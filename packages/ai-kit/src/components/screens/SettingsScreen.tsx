@@ -40,7 +40,7 @@ export function SettingsScreen({
   };
 
   return (
-    <div className="safe-px mx-auto max-w-[430px] pb-10 pt-0">
+    <div className="safe-px mx-auto max-w-[430px] pb-2 pt-0">
       <div className="space-y-0.5">
         <div className="relative flex min-h-8 items-center justify-center">
           <PageBackLink href={backHref} className="absolute left-0 mb-0 h-8 w-8 p-0 leading-none" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock3, Mic, MicOff, Paperclip, SendHorizonal } from "lucide-react";
+import { Clock3, Mic, MicOff, Paperclip, Pencil, Plus, SendHorizonal } from "lucide-react";
 import * as React from "react";
 import { cn } from "@shared/components/ui/cn";
 import { openDevelopmentStub } from "@shared/lib/developmentStub";
@@ -42,8 +42,11 @@ export function BottomInputBar({
   const pendingVoiceRef = React.useRef("");
   const [focused, setFocused] = React.useState(false);
   const [listening, setListening] = React.useState(false);
+  const [assistantManualDraft, setAssistantManualDraft] = React.useState(false);
   const recognitionRef = React.useRef<SpeechRecognition | null>(null);
   const supported = !!getSpeechRecognitionCtor();
+  const hasText = value.trim().length > 0;
+  const showAssistantSend = variant === "assistant" ? hasText && assistantManualDraft : hasText;
 
   React.useEffect(() => {
     return () => {
@@ -51,6 +54,10 @@ export function BottomInputBar({
       recognitionRef.current = null;
     };
   }, []);
+
+  React.useEffect(() => {
+    if (!hasText) setAssistantManualDraft(false);
+  }, [hasText]);
 
   return (
     <div
@@ -74,9 +81,8 @@ export function BottomInputBar({
       >
         <div
           className={cn(
-            "flex items-center gap-1 rounded-[20px] border border-[#E5E5EA] bg-white p-1.5 shadow-[0_2px_12px_rgba(0,0,0,0.05)] dark:border-slate-600 dark:bg-slate-800",
-            focused && "ring-2 ring-accent-yellow/35",
-            variant === "assistant" && "min-h-[52px]"
+            "rounded-[20px] border border-[#E5E5EA] bg-white p-1.5 shadow-[0_2px_12px_rgba(0,0,0,0.05)] dark:border-slate-600 dark:bg-slate-800",
+            focused && "ring-2 ring-accent-yellow/35"
           )}
         >
           <input
@@ -89,29 +95,18 @@ export function BottomInputBar({
               if (f) openDevelopmentStub(`Файл «${f.name}» выбран (демо: не сохраняется).`);
             }}
           />
-          <button
-            aria-label="Прикрепить"
-            type="button"
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 active:translate-y-[1px] dark:text-slate-300 dark:hover:bg-slate-700"
-            onClick={() => fileRef.current?.click()}
-          >
-            <Paperclip className="h-5 w-5" />
-          </button>
-
-          <button
-            aria-label="История"
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 active:translate-y-[1px] dark:text-slate-300 dark:hover:bg-slate-700"
-            onClick={onOpenHistory}
-          >
-            <Clock3 className="h-5 w-5" />
-          </button>
-
           <input
             ref={inputRef}
             value={value}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={(e) => {
+              if (variant === "assistant") setAssistantManualDraft(true);
+              onChange(e.target.value);
+            }}
             placeholder="Чем можем помочь?"
-            className="h-9 min-w-0 flex-1 bg-transparent px-1 text-[15px] outline-none placeholder:text-[#C7C7CC] dark:placeholder:text-slate-500"
+            className={cn(
+              "h-9 min-w-0 bg-transparent px-2 text-[15px] outline-none placeholder:text-[#C7C7CC] dark:placeholder:text-slate-500",
+              variant === "assistant" ? "w-full" : "flex-1"
+            )}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             onKeyDown={(e) => {
@@ -125,111 +120,150 @@ export function BottomInputBar({
             data-testid={inputDataTestId}
           />
 
-          <button
-            aria-label={listening ? "Остановить диктовку" : "Диктовать вопрос"}
-            className={cn(
-              "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition active:translate-y-[1px]",
-              listening
-                ? "bg-rose-50 text-rose-700 animate-pulse dark:bg-rose-900/30 dark:text-rose-200"
-                : "text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700",
-              !supported && "opacity-80"
-            )}
-            title={
-              !supported
-                ? "Нажмите для подсказки: в части браузеров (например Яндекс на Android) распознавание речи недоступно"
-                : listening
-                  ? "Остановить"
-                  : "Диктовать"
-            }
-            onClick={() => {
-              const Ctor = getSpeechRecognitionCtor();
-              if (!Ctor) {
-                openDevelopmentStub(
-                  "Распознавание речи недоступно: в этом браузере нет Web Speech API. В Яндекс.Браузере на Android оно часто отключено — попробуйте Chrome или введите текст вручную."
-                );
-                return;
-              }
+          <div className={cn("mt-1 flex items-center justify-between", variant !== "assistant" && "mt-0")}>
+            <div className="flex items-center gap-1">
+              <button
+                aria-label="Прикрепить"
+                type="button"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-[#5F6676] transition hover:bg-slate-50 active:translate-y-[1px] dark:text-slate-300 dark:hover:bg-slate-700"
+                onClick={() => fileRef.current?.click()}
+              >
+                <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#A9B1C0] dark:border-slate-500">
+                  <Paperclip className="h-3.5 w-3.5" />
+                </span>
+              </button>
 
-              if (listening) {
-                recognitionRef.current?.stop();
-                setListening(false);
-                return;
-              }
+              <button
+                aria-label="История"
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 active:translate-y-[1px] dark:text-slate-300 dark:hover:bg-slate-700"
+                onClick={onOpenHistory}
+              >
+                <Clock3 className="h-5 w-5" />
+              </button>
+            </div>
 
-              const rec = new Ctor();
-              recognitionRef.current = rec;
-              rec.lang = "ru-RU";
-              rec.interimResults = true;
-              rec.continuous = false;
+            <div className="flex items-center gap-1">
+              {!showAssistantSend ? (
+                <button
+                  aria-label="Перейти на главную"
+                  type="button"
+                  className="relative flex h-9 w-9 items-center justify-center rounded-full text-[#5F6676] transition hover:bg-slate-50 active:translate-y-[1px] dark:text-slate-300 dark:hover:bg-slate-700"
+                  onClick={() => {
+                    if (typeof window !== "undefined") window.location.assign("/assistant/?reset=1");
+                  }}
+                >
+                  <span className="relative flex h-7 w-7 items-center justify-center rounded-full border border-[#A9B1C0] dark:border-slate-500">
+                    <Pencil className="h-3.5 w-3.5 -translate-x-[0.5px] -translate-y-[0.5px] -rotate-2" strokeWidth={2} />
+                    <Plus className="absolute bottom-[2.5px] right-[1.5px] h-2.5 w-2.5 text-[#5F6676] dark:text-slate-300" strokeWidth={2.4} />
+                  </span>
+                </button>
+              ) : null}
 
-              const prevValue = value;
-              let hadFinal = false;
-
-              rec.onresult = (event: SpeechRecognitionEvent) => {
-                const parts: string[] = [];
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                  const r = event.results[i];
-                  parts.push(r[0]?.transcript ?? "");
-                  if (r.isFinal) hadFinal = true;
+              <button
+                aria-label={listening ? "Остановить диктовку" : "Диктовать вопрос"}
+                className={cn(
+                  "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition active:translate-y-[1px]",
+                  listening
+                    ? "bg-rose-50 text-rose-700 animate-pulse dark:bg-rose-900/30 dark:text-rose-200"
+                    : "text-[#5F6676] hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700",
+                  !supported && "opacity-80"
+                )}
+                title={
+                  !supported
+                    ? "Нажмите для подсказки: в части браузеров (например Яндекс на Android) распознавание речи недоступно"
+                    : listening
+                      ? "Остановить"
+                      : "Диктовать"
                 }
-                const spoken = parts.join(" ").trim();
-                const merged = (prevValue ? `${prevValue} ` : "") + spoken;
-                const trimmed = merged.trim();
-                pendingVoiceRef.current = trimmed;
-                onChange(trimmed);
-              };
+                onClick={() => {
+                  const Ctor = getSpeechRecognitionCtor();
+                  if (!Ctor) {
+                    openDevelopmentStub(
+                      "Распознавание речи недоступно: в этом браузере нет Web Speech API. В Яндекс.Браузере на Android оно часто отключено — попробуйте Chrome или введите текст вручную."
+                    );
+                    return;
+                  }
 
-              rec.onend = () => {
-                setListening(false);
-                recognitionRef.current = null;
-                inputRef.current?.focus();
-                if (hadFinal) {
-                  const t = pendingVoiceRef.current.trim();
-                  window.setTimeout(() => {
-                    if (t) onSend(t);
-                    else onSend();
-                  }, 80);
-                }
-              };
+                  if (listening) {
+                    recognitionRef.current?.stop();
+                    setListening(false);
+                    return;
+                  }
 
-              rec.onerror = () => {
-                setListening(false);
-                recognitionRef.current = null;
-              };
+                  const rec = new Ctor();
+                  recognitionRef.current = rec;
+                  rec.lang = "ru-RU";
+                  rec.interimResults = true;
+                  rec.continuous = false;
 
-              setListening(true);
-              inputRef.current?.focus();
-              try {
-                rec.start();
-              } catch {
-                setListening(false);
-                recognitionRef.current = null;
-              }
-            }}
-          >
-            {listening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-          </button>
+                  const prevValue = value;
+                  let hadFinal = false;
+
+                  rec.onresult = (event: SpeechRecognitionEvent) => {
+                    const parts: string[] = [];
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                      const r = event.results[i];
+                      parts.push(r[0]?.transcript ?? "");
+                      if (r.isFinal) hadFinal = true;
+                    }
+                    const spoken = parts.join(" ").trim();
+                    const merged = (prevValue ? `${prevValue} ` : "") + spoken;
+                    const trimmed = merged.trim();
+                    pendingVoiceRef.current = trimmed;
+                    onChange(trimmed);
+                  };
+
+                  rec.onend = () => {
+                    setListening(false);
+                    recognitionRef.current = null;
+                    inputRef.current?.focus();
+                    if (hadFinal) {
+                      const t = pendingVoiceRef.current.trim();
+                      window.setTimeout(() => {
+                        if (t) onSend(t);
+                        else onSend();
+                      }, 80);
+                    }
+                  };
+
+                  rec.onerror = () => {
+                    setListening(false);
+                    recognitionRef.current = null;
+                  };
+
+                  setListening(true);
+                  inputRef.current?.focus();
+                  try {
+                    rec.start();
+                  } catch {
+                    setListening(false);
+                    recognitionRef.current = null;
+                  }
+                }}
+              >
+                <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#A9B1C0] dark:border-slate-500">
+                  {listening ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
+                </span>
+              </button>
+
+              {showAssistantSend ? (
+                <button
+                  aria-label="Отправить"
+                  data-testid={sendButtonDataTestId}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-yellow text-accent-dark shadow-softSm transition hover:brightness-95 active:translate-y-[1px]"
+                  onClick={() => onSend()}
+                >
+                  <SendHorizonal className="h-5 w-5" />
+                </button>
+              ) : null}
+            </div>
+          </div>
 
           {listening ? (
-            <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200">
+            <span className="mt-1 inline-flex shrink-0 rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200">
               Говорите...
             </span>
           ) : null}
-
-          <button
-            aria-label="Отправить"
-            data-testid={sendButtonDataTestId}
-            className={cn(
-              "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition active:translate-y-[1px]",
-              value.trim()
-                ? "bg-accent-yellow text-accent-dark shadow-softSm hover:brightness-95"
-                : "bg-[#F2F2F7] text-slate-400 dark:bg-slate-700"
-            )}
-            onClick={() => onSend()}
-            disabled={!value.trim()}
-          >
-            <SendHorizonal className="h-5 w-5" />
-          </button>
         </div>
       </div>
     </div>

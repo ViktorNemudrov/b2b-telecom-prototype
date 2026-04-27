@@ -7,9 +7,7 @@ export default function SettingsPage() {
     <>
       <AppHeader />
       <AppShell>
-        <div className="pb-24">
-          <SettingsScreen backHref="/assistant/" />
-        </div>
+        <SettingsScreen backHref="/assistant/" />
       </AppShell>
     </>
   );
