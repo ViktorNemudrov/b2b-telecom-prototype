@@ -764,11 +764,8 @@ export function AiAssistantScreen() {
 
     replyTimeoutRef.current = window.setTimeout(async () => {
       replyTimeoutRef.current = null;
-      const finishReply = () => {
-        if (mySeq === sendSeqRef.current) setPending(false);
-      };
-
       if (mySeq !== sendSeqRef.current) return;
+      try {
 
       const w =
         typeof window !== "undefined"
@@ -785,7 +782,6 @@ export function AiAssistantScreen() {
         setMessages((m) => [...m, resolved]);
         appendChatLog(v, resolved.text, "special-mock");
         traceAiSource(getAiSourceLabel("special-mock", primaryLiveProvider), v);
-        finishReply();
         return;
       }
 
@@ -802,7 +798,6 @@ export function AiAssistantScreen() {
         if (resolved.navigateTo) {
           window.setTimeout(() => router.push(resolved.navigateTo!), 320);
         }
-        finishReply();
         return;
       }
 
@@ -815,7 +810,6 @@ export function AiAssistantScreen() {
         setMessages((m) => [...m, resolved]);
         appendChatLog(v, resolved.text, "session-memory");
         traceAiSource(getAiSourceLabel("session-memory", primaryLiveProvider), v);
-        finishReply();
         return;
       }
 
@@ -923,7 +917,6 @@ export function AiAssistantScreen() {
                     type: "live_aborted",
                     reason: abortMeta.kind === "timeout" ? "timeout" : "new_message"
                   });
-                  finishReply();
                   return;
                 }
                 if (shouldDisableProviderForSession(e)) {
@@ -961,7 +954,6 @@ export function AiAssistantScreen() {
                 type: "live_aborted",
                 reason: abortMeta.kind === "timeout" ? "timeout" : "new_message"
               });
-              finishReply();
               return;
             }
             resolved = toAiMessage({
@@ -990,7 +982,9 @@ export function AiAssistantScreen() {
       if (resolved.navigateTo) {
         window.setTimeout(() => router.push(resolved.navigateTo!), 320);
       }
-      finishReply();
+      } finally {
+        if (mySeq === sendSeqRef.current) setPending(false);
+      }
     }, 120);
   };
 
@@ -1055,8 +1049,9 @@ export function AiAssistantScreen() {
 
   return (
     <div className="space-y-4 pb-[140px]">
-      {!hasChat ? (
-        <>
+      <div>
+        {!hasChat ? (
+          <>
           <div
             className="-mx-1 cursor-grab px-1 active:cursor-grabbing"
             data-no-assistant-nav-swipe
@@ -1194,109 +1189,111 @@ export function AiAssistantScreen() {
             ) : null}
           </div>
 
-          <div className="flex flex-col items-center px-1 pt-0.5 text-center">
-            <div className="flex items-center justify-center gap-1.5">
-              <span className="text-[22px] font-semibold tracking-tight text-[#212529] dark:text-slate-100">
-                Билайн
-              </span>
-              <Image
-                src={sphereSrc}
-                alt=""
-                width={28}
-                height={28}
-                className="h-7 w-7 rounded-full object-cover shadow-sm ring-1 ring-black/5"
-              />
-              <span className="text-[22px] font-semibold tracking-tight text-accent-yellow">One</span>
+          <div className="mt-3">
+            <div className="flex flex-col items-center px-1 pt-0.5 text-center">
+              <div className="flex items-center justify-center gap-1.5">
+                <span className="text-[22px] font-semibold tracking-tight text-[#212529] dark:text-slate-100">
+                  Билайн
+                </span>
+                <Image
+                  src={sphereSrc}
+                  alt=""
+                  width={28}
+                  height={28}
+                  className="h-7 w-7 rounded-full object-cover shadow-sm ring-1 ring-black/5"
+                />
+                <span className="text-[22px] font-semibold tracking-tight text-accent-yellow">One</span>
+              </div>
+              <h1 className="mt-0.5 max-w-[18rem] text-[26px] font-semibold leading-[1.15] tracking-tight text-[#212529] dark:text-slate-100">
+                Ваш бизнес ассистент
+              </h1>
+              <p className="mt-1 text-[13px] text-[#8E8E93] dark:text-slate-400">{userProfile.legalName}</p>
             </div>
-            <h1 className="mt-2 max-w-[18rem] text-[26px] font-semibold leading-[1.15] tracking-tight text-[#212529] dark:text-slate-100">
-              Ваш бизнес ассистент
-            </h1>
-            <p className="mt-1 text-[13px] text-[#8E8E93] dark:text-slate-400">{userProfile.legalName}</p>
+
+            <div className="mt-2 flex flex-col items-center gap-2">
+              <div className="flex w-full max-w-[360px] justify-center gap-2">
+                <button
+                  type="button"
+                  className={cn(pillBase, getCustomizationButtonClasses(missedChipCustom.dimmedDisabled))}
+                  disabled={missedChipCustom.dimmedDisabled}
+                  onClick={() => {
+                    if (missedChipCustom.useMock) {
+                      setToast("Пропущенные звонки (мок из кастомизации).");
+                      return;
+                    }
+                    markMissedCallsSeen();
+                    setShowMissedCard(false);
+                    window.setTimeout(() => send("Пропущенные звонки"), 60);
+                  }}
+                >
+                  <span>Пропущенные звонки</span>
+                  {!isMissedCallsSeen() ? (
+                    <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#FF3B4E] px-1.5 text-[11px] font-bold text-white">
+                      {missedCallsCount}
+                    </span>
+                  ) : null}
+                </button>
+                <button
+                  type="button"
+                  className={cn(pillBase, getCustomizationButtonClasses(appealsChipCustom.dimmedDisabled))}
+                  disabled={appealsChipCustom.dimmedDisabled}
+                  onClick={() => {
+                    if (appealsChipCustom.useMock) {
+                      setToast("Обращения (мок из кастомизации).");
+                      return;
+                    }
+                    window.setTimeout(() => send("Обращения"), 60);
+                  }}
+                >
+                  <span>Обращения</span>
+                </button>
+              </div>
+              <div className="flex w-full max-w-[360px] flex-wrap justify-center gap-2">
+                <button
+                  type="button"
+                  className={cn(pillBase, getCustomizationButtonClasses(invoicesChipCustom.dimmedDisabled))}
+                  disabled={invoicesChipCustom.dimmedDisabled}
+                  onClick={() => {
+                    if (invoicesChipCustom.dimmedDisabled) {
+                      return;
+                    }
+                    if (invoicesChipCustom.useMock) {
+                      setToast("Мои продукты (мок из кастомизации).");
+                      return;
+                    }
+                    window.setTimeout(() => send("Мои продукты"), 60);
+                  }}
+                >
+                  <span>Мои продукты</span>
+                </button>
+                <button
+                  type="button"
+                  className={cn(pillBase, getCustomizationButtonClasses(unpaidChipCustom.dimmedDisabled))}
+                  disabled={unpaidChipCustom.dimmedDisabled}
+                  onClick={() => {
+                    if (unpaidChipCustom.useMock) {
+                      setToast("Счета на оплату (мок из кастомизации).");
+                      return;
+                    }
+                    window.setTimeout(() => send("Счета на оплату"), 60);
+                  }}
+                >
+                  <span>Счета на оплату</span>
+                  {unpaidInvoicesCount > 0 ? (
+                    <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#2D2D2D] px-1.5 text-[11px] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
+                      {unpaidInvoicesCount}
+                    </span>
+                  ) : null}
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex w-full max-w-[360px] justify-center gap-2">
-              <button
-                type="button"
-                className={cn(pillBase, getCustomizationButtonClasses(missedChipCustom.dimmedDisabled))}
-                disabled={missedChipCustom.dimmedDisabled}
-                onClick={() => {
-                  if (missedChipCustom.useMock) {
-                    setToast("Пропущенные звонки (мок из кастомизации).");
-                    return;
-                  }
-                  markMissedCallsSeen();
-                  setShowMissedCard(false);
-                  window.setTimeout(() => send("Пропущенные звонки"), 60);
-                }}
-              >
-                <span>Пропущенные звонки</span>
-                {!isMissedCallsSeen() ? (
-                  <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#FF3B4E] px-1.5 text-[11px] font-bold text-white">
-                    {missedCallsCount}
-                  </span>
-                ) : null}
-              </button>
-              <button
-                type="button"
-                className={cn(pillBase, getCustomizationButtonClasses(appealsChipCustom.dimmedDisabled))}
-                disabled={appealsChipCustom.dimmedDisabled}
-                onClick={() => {
-                  if (appealsChipCustom.useMock) {
-                    setToast("Обращения (мок из кастомизации).");
-                    return;
-                  }
-                  window.setTimeout(() => send("Обращения"), 60);
-                }}
-              >
-                <span>Обращения</span>
-              </button>
-            </div>
-            <div className="flex w-full max-w-[360px] flex-wrap justify-center gap-2">
-              <button
-                type="button"
-                className={cn(pillBase, getCustomizationButtonClasses(invoicesChipCustom.dimmedDisabled))}
-                disabled={invoicesChipCustom.dimmedDisabled}
-                onClick={() => {
-                  if (invoicesChipCustom.dimmedDisabled) {
-                    return;
-                  }
-                  if (invoicesChipCustom.useMock) {
-                    setToast("Мои продукты (мок из кастомизации).");
-                    return;
-                  }
-                  window.setTimeout(() => send("Мои продукты"), 60);
-                }}
-              >
-                <span>Мои продукты</span>
-              </button>
-              <button
-                type="button"
-                className={cn(pillBase, getCustomizationButtonClasses(unpaidChipCustom.dimmedDisabled))}
-                disabled={unpaidChipCustom.dimmedDisabled}
-                onClick={() => {
-                  if (unpaidChipCustom.useMock) {
-                    setToast("Счета на оплату (мок из кастомизации).");
-                    return;
-                  }
-                  window.setTimeout(() => send("Счета на оплату"), 60);
-                }}
-              >
-                <span>Счета на оплату</span>
-                {unpaidInvoicesCount > 0 ? (
-                  <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#2D2D2D] px-1.5 text-[11px] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
-                    {unpaidInvoicesCount}
-                  </span>
-                ) : null}
-              </button>
-            </div>
-          </div>
+          </>
+        ) : null}
 
-        </>
-      ) : null}
-
-      <div className="space-y-3">
-        {hasChat ? (
+        <div className="space-y-3">
+          {hasChat ? (
           <button
             type="button"
             aria-label="Назад"
@@ -1318,9 +1315,9 @@ export function AiAssistantScreen() {
               <ChevronLeft className="h-4 w-4" aria-hidden />
             </span>
           </button>
-        ) : null}
-        <AnimatePresence initial={false}>
-          {hasChat ? (
+          ) : null}
+          <AnimatePresence initial={false}>
+            {hasChat ? (
             <motion.div
               key="chat"
               initial={{ opacity: 0, y: 8 }}
@@ -1585,8 +1582,9 @@ export function AiAssistantScreen() {
               ))}
               <div ref={chatEndRef} className="h-[112px]" />
             </motion.div>
-          ) : null}
-        </AnimatePresence>
+            ) : null}
+          </AnimatePresence>
+        </div>
       </div>
 
       {!hasChat && chipTags.length > 0 ? (
