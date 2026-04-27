@@ -1,22 +1,22 @@
 # Досье для системного архитектора
 
 ## Цель
-- Определить платформенную и инфраструктурную архитектуру production-системы.
+- Определить платформенную и инфраструктурную архитектуру промышленной системы.
 
 ## Топология окружений
 - `dev` -> `test` -> `stage` -> `prod`.
 - Изоляция секретов и конфигурации по окружениям.
-- Feature toggles per environment.
+- Фича-флаги по окружениям.
 
 ## Базовый инфраструктурный контур
 - Контейнеризация сервисов.
-- IaC (Terraform/Pulumi) как single source of infra truth.
-- Managed DB + managed cache.
-- Centralized logging/metrics/tracing.
+- IaC (Terraform/Pulumi) как единый источник правды по инфраструктуре.
+- Управляемая БД + управляемый кэш.
+- Централизованные логи/метрики/трейсинг.
 
 ## Архитектура исполнения
 - Edge/web layer (CDN + WAF).
-- App layer (FE hosting + BFF/API services).
+- Прикладной слой (FE-хостинг + BFF/API сервисы).
 - Data layer (OLTP + object storage + analytics).
 - Integration layer (connectors/adapters for external systems).
 
@@ -26,13 +26,13 @@
 - service-to-service auth (mTLS/JWT).
 - Secret management:
 - KMS/Vault-like storage.
-- rotation policy.
+- политика ротации.
 - Network controls:
-- private subnets for data services.
-- egress restrictions for AI provider calls.
+- приватные подсети для сервисов данных.
+- ограничения исходящего трафика для вызовов AI-провайдеров.
 
 ## Архитектура надежности
-- Multi-AZ deployment for critical services.
+- Мульти-AZ развёртывание для критичных сервисов.
 - Health checks + auto-restart.
 - Circuit breakers for external dependencies.
 - Retry budgets and timeout standards.
@@ -45,17 +45,17 @@
 
 ## Архитектура наблюдаемости
 - Structured logs with trace IDs.
-- Golden signals dashboards:
+- Дашборды golden signals:
 - latency,
 - traffic,
 - errors,
 - saturation.
-- Product metrics dashboards linked to technical telemetry.
+- Дашборды продуктовых метрик, связанные с технической телеметрией.
 
 ## Резервирование и DR
 - Backup schedule for DB/object storage.
 - Restore drills quarterly.
-- DR runbooks:
+- DR-ранбуки:
 - regional outage,
 - external provider outage,
 - data corruption.
@@ -64,22 +64,22 @@
 - On-call rotation.
 - Incident severity matrix.
 - Postmortem process (blameless).
-- SRE scorecard for service maturity.
+- SRE-скоркард зрелости сервисов.
 
-## Контроли соответствия (enterprise baseline)
+## Контроли соответствия (базовый enterprise-профиль)
 - Access logging and audit retention.
-- PII handling policy and masking.
-- Vulnerability scanning and dependency governance.
+- Политика работы с PII и маскирование.
+- Сканирование уязвимостей и контроль зависимостей.
 - Security patch SLA.
 
 ## Шаблон для Confluence (страница системной архитектуры)
 ### 1. Обзор
 - Область
-- Services/components
+- Сервисы/компоненты
 
 ### 2. Инфраструктура
-- Environment map
-- Deployment model
+- Карта окружений
+- Модель развёртывания
 
 ### 3. Безопасность
 - IAM
@@ -92,17 +92,17 @@
 - Runbooks
 
 ### 5. Наблюдаемость
-- Metrics
-- Alerts
-- Dashboards
+- Метрики
+- Алерты
+- Дашборды
 
 ### 6. Операции
-- On-call
-- Incident process
+- Дежурства on-call
+- Процесс инцидентов
 
 ## Первые системно-архитектурные артефакты
-- Environment blueprint.
+- Блюпринт окружений.
 - Security model v1.
 - DR strategy.
 - Observability standards.
-- Ops runbook set.
+- Набор операционных ранбуков.

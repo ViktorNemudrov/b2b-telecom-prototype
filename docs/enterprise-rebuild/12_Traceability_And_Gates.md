@@ -12,8 +12,8 @@
 - `Design Artifact`
 - `API Contract`
 - `FE/BE Task IDs`
-- `Manual Test IDs`
-- `Automation Test IDs`
+- `ID ручных тестов`
+- `ID автотестов`
 - `Monitoring KPI/Event`
 - `Версия релиза`
 - `Owner`
@@ -36,18 +36,18 @@
 - Гейт B: сборка готова
 - API contracts frozen v1,
 - test strategy утверждена,
-- environments готовы.
+- окружения готовы.
 - Гейт C: кандидат в релиз
 - critical regression pass,
-- security/performance baseline pass,
-- observability dashboards готовы.
-- Гейт D: go-live
+- базовая линия по безопасности/производительности пройдена,
+- дашборды наблюдаемости готовы.
+- Гейт D: запуск в продуктив
 - UAT sign-off,
-- runbooks + support model готовы,
+- ранбуки + модель поддержки готовы,
 - rollback procedure проверен.
 - Гейт E: выход из hypercare
 - стабильность SLO,
-- снижение incident rate,
+- снижение частоты инцидентов,
 - закрыт open high-risk list.
 
 ## Чеклист готовности к релизу
@@ -59,10 +59,10 @@
 - Security:
 - no unresolved critical vulnerabilities.
 - Performance:
-- SLO baseline met.
+- базовая линия SLO достигнута.
 - Operations:
-- alerting/on-call/runbook ready.
-- Product:
+- алертинг/on-call/ранбук готовы.
+- Продукт:
 - KPI instrumentation verified.
 
 ## Политика порогов по дефектам (пример)
@@ -81,18 +81,18 @@
 ## Метрики мониторинговых гейтов
 - API error rate.
 - P95 latency by endpoint.
-- Assistant success-to-fallback ratio.
+- Соотношение успешных ответов ассистента к резервным сценариям.
 - External provider availability.
 - Web Vitals фронтенда.
 
 ## Управленческие встречи и входы
-- Product Review:
+- Продуктовый обзор:
 - scope, KPI, decisions.
-- Architecture Board:
+- Архитектурный совет:
 - ADR, constraints, tech risks.
-- Quality Board:
+- Совет по качеству:
 - test coverage, defects, gate status.
-- Release Board:
+- Релизный совет:
 - readiness decision.
 
 ## Шаблон для Confluence (страница RTM)
@@ -114,4 +114,4 @@
 ## Минимальные рекомендации по инструментам
 - Единый ID namespace для BR/FR/NFR/Test.
 - Автоэкспорт тест-результатов в RTM репорт.
-- Дашборд качества релиза для PO/PM/QA/Architects.
+- Дашборд качества релиза для PO/PM/QA/Архитекторов.

@@ -10,7 +10,7 @@
 - assistant -> calls,
 - auth/session/navigation stability.
 - Кросс-сценарии:
-- fallback/error handling,
+- обработка резервного сценария/ошибок,
 - permissions,
 - localization/theme parity.
 
@@ -26,7 +26,7 @@
 - Требование: каждый FR имеет минимум 1 positive + 1 negative сценарий.
 - Для AI сценариев:
 - expected behavior по intent,
-- fallback behavior,
+- поведение резервного сценария,
 - safety behavior.
 
 ## Тестовые артефакты
@@ -87,7 +87,7 @@
 ## Пример матрицы регрессии (минимум)
 - R1: Auth/session navigation.
 - R2: Assistant deterministic intents.
-- R3: Assistant live fallback chain.
+- R3: Цепочка резервирования ассистента для живого ИИ.
 - R4: Invoices list/detail/status.
 - R5: Appeals list/create/filter.
 - R6: Missed calls and details.

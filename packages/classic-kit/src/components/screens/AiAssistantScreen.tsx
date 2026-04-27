@@ -1588,7 +1588,7 @@ export function AiAssistantScreen() {
       </div>
 
       {!hasChat && chipTags.length > 0 ? (
-        <div className="fixed bottom-[122px] left-0 right-0 z-30 mx-auto w-full max-w-[430px]">
+        <div className="fixed bottom-[calc(128px+clamp(0px,env(safe-area-inset-bottom),14px))] left-0 right-0 z-30 mx-auto w-full max-w-[430px]">
           <div className="safe-px">
             <div className="flex flex-wrap gap-1.5">
               {chipTags.map((label) => (
