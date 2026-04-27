@@ -7,7 +7,7 @@ const sphereFallbackSrc = "/mockups/Шар.png";
  */
 export function LaunchScreen() {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-[rgb(var(--bg))] px-4">
+    <div className="flex min-h-dvh items-center justify-center bg-white px-4 dark:bg-slate-900">
       <div className="flex flex-col items-center">
         <div className="launch-sphere-pulse h-[160px] w-[160px] overflow-hidden rounded-full">
           {/* eslint-disable-next-line @next/next/no-img-element */}

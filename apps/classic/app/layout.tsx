@@ -15,6 +15,24 @@ const inter = Inter({
   variable: "--font-inter"
 });
 
+const CLASSIC_THEME_BOOTSTRAP_SCRIPT = `
+(() => {
+  try {
+    const storageKey = "b2b_theme_mode_v1";
+    const raw = window.localStorage.getItem(storageKey);
+    const mode = raw === "light" || raw === "dark" || raw === "system" ? raw : "system";
+    const resolved = mode === "system"
+      ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+      : mode;
+    const root = document.documentElement;
+    if (resolved === "dark") root.classList.add("dark");
+    else root.classList.remove("dark");
+  } catch {
+    // noop
+  }
+})();
+`;
+
 export const viewport: Viewport = {
   themeColor: "#F7F8FA",
   viewportFit: "cover"
@@ -39,7 +57,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" suppressHydrationWarning>
-      <body className={`min-h-dvh antialiased ${inter.variable} font-sans`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: CLASSIC_THEME_BOOTSTRAP_SCRIPT }} />
+      </head>
+      <body className={`min-h-dvh bg-white antialiased dark:bg-slate-950 ${inter.variable} font-sans`}>
         <div className="relative mx-auto min-h-dvh w-full max-w-[430px]">
           <ThemeProvider>
             <DemoSessionProvider>

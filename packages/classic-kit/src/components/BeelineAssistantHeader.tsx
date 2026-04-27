@@ -128,7 +128,6 @@ export function BeelineAssistantHeader() {
   const pathname = usePathname() ?? "";
   if (shouldHideClassicTopNav(pathname)) return null;
 
-  const isProfile = pathname === "/settings" || pathname.startsWith("/settings/");
   const isMain =
     pathname === "/assistant" ||
     pathname === "/assistant/" ||
@@ -143,13 +142,13 @@ export function BeelineAssistantHeader() {
   const iconActive = "text-slate-800 dark:text-slate-100";
 
   return (
-    <header className="sticky top-0 z-40 bg-[rgb(var(--bg))]/95 backdrop-blur dark:bg-[rgb(var(--bg))]/95">
-      <div className="safe-px flex h-11 items-center gap-2">
+    <header className="sticky top-0 z-40 bg-white pt-1 dark:bg-slate-950">
+      <div className="safe-px flex h-10 items-center gap-2">
         <Link
           href="/settings/"
           className={cn(
-            "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200/90 bg-[rgb(var(--card))] transition",
-            "hover:bg-slate-50/80 active:translate-y-[1px] dark:border-slate-600 dark:bg-[rgb(var(--card))] dark:hover:bg-slate-800",
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent-yellow/70 bg-accent-yellow text-slate-900 transition",
+            "hover:brightness-95 active:translate-y-[1px]",
             getCustomizationButtonClasses(profileCustom.dimmedDisabled)
           )}
           aria-label="Профиль"
@@ -164,25 +163,17 @@ export function BeelineAssistantHeader() {
             }
           }}
         >
-          <div
-            className={cn(
-              "flex h-9 w-9 items-center justify-center rounded-2xl",
-              isProfile
-                ? "bg-accent-yellow text-slate-900"
-                : "bg-accent-dark/5 text-slate-700 dark:bg-white/10 dark:text-slate-200"
-            )}
-          >
-            <span className="text-xs font-bold">ИП</span>
-          </div>
+          <span className="inline-flex items-center justify-center text-[9px] font-bold leading-none translate-y-[1.25px]">ИП</span>
         </Link>
 
-        <div className="flex h-11 min-w-0 flex-1 items-center rounded-full bg-slate-200/40 p-1 dark:bg-slate-700/40">
+        <div className="flex h-10 min-w-0 flex-1 items-center rounded-full border border-slate-200/80 bg-white p-1 dark:border-white/15 dark:bg-[rgb(var(--bg))]">
           <Link
             href="/assistant/?reset=1"
             className={cn(
-              "flex min-w-0 flex-1 items-center justify-center rounded-full px-0.5 transition-colors",
-              isMain &&
-                "bg-[rgb(var(--card))] shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:bg-slate-800/90 dark:shadow-none",
+              "flex min-w-0 flex-1 items-center justify-center rounded-full border border-transparent px-0.5 transition-colors",
+              isMain
+                ? "border-slate-200/80 bg-slate-100/80 text-slate-900 dark:border-white/20 dark:bg-white/10 dark:text-slate-100"
+                : "text-slate-400 dark:text-slate-500",
               getCustomizationButtonClasses(mainSwitchCustom.dimmedDisabled)
             )}
             aria-label="Главный экран"
@@ -202,13 +193,13 @@ export function BeelineAssistantHeader() {
               <SphereMagnifierMark compact active={isMain} />
             </span>
           </Link>
-
           <Link
             href="/widgets/"
             className={cn(
-              "flex min-w-0 flex-1 items-center justify-center rounded-full transition-colors",
-              isWidgets &&
-                "bg-[rgb(var(--card))] shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:bg-slate-800/90 dark:shadow-none",
+              "flex min-w-0 flex-1 items-center justify-center rounded-full border border-transparent transition-colors",
+              isWidgets
+                ? "border-slate-200/80 bg-slate-100/80 text-slate-900 dark:border-white/20 dark:bg-white/10 dark:text-slate-100"
+                : "text-slate-400 dark:text-slate-500",
               getCustomizationButtonClasses(widgetsSwitchCustom.dimmedDisabled)
             )}
             aria-label="Виджеты"

@@ -45,8 +45,8 @@ export function GlobalAppHeader({
             }
           }}
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-accent-dark/5 dark:bg-white/10">
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-200">ИП</span>
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-dark/5 dark:bg-white/10">
+            <span className="inline-flex items-center justify-center leading-none text-xs font-bold text-slate-700 translate-y-[1.25px] dark:text-slate-200">ИП</span>
           </div>
         </Link>
 
