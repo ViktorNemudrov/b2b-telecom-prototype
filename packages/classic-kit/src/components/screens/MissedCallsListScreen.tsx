@@ -30,14 +30,13 @@ export function MissedCallsListScreen() {
 
   return (
     <div className="space-y-4 pb-6">
-      {/* Заголовок с количеством */}
       <div className="flex items-start justify-between gap-2">
-        <p className="flex-1 text-sm leading-relaxed text-[rgb(var(--text))]">
+        <p className="flex-1 text-sm leading-relaxed text-[rgb(var(--text))]100">
           {missedCallsIntroText(missedCallsCount)}
         </p>
         <button
           type="button"
-          className="shrink-0 rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--card))] p-2 transition hover:brightness-105"
+          className="shrink-0 rounded-full border border-[rgb(var(--border))] p-2600"
           aria-label="Озвучить"
           onClick={() => {
             if (!("speechSynthesis" in window)) return;
@@ -51,14 +50,13 @@ export function MissedCallsListScreen() {
         </button>
       </div>
 
-      {/* Список звонков */}
-      <div className="rounded-3xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] overflow-hidden">
-        {groups.map(([date, rows], gi) => (
+      <div className="rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--card))]700800">
+        {groups.map(([date, rows]) => (
           <div key={date}>
-            <div className={`px-4 pb-1.5 pt-3 text-[11px] font-semibold uppercase tracking-wide text-[rgb(var(--muted))] ${gi > 0 ? "border-t border-[rgb(var(--border))]" : ""}`}>
+            <div className="border-b border-[rgb(var(--border))] px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-[rgb(var(--muted))]600">
               {date}
             </div>
-            <div className="divide-y divide-[rgb(var(--border))] px-2">
+            <div className="divide-y divide-[rgb(var(--border))] px-2 dark:divide-[rgb(var(--border))]">
               {rows.map((row) => (
                 <CommunicationLogRow key={row.id} row={row} />
               ))}

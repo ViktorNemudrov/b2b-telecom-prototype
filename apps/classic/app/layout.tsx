@@ -20,7 +20,7 @@ const CLASSIC_THEME_BOOTSTRAP_SCRIPT = `
   try {
     const storageKey = "b2b_theme_mode_v1";
     const raw = window.localStorage.getItem(storageKey);
-    const mode = raw === "light" || raw === "dark" || raw === "system" ? raw : "dark";
+    const mode = raw === "light" || raw === "dark" || raw === "system" ? raw : "system";
     const resolved = mode === "system"
       ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
       : mode;
