@@ -69,12 +69,19 @@ export function CallDetailClient({
       />
 
       <div className="mt-4">
-        <h1 className="text-xl font-semibold leading-tight text-[rgb(var(--text))]">{title}</h1>
+        <h1 className="text-xl font-bold leading-tight text-[rgb(var(--text))]">{title}</h1>
         <p className="mt-1 text-sm text-[rgb(var(--muted))]">{call.phone}</p>
-        <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-accent-orange/15 px-3 py-1.5 text-xs font-semibold text-accent-orange dark:bg-accent-orange/20">
-          <span className="opacity-90">{call.missed ? "Пропущенный" : "Входящий"}</span>
-          <span className="text-white/70">·</span>
-          <span>Филатов</span>
+        <div className="mt-3 inline-flex items-center gap-2">
+          <span className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+            call.missed
+              ? "bg-rose-500/15 text-rose-500"
+              : "bg-accent-orange/15 text-accent-orange"
+          }`}>
+            {call.missed ? "Пропущенный" : "Входящий"}
+          </span>
+          <span className="rounded-full bg-[rgb(var(--surface-2))] px-3 py-1.5 text-xs font-semibold text-[rgb(var(--muted))]">
+            Филатов
+          </span>
         </div>
       </div>
 
@@ -86,13 +93,16 @@ export function CallDetailClient({
 
       <Card className="mt-4">
         <CardContent className="pb-5 pt-5">
-          <div className="text-base font-semibold text-[rgb(var(--text))]">
-            Итоги разговора <span className="text-accent-orange">⭐</span>
+          <div className="text-base font-bold text-[rgb(var(--text))]">
+            Итоги разговора <span className="text-accent-amber">★</span>
           </div>
           <p className="mt-1 text-xs text-[rgb(var(--muted))]">Ключевые моменты разговора и запросы клиента</p>
-          <ul className="mt-4 list-disc space-y-2 pl-4 text-sm text-[rgb(var(--text))]">
+          <ul className="mt-4 space-y-2.5 text-sm text-[rgb(var(--text))]">
             {bullets.map((b, i) => (
-              <li key={i}>{b}</li>
+              <li key={i} className="flex items-start gap-2">
+                <span className="mt-0.5 h-4 w-4 shrink-0 rounded-full bg-accent-orange/20 text-center text-[10px] font-bold leading-4 text-accent-orange">{i + 1}</span>
+                <span>{b}</span>
+              </li>
             ))}
           </ul>
           <button
@@ -106,13 +116,13 @@ export function CallDetailClient({
               setShowTranscript((v) => !v);
             }}
             className={[
-              "mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E8D5F5] via-[#C4B5FD] to-[#7E6DBF] px-4 py-3 text-sm font-semibold text-[rgb(var(--text))] shadow-softSm transition hover:opacity-95 active:translate-y-[1px]",
+              "mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#8B5CF6] to-[#6D28D9] px-4 py-3 text-sm font-semibold text-white shadow-softSm transition hover:opacity-90 active:scale-[0.98]",
               getCustomizationButtonClasses(transcriptCustom.dimmedDisabled)
             ].join(" ")}
             disabled={transcriptCustom.dimmedDisabled}
           >
             <FileText className="h-4 w-4" />
-            Расшифровка
+            {showTranscript ? "Скрыть расшифровку" : "Расшифровка"}
           </button>
           {showTranscript ? (
             <div className="mt-4 rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--surface-2))] p-3 text-sm whitespace-pre-wrap text-[rgb(var(--text))]">

@@ -25,20 +25,20 @@ export function WelcomeScreen({
 
   return (
     <div className="safe-px flex min-h-dvh flex-col bg-[rgb(var(--bg))] text-[rgb(var(--text))]">
-      <header className="flex items-center justify-between border-b border-[rgb(var(--border))]/80 bg-[rgb(var(--bg))]/95 pt-3 pb-3 backdrop-blur">
+      <header className="flex items-center justify-between border-b border-[rgb(var(--border))] bg-[rgb(var(--bg))]/95 pt-3 pb-3 backdrop-blur-md">
         <Image
           src="/beeline-sphere.svg"
           alt=""
           width={36}
           height={36}
-          className="h-9 w-9 shrink-0 rounded-full shadow-softSm ring-1 ring-[rgb(var(--border))]/80"
+          className="h-9 w-9 shrink-0 rounded-full shadow-softSm ring-1 ring-[rgb(var(--border))]"
         />
         <button
           type="button"
           onClick={() => {
             openDevelopmentStub("Раздел «Помощь» и база знаний.");
           }}
-          className="rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--card))] px-4 py-2 text-[11px] font-bold tracking-wide text-[rgb(var(--text))] shadow-softSm transition hover:bg-[rgb(var(--surface-2))]"
+          className="rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--card))] px-4 py-2 text-[11px] font-bold tracking-wide text-[rgb(var(--text))] shadow-softSm transition hover:brightness-105"
         >
           ПОМОЩЬ
         </button>
@@ -51,7 +51,7 @@ export function WelcomeScreen({
             <span className="text-[rgb(var(--text))]">в </span>
             <span className="relative inline-block font-semibold">
               <span className="text-[rgb(var(--text))]">билайн!</span>
-              <span className="absolute -bottom-1 left-0 right-0 h-1.5 rounded-full bg-accent-yellow" aria-hidden />
+              <span className="absolute -bottom-1 left-0 right-0 h-1.5 rounded-full bg-accent-orange" aria-hidden />
             </span>
           </span>
         </h1>
@@ -59,7 +59,7 @@ export function WelcomeScreen({
         <div className="mt-auto pb-[max(32px,env(safe-area-inset-bottom))]">
           <Link
             href={loginHref}
-            className="flex w-full items-center justify-center rounded-2xl bg-[rgb(var(--card))] border border-[rgb(var(--border))] py-4 text-base font-semibold lowercase text-white shadow-soft transition hover:brightness-110 active:scale-[0.97]"
+            className="flex w-full items-center justify-center rounded-2xl bg-accent-orange py-4 text-base font-semibold lowercase text-white shadow-soft transition hover:brightness-105 active:scale-[0.98]"
           >
             войти
           </Link>
