@@ -6,7 +6,6 @@ import { Card, CardContent } from "@shared/components/ui/card";
 import { CLASSIC_PRODUCT_VERSION } from "@shared/lib/productVersion";
 
 const FAQ_VERSION_COMMIT_TIMESTAMPS: Record<string, string> = {
-  "v.0.3.28": "2026-06-01T18:00:00+03:00",
   "v.0.3.27": "2026-04-27T18:04:00+03:00",
   "v.0.3.26": "2026-04-27T15:08:00+03:00",
   "v.0.3.25": "2026-04-27T13:42:00+03:00",
@@ -864,7 +863,7 @@ export function FaqVersionsScreen({ backHref = "/settings/" }: { backHref?: stri
 
       <Card>
         <CardContent className="space-y-2 pb-4 pt-4">
-          <p className="text-sm text-[rgb(var(--text))]">
+          <p className="text-sm text-slate-600 dark:text-slate-300">
             Здесь собраны основные изменения по версиям продукта.
           </p>
         </CardContent>
@@ -873,13 +872,13 @@ export function FaqVersionsScreen({ backHref = "/settings/" }: { backHref?: stri
       {versions.map((version) => (
         <Card key={version.tag}>
           <CardContent className="space-y-2 pb-4 pt-4">
-            <h2 className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm font-semibold text-[rgb(var(--text))]">
+            <h2 className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
               <span>{version.tag}</span>
-              <span className="text-xs font-normal tabular-nums text-[rgb(var(--text))]">
+              <span className="text-xs font-normal tabular-nums text-slate-500 dark:text-slate-400">
                 {formatVersionReleasedAtLabel(version.tag)}
               </span>
             </h2>
-            <ul className="list-disc space-y-1 pl-5 text-sm text-[rgb(var(--text))]">
+            <ul className="list-disc space-y-1 pl-5 text-sm text-slate-700 dark:text-slate-300">
               {version.items.map((line) => (
                 <li key={line}>{line}</li>
               ))}
@@ -889,7 +888,7 @@ export function FaqVersionsScreen({ backHref = "/settings/" }: { backHref?: stri
       ))}
 
       <Card className="opacity-85">
-        <CardContent className="space-y-1 pb-4 pt-4 text-xs text-[rgb(var(--text))]">
+        <CardContent className="space-y-1 pb-4 pt-4 text-xs text-slate-500 dark:text-slate-400">
           <p>Дизайнер: Балашов Влад</p>
           <p>Создатель: Немудров Виктор</p>
           <p>Владелец продукта: Пальчиков Леонид</p>

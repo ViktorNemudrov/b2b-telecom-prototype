@@ -39,7 +39,7 @@ function FeedCallCard({
   const canExpand = transcript.trim().length > 140 || transcript.includes("\n");
 
   return (
-    <Card className="rounded-[22px] border-[#E5E7EE] bg-white shadow-none dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))]">
+    <Card className="rounded-[22px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
       <CardContent className="space-y-3 pb-3 pt-3">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">
@@ -51,16 +51,16 @@ function FeedCallCard({
               )}
             </span>
             <div>
-              <div className="text-xl font-semibold text-[#1F2430] dark:text-[rgb(var(--text))]">{title}</div>
-              <div className="text-sm text-[#9CA3B5] dark:text-[rgb(var(--text))]">{subtitle}</div>
+              <div className="text-xl font-semibold text-[#1F2430] dark:text-slate-100">{title}</div>
+              <div className="text-sm text-[#9CA3B5] dark:text-slate-400">{subtitle}</div>
             </div>
           </div>
-          <span className="text-xs text-[#C0C6D2] dark:text-[rgb(var(--text))]">{time}</span>
+          <span className="text-xs text-[#C0C6D2] dark:text-slate-500">{time}</span>
         </div>
 
         <div className="flex flex-wrap gap-1.5 text-[12px] text-[#2B6CE0] dark:text-accent-yellow">
           {tags.map((tag) => (
-            <span key={tag} className="rounded-full bg-[#F5F8FF] px-2.5 py-1 dark:bg-[rgb(var(--surface-2))]">
+            <span key={tag} className="rounded-full bg-[#F5F8FF] px-2.5 py-1 dark:bg-slate-700">
               {tag}
             </span>
           ))}
@@ -75,10 +75,10 @@ function FeedCallCard({
             className="border-[#ECEEF3] bg-[#FAFBFD] p-2"
           />
         ) : null}
-        <div className="rounded-xl border border-[#ECEEF3] bg-[#FBFCFF] px-3 py-2 dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))]">
-          <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9AA0AF] dark:text-[rgb(var(--text))]">Расшифровка</div>
+        <div className="rounded-xl border border-[#ECEEF3] bg-[#FBFCFF] px-3 py-2 dark:border-slate-600 dark:bg-slate-700">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-[#9AA0AF] dark:text-slate-400">Расшифровка</div>
           <p
-            className={`mt-1 whitespace-pre-line text-sm leading-relaxed text-[#4B5563] dark:text-[rgb(var(--text))] ${
+            className={`mt-1 whitespace-pre-line text-sm leading-relaxed text-[#4B5563] dark:text-slate-200 ${
               expanded ? "" : "line-clamp-2"
             }`}
           >
@@ -157,7 +157,7 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
   return (
     <div className="space-y-3 pb-6">
       {showTitle ? (
-        <h1 className="px-2 text-center text-lg font-bold leading-snug tracking-tight text-[#1F2430] dark:text-[rgb(var(--text))]">
+        <h1 className="px-2 text-center text-lg font-bold leading-snug tracking-tight text-[#1F2430] dark:text-slate-100">
           Лента событий
         </h1>
       ) : null}
@@ -172,7 +172,7 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
                 "snap-start shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-medium transition",
                 feedFilter === "missed"
                   ? "border-[#2B6CE0] bg-[#F0F6FF] text-[#1d4ed8] dark:border-sky-500 dark:bg-sky-950/40 dark:text-sky-100"
-                  : "border-[#E5E7EE] bg-white text-[#343A4A] dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))] dark:text-[rgb(var(--text))]"
+                  : "border-[#E5E7EE] bg-white text-[#343A4A] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
               )}
               aria-pressed={feedFilter === "missed"}
               aria-label="Фильтр: пропущенные звонки"
@@ -191,7 +191,7 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
                 "snap-start shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-medium transition",
                 feedFilter === "tips"
                   ? "border-violet-500 bg-violet-50 text-violet-950 dark:border-violet-500 dark:bg-violet-950/50 dark:text-violet-100"
-                  : "border-[#E5E7EE] bg-gradient-to-r from-[#EFE9FF] to-[#F4F0FF] text-[#343A4A] dark:border-[rgb(var(--border))] dark:from-violet-900/40 dark:to-[rgb(var(--text))] dark:text-[rgb(var(--text))]"
+                  : "border-[#E5E7EE] bg-gradient-to-r from-[#EFE9FF] to-[#F4F0FF] text-[#343A4A] dark:border-slate-600 dark:from-violet-900/40 dark:to-slate-800 dark:text-slate-100"
               )}
               aria-pressed={feedFilter === "tips"}
               aria-label="Фильтр: советы от ассистента"
@@ -205,7 +205,7 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
                 "snap-start shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-medium transition",
                 feedFilter === "invoices"
                   ? "border-emerald-600 bg-emerald-50 text-emerald-950 dark:border-emerald-500 dark:bg-emerald-950/40 dark:text-emerald-100"
-                  : "border-[#E5E7EE] bg-white text-[#343A4A] dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))] dark:text-[rgb(var(--text))]"
+                  : "border-[#E5E7EE] bg-white text-[#343A4A] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
               )}
               aria-pressed={feedFilter === "invoices"}
               aria-label="Фильтр: счета на оплату"
@@ -219,13 +219,13 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
       <div className="mx-auto w-fit rounded-full bg-[#EEF0F4] px-3 py-1 text-xs text-[#A2A8B8]">сегодня</div>
 
       {!hasVisibleContent && feedFilter !== "all" ? (
-        <p className="px-2 text-center text-sm text-[#9AA0AF] dark:text-[rgb(var(--text))]">
+        <p className="px-2 text-center text-sm text-[#9AA0AF] dark:text-slate-400">
           Нет событий по выбранному фильтру. Выберите другой фильтр или сбросьте, нажав активный чип ещё раз.
         </p>
       ) : null}
 
       {v(feedFilter, "dailyReport") && !dismissDaily ? (
-        <Card className="rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))]">
+        <Card className="rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
           <CardContent className="flex items-center gap-3 pb-3 pt-3">
             <button
               type="button"
@@ -254,16 +254,16 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
               )}
             </button>
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1 text-sm font-semibold text-[#343A4A] dark:text-[rgb(var(--text))]">
+              <div className="flex items-center gap-1 text-sm font-semibold text-[#343A4A] dark:text-slate-100">
                 <Sparkles className="h-4 w-4 text-[#9C8AF2]" />
                 Ежедневный отчет
               </div>
-              <div className="text-xs text-[#A2A8B8] dark:text-[rgb(var(--text))]">за 24 апреля</div>
-              <p className="mt-1 text-xs leading-relaxed text-[#6B7280] dark:text-[rgb(var(--text))]">{dailyReportText}</p>
+              <div className="text-xs text-[#A2A8B8] dark:text-slate-400">за 24 апреля</div>
+              <p className="mt-1 text-xs leading-relaxed text-[#6B7280] dark:text-slate-300">{dailyReportText}</p>
             </div>
             <button
               type="button"
-              className="shrink-0 rounded-full p-1 text-[#C7CBD6] hover:bg-[rgb(var(--surface-2))] dark:hover:bg-[rgb(var(--surface-2))]"
+              className="shrink-0 rounded-full p-1 text-[#C7CBD6] hover:bg-slate-100 dark:hover:bg-slate-700"
               aria-label="Закрыть"
               onClick={() => setDismissDaily(true)}
             >
@@ -319,10 +319,10 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/75">✦</span>
                 Совет от Ассистента
               </div>
-              <div className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 dark:bg-[rgb(var(--surface-2))]">
+              <div className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 dark:bg-slate-800">
                 <div>
-                  <div className="text-xl font-semibold text-[#303646] dark:text-[rgb(var(--text))]">Пополните пакет минут</div>
-                  <div className="text-sm text-[#9AA0AF] dark:text-[rgb(var(--text))]">Осталось 25 минут</div>
+                  <div className="text-xl font-semibold text-[#303646] dark:text-slate-100">Пополните пакет минут</div>
+                  <div className="text-sm text-[#9AA0AF] dark:text-slate-400">Осталось 25 минут</div>
                 </div>
                 <button
                   type="button"
@@ -330,7 +330,7 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
                     e.stopPropagation();
                     router.push("/assistant/?q=Как пополнить пакет минут");
                   }}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F1F3F7] text-xl text-[#2D3342] dark:bg-[rgb(var(--surface-2))] dark:text-[rgb(var(--text))]"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F1F3F7] text-xl text-[#2D3342] dark:bg-slate-700 dark:text-slate-100"
                 >
                   +
                 </button>
@@ -341,19 +341,19 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
       ) : null}
 
       {v(feedFilter, "tariffBalance") ? (
-        <Card className="rounded-[22px] border-[#E5E7EE] bg-white shadow-none dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))]">
+        <Card className="rounded-[22px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
           <CardContent className="space-y-2 pb-4 pt-4">
-            <div className="text-2xl font-semibold text-[#343A4A] dark:text-[rgb(var(--text))]">Остаток по тарифу</div>
-            <div className="text-sm text-[#9AA0AF] dark:text-[rgb(var(--text))]">на 24 апреля</div>
+            <div className="text-2xl font-semibold text-[#343A4A] dark:text-slate-100">Остаток по тарифу</div>
+            <div className="text-sm text-[#9AA0AF] dark:text-slate-400">на 24 апреля</div>
             <div className="grid grid-cols-3 gap-2">
-              <div className="col-span-2 rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3 dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))]">
-                <div className="text-xl font-semibold text-[#303646] dark:text-[rgb(var(--text))]">298 гб</div>
+              <div className="col-span-2 rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3 dark:border-slate-600 dark:bg-slate-700">
+                <div className="text-xl font-semibold text-[#303646] dark:text-slate-100">298 гб</div>
               </div>
-              <div className="rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3 dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))]">
-                <div className="text-xl font-semibold text-[#303646] dark:text-[rgb(var(--text))]">1 545 мин</div>
+              <div className="rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3 dark:border-slate-600 dark:bg-slate-700">
+                <div className="text-xl font-semibold text-[#303646] dark:text-slate-100">1 545 мин</div>
               </div>
-              <div className="col-span-2 rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3 dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))]">
-                <div className="text-xl font-semibold text-[#303646] dark:text-[rgb(var(--text))]">100 sms</div>
+              <div className="col-span-2 rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] p-3 dark:border-slate-600 dark:bg-slate-700">
+                <div className="text-xl font-semibold text-[#303646] dark:text-slate-100">100 sms</div>
               </div>
               <button
                 type="button"
@@ -362,7 +362,7 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
                     "/assistant/?q=%D0%9A%D0%B0%D0%BA%20%D0%BE%D0%BF%D1%82%D0%B8%D0%BC%D0%B8%D0%B7%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D1%82%D1%8C%20%D0%BE%D1%81%D1%82%D0%B0%D1%82%D0%BE%D0%BA%20%D0%BF%D0%B0%D0%BA%D0%B5%D1%82%D0%B0"
                   )
                 }
-                className="rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] text-[#8E76F5] dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))] dark:text-[rgb(var(--text))]"
+                className="rounded-2xl border border-[#ECEEF3] bg-[#F9FAFC] text-[#8E76F5] dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
               >
                 💬
               </button>
@@ -372,10 +372,10 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
       ) : null}
 
       {v(feedFilter, "appealsPanel") ? (
-        <Card className="rounded-[22px] border-[#E5E7EE] bg-[#F7F7FF] shadow-none dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))]/80">
+        <Card className="rounded-[22px] border-[#E5E7EE] bg-[#F7F7FF] shadow-none dark:border-slate-700 dark:bg-slate-800/80">
           <CardContent className="space-y-3 pb-4 pt-4">
-            <div className="text-2xl font-semibold text-[#343A4A] dark:text-[rgb(var(--text))]">Активные обращения</div>
-            <p className="text-sm leading-relaxed text-[#4B5563] dark:text-[rgb(var(--text))]">
+            <div className="text-2xl font-semibold text-[#343A4A] dark:text-slate-100">Активные обращения</div>
+            <p className="text-sm leading-relaxed text-[#4B5563] dark:text-slate-300">
               На данный момент у вас: <span className="font-semibold">{activeAppeals.length} активных обращения</span>
               <br />- В работе: {inWorkAppealsCount} штуки
               <br />- Ожидает подписания: {signPendingAppealsCount} штука
@@ -383,12 +383,12 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
             <button
               type="button"
               onClick={() => router.push(appealsListHref("assistant"))}
-              className="rounded-2xl bg-[#16181D] px-5 py-3 text-sm font-semibold text-white dark:bg-[rgb(var(--surface-2))] dark:text-[rgb(var(--text))]"
+              className="rounded-2xl bg-[#16181D] px-5 py-3 text-sm font-semibold text-white dark:bg-slate-100 dark:text-slate-900"
             >
               Создать обращение
             </button>
 
-            <Card className="rounded-[18px] border-[#E5E7EE] bg-white shadow-none dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))]">
+            <Card className="rounded-[18px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-600 dark:bg-slate-900">
               <CardContent className="space-y-3 pb-3 pt-3">
                 {activeAppeals.slice(0, 3).map((appeal) => (
                   <button
@@ -398,8 +398,8 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
                     className="flex w-full items-center justify-between gap-2 text-left"
                   >
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-base font-medium text-[#1F2430] dark:text-[rgb(var(--text))]">{appeal.title}</div>
-                      <div className="truncate text-sm text-[#9CA3B5] dark:text-[rgb(var(--text))]">
+                      <div className="truncate text-base font-medium text-[#1F2430] dark:text-slate-100">{appeal.title}</div>
+                      <div className="truncate text-sm text-[#9CA3B5] dark:text-slate-400">
                         {appeal.category} — {appeal.id}
                       </div>
                     </div>
@@ -413,22 +413,22 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
                       >
                         {appeal.badgeLabel}
                       </span>
-                      <ChevronRight className="h-4 w-4 text-[#9CA3B5] dark:text-[rgb(var(--text))]" aria-hidden />
+                      <ChevronRight className="h-4 w-4 text-[#9CA3B5] dark:text-slate-500" aria-hidden />
                     </span>
                   </button>
                 ))}
                 <button
                   type="button"
                   onClick={() => router.push(appealsListHref("assistant"))}
-                  className="flex w-full items-center justify-center gap-1 text-sm font-medium text-[#343A4A] dark:text-[rgb(var(--text))]"
+                  className="flex w-full items-center justify-center gap-1 text-sm font-medium text-[#343A4A] dark:text-slate-200"
                 >
                   Все обращения
-                  <ChevronRight className="h-4 w-4 text-[#9CA3B5] dark:text-[rgb(var(--text))]" aria-hidden />
+                  <ChevronRight className="h-4 w-4 text-[#9CA3B5] dark:text-slate-400" aria-hidden />
                 </button>
               </CardContent>
             </Card>
 
-            <p className="text-sm leading-relaxed text-[#4B5563] dark:text-[rgb(var(--text))]">
+            <p className="text-sm leading-relaxed text-[#4B5563] dark:text-slate-300">
               Для поиска конкретного обращения укажите:
               <br />- Дату создания: точная дата, месяц или интервал
               <br />- Номер договора
@@ -439,17 +439,17 @@ export function EventsFeedScreen({ showTitle = true }: { showTitle?: boolean }) 
       ) : null}
 
       {v(feedFilter, "appealsQuickLinks") ? (
-        <Card className="rounded-[22px] border-[#E5E7EE] bg-white shadow-none dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))]">
+        <Card className="rounded-[22px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
           <CardContent className="space-y-2 pb-2 pt-2">
             {["Создать обращение", "Список обращений", "Выполненные", "Отклонённые"].map((item) => (
               <button
                 key={item}
                 type="button"
                 onClick={() => router.push(appealsListHref("assistant"))}
-                className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-base text-[#1F2430] hover:bg-[#F7F8FB] dark:text-[rgb(var(--text))] dark:hover:bg-[rgb(var(--surface-2))]/40"
+                className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-base text-[#1F2430] hover:bg-[#F7F8FB] dark:text-slate-100 dark:hover:bg-slate-700/40"
               >
                 {item}
-                <span className="text-[#9CA3B5] dark:text-[rgb(var(--text))]">›</span>
+                <span className="text-[#9CA3B5] dark:text-slate-400">›</span>
               </button>
             ))}
           </CardContent>

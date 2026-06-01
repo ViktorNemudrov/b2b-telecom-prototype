@@ -9,10 +9,10 @@ import { openDevelopmentStub } from "@shared/lib/developmentStub";
 import { getCustomizationButtonClasses, useUiCustomization } from "@shared/lib/uiCustomization";
 
 const tabClass = (active: boolean) =>
-  `flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-3 text-[10px] font-semibold transition ${
+  `flex min-w-0 flex-1 flex-col items-center gap-0.5 px-1 py-2 text-[10px] font-semibold transition ${
     active
-      ? "text-accent-orange dark:text-accent-orange"
-      : "text-[rgb(var(--muted))] hover:text-[rgb(var(--text))]"
+      ? "text-accent-yellow dark:text-accent-yellow"
+      : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
   }`;
 
 export function ClassicBottomTabBar() {
@@ -34,10 +34,10 @@ export function ClassicBottomTabBar() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-[90] border-t border-[rgb(var(--border))] bg-[rgb(var(--bg))]/97 pb-[env(safe-area-inset-bottom)] backdrop-blur-md"
+      className="fixed bottom-0 left-0 right-0 z-[90] border-t border-slate-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur dark:border-slate-700/80 dark:bg-slate-900/95"
       aria-label="Основное меню"
     >
-      <div className="mx-auto flex max-w-lg items-stretch justify-between px-2">
+      <div className="mx-auto flex max-w-lg items-stretch justify-between px-1">
         <Link
           href="/widgets/"
           data-testid="classic-bottom-nav-services"
@@ -55,12 +55,7 @@ export function ClassicBottomTabBar() {
             }
           }}
         >
-          <div className={cn(
-            "flex h-6 w-6 items-center justify-center rounded-xl transition",
-            isWidgets && "bg-accent-orange/15 dark:bg-accent-orange/20"
-          )}>
-            <LayoutGrid className="h-4.5 w-4.5 shrink-0" aria-hidden />
-          </div>
+          <LayoutGrid className="h-5 w-5 shrink-0" aria-hidden />
           <span className="truncate">Сервисы</span>
         </Link>
         <Link
@@ -83,12 +78,7 @@ export function ClassicBottomTabBar() {
             documentsSheet.toggleDocumentsSheet();
           }}
         >
-          <div className={cn(
-            "flex h-6 w-6 items-center justify-center rounded-xl transition",
-            isDocuments && "bg-accent-orange/15 dark:bg-accent-orange/20"
-          )}>
-            <FileText className="h-4.5 w-4.5 shrink-0" aria-hidden />
-          </div>
+          <FileText className="h-5 w-5 shrink-0" aria-hidden />
           <span className="truncate">Документы</span>
         </Link>
         <Link
@@ -108,12 +98,7 @@ export function ClassicBottomTabBar() {
             }
           }}
         >
-          <div className={cn(
-            "flex h-6 w-6 items-center justify-center rounded-xl transition",
-            isSupport && "bg-accent-orange/15 dark:bg-accent-orange/20"
-          )}>
-            <Headphones className="h-4.5 w-4.5 shrink-0" aria-hidden />
-          </div>
+          <Headphones className="h-5 w-5 shrink-0" aria-hidden />
           <span className="truncate">Поддержка</span>
         </Link>
       </div>

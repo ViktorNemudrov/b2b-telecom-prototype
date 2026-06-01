@@ -241,13 +241,13 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
         }}
       >
         <div className="relative h-full w-full">
-          <div className="absolute inset-0 bg-[#f3f3f6]900" />
+          <div className="absolute inset-0 bg-[#f3f3f6] dark:bg-slate-900" />
 
           <button
             type="button"
             data-testid="onboarding-prev"
             aria-label="Предыдущий экран"
-            className="absolute left-[7%] top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#eceef3] text-[#6f7483] shadow-[0_1px_3px_rgba(0,0,0,0.05)] disabled:opacity-35800300"
+            className="absolute left-[7%] top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#eceef3] text-[#6f7483] shadow-[0_1px_3px_rgba(0,0,0,0.05)] disabled:opacity-35 dark:bg-slate-800 dark:text-slate-300"
             onClick={() => setActiveSlide((prev) => Math.max(0, prev - 1))}
             disabled={activeSlide === 0}
           >
@@ -263,7 +263,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
                 aria-label={`Перейти к экрану ${index + 1}`}
                 onClick={() => setActiveSlide(index)}
                 className={`h-2.5 w-2.5 rounded-full transition-colors ${
-                  index === activeSlide ? "bg-[#1f2230]200" : "bg-[#dde0e8]600"
+                  index === activeSlide ? "bg-[#1f2230] dark:bg-slate-200" : "bg-[#dde0e8] dark:bg-slate-600"
                 }`}
               />
             ))}
@@ -273,7 +273,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
             type="button"
             data-testid="onboarding-next"
             aria-label="Следующий экран"
-            className="absolute right-[7%] top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#eceef3] text-[#2f3241] shadow-[0_1px_3px_rgba(0,0,0,0.05)] disabled:opacity-35800100"
+            className="absolute right-[7%] top-1/2 z-10 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-[#eceef3] text-[#2f3241] shadow-[0_1px_3px_rgba(0,0,0,0.05)] disabled:opacity-35 dark:bg-slate-800 dark:text-slate-100"
             onClick={() => {
               if (activeSlide === onboardingSlides.length - 1) {
                 finishOnboarding();
@@ -298,12 +298,12 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
       return (
         <div className="h-[90%] w-full overflow-hidden bg-[rgb(var(--bg))] px-4 pb-2 pt-8">
           <div className="mx-auto flex h-full max-w-[360px] min-h-0 flex-col">
-            <h2 className="text-[24px] font-normal leading-[1.15] tracking-[-0.03em] text-[#222222]100">
+            <h2 className="text-[24px] font-normal leading-[1.15] tracking-[-0.03em] text-[#222222] dark:text-slate-100">
               Личный ассистент
               <br />
               для ведения бизнеса
             </h2>
-            <p className="mt-2 text-[11px] leading-[1.3] text-[#8F93A2]">
+            <p className="mt-2 text-[11px] leading-[1.3] text-[#8F93A2] dark:text-slate-400">
               Сформируйте и задайте запрос в чате, в нем появиться
               <br />
               вся актуальная информация о вашем бизнесе и процессах
@@ -320,7 +320,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
                 />
               </div>
             </div>
-            <p className="mt-3 text-[21px] font-normal leading-[1.12] tracking-normal text-[#222222]100">
+            <p className="mt-3 text-[21px] font-normal leading-[1.12] tracking-normal text-[#222222] dark:text-slate-100">
               Ежедневная сводка о состоянии вашего бизнеса и умный помощник в одном окне
             </p>
           </div>
@@ -331,12 +331,12 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
     return (
       <div className="h-[90%] w-full overflow-hidden bg-[rgb(var(--bg))] px-4 pb-2 pt-8">
         <div className="mx-auto flex h-full max-w-[360px] min-h-0 flex-col">
-          <h2 className="text-[24px] font-normal leading-[1.15] tracking-[-0.03em] text-[#222222]100">
+          <h2 className="text-[24px] font-normal leading-[1.15] tracking-[-0.03em] text-[#222222] dark:text-slate-100">
             Когда нужно — действуйте
             <br />
             привычным способом
           </h2>
-          <p className="mt-2 text-[11px] leading-[1.3] text-[#8F93A2]">Все важные функции собраны в привычном виде</p>
+          <p className="mt-2 text-[11px] leading-[1.3] text-[#8F93A2] dark:text-slate-400">Все важные функции собраны в привычном виде</p>
           <div className="mt-4 min-h-0 flex-1 rounded-2xl bg-[#E8EAF1] p-2">
             <div className="h-full w-full overflow-hidden rounded-xl">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -349,7 +349,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
               />
             </div>
           </div>
-          <p className="mt-3 text-[21px] font-normal leading-[1.12] tracking-normal text-[#222222]100">
+          <p className="mt-3 text-[21px] font-normal leading-[1.12] tracking-normal text-[#222222] dark:text-slate-100">
             Экраны, виджеты и операции всегда под рукой для точных и привычных сценариев
           </p>
         </div>
@@ -399,7 +399,7 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
               {index === 0 ? (
                 <div className="relative h-full w-full">
                   <div
-                    className="absolute inset-0 overflow-hidden bg-[rgb(var(--bg))]"
+                    className="absolute inset-0 overflow-hidden bg-white dark:bg-slate-900"
                     style={{
                       left: `${imageFrame.x}px`,
                       top: `${imageFrame.y}px`,
@@ -411,8 +411,8 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
                     <div className="absolute left-1/2 top-[30%] w-[92%] -translate-x-1/2 px-1 text-center">
                       <div className="flex flex-col items-center gap-2.5">
                         <div className="flex items-center justify-center gap-1 text-[17px] font-medium leading-none tracking-[-0.01em]">
-                          <span className="text-[#555555]300">Билайн</span>
-                          <span className="inline-flex h-[18px] w-[18px] shrink-0 translate-y-[0.5px] items-center justify-center overflow-hidden rounded-full bg-[rgb(var(--card))]">
+                          <span className="text-[#555555] dark:text-slate-300">Билайн</span>
+                          <span className="inline-flex h-[18px] w-[18px] shrink-0 translate-y-[0.5px] items-center justify-center overflow-hidden rounded-full bg-white">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src="/mockups/Шар.png"
@@ -423,25 +423,25 @@ export function OnboardingScreen({ showBack = false, backHref = "/settings/" }: 
                               draggable={false}
                             />
                           </span>
-                          <span className="text-[#000000]100">One</span>
+                          <span className="text-[#000000] dark:text-slate-100">One</span>
                         </div>
-                        <div className="whitespace-nowrap text-[24px] font-bold leading-[1.15] tracking-[-0.03em] text-[#222222]100">
+                        <div className="whitespace-nowrap text-[24px] font-bold leading-[1.15] tracking-[-0.03em] text-[#222222] dark:text-slate-100">
                           Ваш бизнес ассистент
                         </div>
-                        <div className="text-[13px] font-normal leading-normal text-[#555555]300">Стоит только спросить</div>
+                        <div className="text-[13px] font-normal leading-normal text-[#555555] dark:text-slate-300">Стоит только спросить</div>
                       </div>
                     </div>
 
-                    <div className="absolute left-1/2 top-[48%] w-[84%] -translate-x-1/2 rounded-full border border-[#e4e6ec] bg-[#eff0f3] px-[12px] py-[9px]700800">
+                    <div className="absolute left-1/2 top-[48%] w-[84%] -translate-x-1/2 rounded-full border border-[#e4e6ec] bg-[#eff0f3] px-[12px] py-[9px] dark:border-slate-700 dark:bg-slate-800">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="inline-flex min-w-0 items-center whitespace-nowrap text-[11px] font-normal leading-[1.1] text-[#9ca0aa]">
+                        <span className="inline-flex min-w-0 items-center whitespace-nowrap text-[11px] font-normal leading-[1.1] text-[#9ca0aa] dark:text-slate-400">
                           <span className="max-w-full overflow-hidden text-ellipsis tracking-[-0.01em]">{animatedText || " "}</span>
                           <span
                             className="ml-[2px] inline-block h-[0.95em] w-[1px] bg-[#9ca0aa] align-middle"
                             style={{ animation: "onboardingCaretBlink 0.8s steps(1, end) infinite" }}
                           />
                         </span>
-                        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-orange text-white shadow-softSm">
+                        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-yellow text-accent-dark shadow-softSm">
                           <SendHorizonal className="h-5 w-5" />
                         </span>
                       </div>

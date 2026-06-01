@@ -25,13 +25,13 @@ export function PageBackLink({ href = "/assistant/", label, className }: Props) 
       type="button"
       aria-label={showText ? undefined : "Назад"}
       className={cn(
-        "mb-3 inline-flex items-center text-sm font-semibold text-[rgb(var(--muted))] transition hover:text-[rgb(var(--text))]",
+        "mb-3 inline-flex items-center text-sm font-semibold text-[#3C4858] transition hover:text-[#212529] dark:text-slate-200 dark:hover:text-white",
         showText ? "gap-2" : "",
         className
       )}
       onClick={() => goSmartBack(router, href)}
     >
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[rgb(var(--surface-2))] border border-[rgb(var(--border))]">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F2F2F7] dark:bg-slate-700">
         <ChevronLeft className="h-4 w-4" aria-hidden />
       </span>
       {showText ? label : null}

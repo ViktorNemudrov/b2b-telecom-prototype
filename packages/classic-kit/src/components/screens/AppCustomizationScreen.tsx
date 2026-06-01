@@ -27,10 +27,10 @@ function Toggle({
       role="switch"
       aria-checked={value}
       aria-label={label}
-      className={cn("relative h-7 w-12 rounded-full transition", value ? "bg-accent-yellow" : "bg-[rgb(var(--surface-2))]")}
+      className={cn("relative h-7 w-12 rounded-full transition", value ? "bg-accent-yellow" : "bg-slate-300 dark:bg-slate-600")}
       onClick={() => onChange(!value)}
     >
-      <span className={cn("absolute top-1 h-5 w-5 rounded-full bg-[rgb(var(--card))] shadow transition", value ? "right-1" : "left-1")} />
+      <span className={cn("absolute top-1 h-5 w-5 rounded-full bg-white shadow transition", value ? "right-1" : "left-1")} />
     </button>
   );
 }
@@ -48,12 +48,12 @@ function CustomizationRow({
   const [expanded, setExpanded] = React.useState(false);
 
   return (
-    <div className="rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] p-3600800">
+    <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-600 dark:bg-slate-800">
       <div className="mb-2 flex items-start justify-between gap-2">
-        <div className="text-sm font-medium text-[rgb(var(--text))]">{label}</div>
+        <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{label}</div>
         <button
           type="button"
-          className="rounded-lg p-1 text-[rgb(var(--muted))] transition hover:bg-[rgb(var(--surface-2))]300 dark:hover:bg-[rgb(var(--surface-2))]"
+          className="rounded-lg p-1 text-slate-500 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
           aria-label={expanded ? "Свернуть описание" : "Развернуть описание"}
           onClick={() => setExpanded((v) => !v)}
         >
@@ -61,17 +61,17 @@ function CustomizationRow({
         </button>
       </div>
       {expanded ? (
-        <div className="mb-3 rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--surface-2))] px-2 py-1.5 text-xs leading-relaxed text-[rgb(var(--muted))]600700/40300">
+        <div className="mb-3 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs leading-relaxed text-slate-600 dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-300">
           {description}
         </div>
       ) : null}
       <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-1 rounded-lg border border-[rgb(var(--border))] p-2700">
-          <span className="text-[11px] text-[rgb(var(--muted))]200">Мок вместо перехода</span>
+        <div className="flex flex-col gap-1 rounded-lg border border-slate-100 p-2 dark:border-slate-700">
+          <span className="text-[11px] text-slate-500 dark:text-slate-200">Мок вместо перехода</span>
           <Toggle value={customization.useMock} onChange={customization.setUseMock} label={`${label}: мок`} />
         </div>
-        <div className="flex flex-col gap-1 rounded-lg border border-[rgb(var(--border))] p-2700">
-          <span className="text-[11px] text-[rgb(var(--muted))]300">Блеклый и неактивный</span>
+        <div className="flex flex-col gap-1 rounded-lg border border-slate-100 p-2 dark:border-slate-700">
+          <span className="text-[11px] text-slate-500 dark:text-slate-300">Блеклый и неактивный</span>
           <Toggle
             value={customization.dimmedDisabled}
             onChange={customization.setDimmedDisabled}
@@ -101,7 +101,7 @@ export function AppCustomizationScreen({
 
       <Card>
         <CardContent className="space-y-2 pb-4 pt-4">
-          <p className="text-sm text-[rgb(var(--muted))]">
+          <p className="text-sm text-slate-600 dark:text-slate-300">
             Для каждого элемента доступны два режима: мок-действие и визуальное отключение без клика.
           </p>
         </CardContent>

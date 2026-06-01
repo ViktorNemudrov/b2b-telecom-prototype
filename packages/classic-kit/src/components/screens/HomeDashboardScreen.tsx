@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Sparkles, TrendingUp } from "lucide-react";
+import { ChevronRight, Sparkles } from "lucide-react";
 import { TariffSubscriptionCard } from "@shared/components/TariffSubscriptionCard";
 import { TargetMailingModal } from "@shared/components/TargetMailingModal";
 import { Button } from "@shared/components/ui/button";
@@ -14,20 +14,16 @@ import { resolveProductTap } from "@shared/lib/widgetTapActions";
 
 const aiAvatars = ["AI", "GPT", "Claude", "CRM", "Отчёты"];
 
-/** Тепловая карта звонков по часам — новый стиль по дизайну */
 function CallHeatmap() {
   const cols = 14;
   const rows = 7;
+  const colors = ["bg-slate-800", "bg-slate-300", "bg-accent-yellow", "bg-amber-400", "bg-rose-500"];
   return (
-    <div className="mt-3 grid gap-[3px]" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+    <div className="mt-3 grid gap-1" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
       {Array.from({ length: cols * rows }).map((_, i) => {
-        const intensity = Math.random();
-        let bg = "bg-[rgb(var(--surface-2))]";
-        if (intensity > 0.85) bg = "bg-accent-orange";
-        else if (intensity > 0.65) bg = "bg-accent-orange/50";
-        else if (intensity > 0.45) bg = "bg-accent-amber/40";
-        else if (intensity > 0.25) bg = "bg-[rgb(var(--border))]";
-        return <div key={i} className={`aspect-square rounded-[3px] ${bg}`} />;
+        const c = colors[i % colors.length];
+        const taper = i % cols > (i / rows) * 0.8;
+        return <div key={i} className={`aspect-square rounded-full ${taper ? c : "bg-slate-200"}`} />;
       })}
     </div>
   );
@@ -57,31 +53,28 @@ export function HomeDashboardScreen({
   };
 
   return (
-    <div className="space-y-3 pb-2">
-      {/* Бейдж подписки */}
+    <div className="space-y-4 pb-2">
       <div className="flex justify-center">
-        <span className="inline-flex items-center gap-2 rounded-full bg-accent-orange/15 px-4 py-2 text-xs font-semibold text-accent-orange dark:bg-accent-orange/20">
-          <span>✓</span> Подписка активна
+        <span className="inline-flex items-center gap-2 rounded-full bg-accent-dark px-4 py-2 text-xs font-semibold text-white shadow-softSm">
+          <span className="text-accent-yellow">✓</span> Подписка
         </span>
       </div>
-
       {tariff ? <TariffSubscriptionCard stats={tariff} /> : null}
 
-      {/* Мои номера */}
       <Card>
         <CardContent className="pb-3 pt-4">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-base font-semibold text-[rgb(var(--text))]">Мои номера</h2>
+            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Мои номера</h2>
             <button
               type="button"
               onClick={() => openDevelopmentStub("Управление номерами (демо).")}
-              className="text-[rgb(var(--muted))] transition hover:text-[rgb(var(--text))]"
+              className="text-slate-400 transition hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
               aria-label="Ещё"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
-          <div className="mt-2 divide-y divide-[rgb(var(--border))]">
+          <div className="mt-2 divide-y divide-slate-100 dark:divide-slate-700">
             {dashboardLines.map((line) => {
               const gbPct = line.gbMax ? line.gb / line.gbMax : 0;
               const minPct = line.minMax ? line.min / line.minMax : 0;
@@ -101,30 +94,30 @@ export function HomeDashboardScreen({
                   className="flex cursor-pointer items-center gap-3 py-3 first:pt-1"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-semibold text-[rgb(var(--text))]">{line.phone}</div>
-                    <div className="text-xs text-[rgb(var(--muted))]">{line.name}</div>
+                    <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{line.phone}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">{line.name}</div>
                     <div className="mt-2 flex gap-2">
-                      <div className="min-w-0 flex-1 rounded-xl bg-[rgb(var(--surface-2))] px-2 py-1.5">
-                        <div className="text-[10px] font-semibold text-[rgb(var(--muted))]">{line.gb} гб</div>
-                        <div className="mt-1 h-0.5 overflow-hidden rounded-full bg-[rgb(var(--border))]">
-                          <div className="h-full bg-accent-orange" style={{ width: `${gbPct * 100}%` }} />
+                      <div className="min-w-0 flex-1 rounded-xl bg-slate-50 px-2 py-1.5 dark:bg-slate-700/50">
+                        <div className="text-[10px] font-semibold text-slate-500">{line.gb} гб</div>
+                        <div className="mt-1 h-0.5 overflow-hidden rounded-full bg-slate-200">
+                          <div className="h-full bg-emerald-500" style={{ width: `${gbPct * 100}%` }} />
                         </div>
                       </div>
-                      <div className="min-w-0 flex-1 rounded-xl bg-[rgb(var(--surface-2))] px-2 py-1.5">
-                        <div className="text-[10px] font-semibold text-[rgb(var(--muted))]">{line.min} мин</div>
-                        <div className="mt-1 h-0.5 overflow-hidden rounded-full bg-[rgb(var(--border))]">
-                          <div className="h-full bg-accent-amber" style={{ width: `${minPct * 100}%` }} />
+                      <div className="min-w-0 flex-1 rounded-xl bg-slate-50 px-2 py-1.5 dark:bg-slate-700/50">
+                        <div className="text-[10px] font-semibold text-slate-500">{line.min} мин</div>
+                        <div className="mt-1 h-0.5 overflow-hidden rounded-full bg-slate-200">
+                          <div className="h-full bg-amber-500" style={{ width: `${minPct * 100}%` }} />
                         </div>
                       </div>
-                      <div className="min-w-0 flex-1 rounded-xl bg-[rgb(var(--surface-2))] px-2 py-1.5">
-                        <div className="text-[10px] font-semibold text-[rgb(var(--muted))]">{line.sms} смс</div>
-                        <div className="mt-1 h-0.5 overflow-hidden rounded-full bg-[rgb(var(--border))]">
-                          <div className="h-full bg-rose-500" style={{ width: `${smsPct * 100}%` }} />
+                      <div className="min-w-0 flex-1 rounded-xl bg-slate-50 px-2 py-1.5 dark:bg-slate-700/50">
+                        <div className="text-[10px] font-semibold text-slate-500">{line.sms} смс</div>
+                        <div className="mt-1 h-0.5 overflow-hidden rounded-full bg-slate-200">
+                          <div className="h-full bg-rose-400" style={{ width: `${smsPct * 100}%` }} />
                         </div>
                       </div>
                     </div>
                   </div>
-                  <ChevronRight className="h-5 w-5 shrink-0 text-[rgb(var(--border))]" />
+                  <ChevronRight className="h-5 w-5 shrink-0 text-slate-300 dark:text-slate-500" />
                 </div>
               );
             })}
@@ -132,7 +125,6 @@ export function HomeDashboardScreen({
         </CardContent>
       </Card>
 
-      {/* Записи разговоров */}
       <Card
         data-testid="widgets-recordings-card"
         className={
@@ -150,22 +142,21 @@ export function HomeDashboardScreen({
             >
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base font-semibold text-[rgb(var(--text))]">Записи разговоров</h2>
-                  <span className="text-xs font-medium text-[rgb(var(--muted))]">24.05</span>
-                  <span className="h-2 w-2 rounded-full bg-accent-orange" />
+                  <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Записи разговоров</h2>
+                  <span className="text-xs font-medium text-slate-400 dark:text-slate-500">24.05</span>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-3 text-xs">
                   <span>
-                    <span className="font-semibold text-[rgb(var(--text))]">245</span>{" "}
-                    <span className="text-[rgb(var(--muted))]">принято</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-100">245</span>{" "}
+                    <span className="text-slate-500 dark:text-slate-400">принято</span>
                   </span>
                   <span>
-                    <span className="font-semibold text-accent-amber">12</span>{" "}
-                    <span className="text-[rgb(var(--muted))]">ждут ответа</span>
+                    <span className="font-semibold text-amber-600">12</span>{" "}
+                    <span className="text-slate-500 dark:text-slate-400">ждут ответа</span>
                   </span>
                   <span>
-                    <span className="font-semibold text-rose-500">16</span>{" "}
-                    <span className="text-[rgb(var(--muted))]">секретарь</span>
+                    <span className="font-semibold text-rose-600">16</span>{" "}
+                    <span className="text-slate-500 dark:text-slate-400">секретарь</span>
                   </span>
                 </div>
               </div>
@@ -173,7 +164,7 @@ export function HomeDashboardScreen({
             <button
               type="button"
               onClick={onRecordingsNavigate}
-              className="shrink-0 rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--surface-2))] px-3 py-1.5 text-xs font-semibold text-[rgb(var(--text))] transition hover:brightness-105"
+              className="shrink-0 rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
             >
               Все
             </button>
@@ -181,7 +172,7 @@ export function HomeDashboardScreen({
           <button type="button" className="mt-1 w-full text-left" onClick={onRecordingsNavigate}>
             <CallHeatmap />
           </button>
-          <div className="mt-2 flex justify-between px-0.5 text-[10px] font-medium text-[rgb(var(--muted))]">
+          <div className="mt-2 flex justify-between px-0.5 text-[10px] font-medium text-slate-400 dark:text-slate-500">
             {["8", "10", "12", "14", "16", "18"].map((t) => (
               <span key={t}>{t}</span>
             ))}
@@ -189,18 +180,17 @@ export function HomeDashboardScreen({
         </CardContent>
       </Card>
 
-      {/* AI — команда */}
       <Card>
         <CardContent className="pb-4 pt-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-semibold text-[rgb(var(--text))]">AI — команда</h2>
-              <p className="text-xs text-[rgb(var(--muted))]">Ваши помощники 24/7</p>
+              <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">AI — команда</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Ваши помощники 24/7</p>
             </div>
             <button
               type="button"
               onClick={() => openDevelopmentStub("Каталог AI-агентов (демо).")}
-              className="text-[rgb(var(--border))] transition hover:text-[rgb(var(--muted))]"
+              className="text-slate-300 transition hover:text-slate-500 dark:text-slate-500 dark:hover:text-slate-300"
               aria-label="Подробнее"
             >
               <ChevronRight className="h-5 w-5" />
@@ -212,7 +202,7 @@ export function HomeDashboardScreen({
                 key={label}
                 type="button"
                 onClick={() => openDevelopmentStub(`Агент «${label}»: открыть чат (демо).`)}
-                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--surface-2))] text-xs font-bold text-[rgb(var(--text))] shadow-softSm transition hover:brightness-105 active:scale-[0.97]"
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-gradient-to-br from-white to-slate-50 text-xs font-bold text-slate-700 shadow-softSm transition hover:brightness-[1.02] active:translate-y-[1px] dark:border-slate-600 dark:from-slate-700 dark:to-slate-800 dark:text-slate-100"
               >
                 {label.slice(0, 2)}
               </button>
@@ -221,32 +211,30 @@ export function HomeDashboardScreen({
         </CardContent>
       </Card>
 
-      {/* Этикетка */}
       <button
         type="button"
         onClick={() => openDevelopmentStub("Этикетка контрагента: редактирование (демо).")}
         className="block w-full text-left"
       >
-        <Card className="border-accent-orange/30 bg-gradient-to-r from-accent-orange/10 to-transparent dark:from-accent-orange/15 dark:to-transparent">
+        <Card className="border-accent-yellow/40 bg-gradient-to-r from-amber-50/80 to-white transition hover:brightness-[1.02] dark:from-slate-800 dark:to-slate-900">
           <CardContent className="flex items-center gap-3 py-3">
             <span className="text-lg">🏷️</span>
             <div>
-              <div className="text-sm font-semibold text-[rgb(var(--text))]">Ваша этикетка</div>
-              <div className="text-xs text-[rgb(var(--muted))]">ИП Балашов Владислав</div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Ваша этикетка</div>
+              <div className="text-xs text-slate-600 dark:text-slate-400">ИП Балашов Владислав</div>
             </div>
-            <span className="ml-auto text-accent-orange">✓</span>
+            <span className="ml-auto text-accent-yellow">✓</span>
           </CardContent>
         </Card>
       </button>
 
-      {/* Поможет развивать ваш бизнес */}
       <div>
         <div className="mb-2 flex items-center justify-between px-0.5">
-          <h2 className="text-sm font-semibold text-[rgb(var(--text))]">Поможет развивать ваш бизнес</h2>
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Поможет развивать ваш бизнес</h2>
           <button
             type="button"
             onClick={() => openDevelopmentStub("Каталог предложений для бизнеса (демо).")}
-            className="text-[rgb(var(--muted))] transition hover:text-[rgb(var(--text))]"
+            className="text-slate-400 transition hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
             aria-label="Ещё"
           >
             <ChevronRight className="h-4 w-4" />
@@ -256,34 +244,30 @@ export function HomeDashboardScreen({
           <button
             type="button"
             onClick={() => setMailingOpen(true)}
-            className="w-[220px] shrink-0 snap-start rounded-3xl border border-[rgb(var(--border))] bg-gradient-to-br from-accent-orange/15 to-accent-amber/10 p-4 text-left shadow-softSm transition hover:brightness-105 active:scale-[0.98] dark:from-accent-orange/20 dark:to-accent-amber/15"
+            className="w-[220px] shrink-0 snap-start rounded-[22px] border border-slate-100 bg-gradient-to-br from-sky-50 to-indigo-50 p-4 text-left shadow-softSm transition hover:brightness-[1.02] active:translate-y-[1px] dark:border-slate-600 dark:from-slate-700 dark:to-slate-800"
           >
             <div className="text-3xl">📣</div>
-            <div className="mt-3 text-sm font-bold text-[rgb(var(--text))]">Таргет рассылка</div>
-            <div className="mt-1 text-xs text-[rgb(var(--muted))]">Расскажем всем о вашем бизнесе</div>
+            <div className="mt-3 text-sm font-bold text-slate-900 dark:text-slate-100">Таргет рассылка</div>
+            <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">Расскажем всем о вашем бизнесе</div>
           </button>
           <button
             type="button"
             onClick={() => openDevelopmentStub("Акция: скидка на пакет минут (демо).")}
-            className="w-[200px] shrink-0 snap-start rounded-3xl bg-accent-dark p-4 text-left text-white shadow-softSm transition hover:brightness-110 active:scale-[0.98] dark:bg-accent-dark"
+            className="w-[200px] shrink-0 snap-start rounded-[22px] bg-accent-dark p-4 text-left text-white shadow-softSm transition hover:brightness-110 active:translate-y-[1px]"
           >
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-white/70">
-              <TrendingUp className="h-3.5 w-3.5" />
-              Акция
-            </div>
+            <div className="text-xs font-semibold opacity-80">Акция</div>
             <div className="mt-2 text-sm font-bold">Скидка на пакет минут</div>
           </button>
         </div>
       </div>
 
-      {/* Советы для бизнеса */}
       <div>
         <div className="mb-2 flex items-center justify-between px-0.5">
-          <h2 className="text-sm font-semibold text-[rgb(var(--text))]">Советы для бизнеса</h2>
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Советы для бизнеса</h2>
           <button
             type="button"
             onClick={() => openDevelopmentStub("Лента статей (демо).")}
-            className="text-[rgb(var(--muted))] transition hover:text-[rgb(var(--text))]"
+            className="text-slate-400 transition hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
             aria-label="Ещё"
           >
             <ChevronRight className="h-4 w-4" />
@@ -293,17 +277,17 @@ export function HomeDashboardScreen({
           <button
             type="button"
             onClick={() => router.push("/assistant/?q=Дай советы для бизнеса")}
-            className="w-[260px] shrink-0 snap-start overflow-hidden rounded-3xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] text-left shadow-softSm transition hover:brightness-105 active:scale-[0.98]"
+            className="w-[260px] shrink-0 snap-start overflow-hidden rounded-[22px] border border-slate-200 bg-white text-left shadow-softSm transition hover:bg-slate-50/80 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
           >
-            <div className="h-28 bg-gradient-to-br from-accent-orange/30 via-accent-amber/20 to-rose-500/20" />
-            <div className="p-3 text-xs font-semibold leading-snug text-[rgb(var(--text))]">
+            <div className="h-28 bg-gradient-to-br from-emerald-100 via-amber-50 to-rose-100" />
+            <div className="p-3 text-xs font-semibold leading-snug text-slate-900 dark:text-slate-100">
               Небольшие точки продаж: как настроить процессы с помощью AI-агентов в малом бизнесе
             </div>
           </button>
           <button
             type="button"
             onClick={() => router.push("/assistant/")}
-            className="w-[200px] shrink-0 snap-start rounded-3xl border border-[rgb(var(--border))] bg-[rgb(var(--surface-2))] p-3 text-left text-xs text-[rgb(var(--muted))] transition hover:brightness-105 active:scale-[0.98]"
+            className="w-[200px] shrink-0 snap-start rounded-[22px] border border-slate-200 bg-slate-50 p-3 text-left text-xs text-slate-600 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
           >
             Ещё статьи в ленте (демо)
           </button>
