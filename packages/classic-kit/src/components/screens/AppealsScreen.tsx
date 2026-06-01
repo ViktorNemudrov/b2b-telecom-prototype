@@ -53,12 +53,12 @@ function AppealRow({ a, onOpen }: { a: AppealItem; onOpen: () => void }) {
   return (
     <button
       type="button"
-      className="flex w-full items-start justify-between gap-2 border-b border-slate-100 py-3 text-left last:border-0 dark:border-slate-700"
+      className="flex w-full items-start justify-between gap-2 border-b border-[rgb(var(--border))] py-3 text-left last:border-0700"
       onClick={onOpen}
     >
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{a.title}</div>
-        <div className="text-xs text-slate-500 dark:text-slate-400">
+        <div className="text-sm font-semibold text-[rgb(var(--text))]">{a.title}</div>
+        <div className="text-xs text-[rgb(var(--muted))]">
           {a.category} · ID от {a.dateLabel}
         </div>
       </div>
@@ -66,15 +66,15 @@ function AppealRow({ a, onOpen }: { a: AppealItem; onOpen: () => void }) {
         <span
           className={cn(
             "rounded-full px-2 py-0.5 text-[10px] font-bold",
-            a.badgeLabel.includes("работе") && "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200",
-            a.badgeLabel.includes("подпис") && "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100",
-            a.badgeLabel === "Выполнено" && "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200",
-            a.badgeLabel === "Отклонено" && "bg-slate-200 text-slate-700 dark:bg-slate-600 dark:text-slate-200"
+            a.badgeLabel.includes("работе") && "bg-sky-100 text-sky-800900/40200",
+            a.badgeLabel.includes("подпис") && "bg-amber-100 text-amber-900900/40100",
+            a.badgeLabel === "Выполнено" && "bg-emerald-100 text-emerald-800900/40200",
+            a.badgeLabel === "Отклонено" && "bg-[rgb(var(--surface-2))] text-[rgb(var(--text))]600200"
           )}
         >
           {a.badgeLabel}
         </span>
-        <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-500" aria-hidden />
+        <ChevronRight className="h-4 w-4 text-[rgb(var(--text))]" aria-hidden />
       </span>
     </button>
   );
@@ -175,14 +175,14 @@ export function AppealsScreen() {
 
   return (
     <div className="space-y-4 pb-6">
-      <p className="text-sm text-slate-700 dark:text-slate-300">
+      <p className="text-sm text-[rgb(var(--text))]300">
         Сейчас у вас: <span className="font-semibold">{activeAppeals.length} активных обращения</span>
         <br />
         В работе: {inWorkCount} · Ожидает подписания: {signPendingCount}
       </p>
 
       <Button
-        className="w-full rounded-2xl bg-slate-900 py-6 text-base font-semibold text-white dark:bg-slate-100 dark:text-slate-900"
+        className="w-full rounded-2xl bg-[rgb(var(--surface-2))] py-6 text-base font-semibold text-white"
         onClick={() => setCreateOpen((v) => !v)}
       >
         Создать обращение
@@ -193,9 +193,9 @@ export function AppealsScreen() {
           className={cn(
             "rounded-2xl border px-4 py-3 text-sm",
             submitNotice.kind === "ok" &&
-              "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800/60 dark:bg-emerald-900/30 dark:text-emerald-200",
+              "border-emerald-200 bg-emerald-50 text-emerald-800800/60900/30200",
             submitNotice.kind === "error" &&
-              "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-800/60 dark:bg-rose-900/30 dark:text-rose-200"
+              "border-rose-200 bg-rose-50 text-rose-800800/60900/30200"
           )}
         >
           {submitNotice.text}
@@ -203,11 +203,11 @@ export function AppealsScreen() {
       ) : null}
 
       {createOpen ? (
-        <Card className="border-slate-200 dark:border-slate-600 dark:bg-slate-800/80">
+        <Card className="border-[rgb(var(--border))]800/80">
           <CardContent className="space-y-3 pb-4 pt-4">
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Тема</label>
+            <label className="text-xs font-semibold text-[rgb(var(--muted))]">Тема</label>
             <select
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+              className="w-full rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] px-3 py-2 text-sm text-[rgb(var(--text))]600900100"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
             >
@@ -217,9 +217,9 @@ export function AppealsScreen() {
                 </option>
               ))}
             </select>
-            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Текст</label>
+            <label className="text-xs font-semibold text-[rgb(var(--muted))]">Текст</label>
             <textarea
-              className="min-h-[88px] w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+              className="min-h-[88px] w-full rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] px-3 py-2 text-sm text-[rgb(var(--text))]600900100"
               placeholder="Опишите запрос…"
               value={body}
               onChange={(e) => setBody(e.target.value)}
@@ -237,14 +237,14 @@ export function AppealsScreen() {
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-xl dark:border-slate-600 dark:text-slate-200"
+                className="rounded-xl600200"
                 onClick={() => fileRef.current?.click()}
               >
                 <Paperclip className="mr-2 h-4 w-4" />
                 Прикрепить файл
               </Button>
               {attachedName ? (
-                <span className="self-center text-xs text-slate-600 dark:text-slate-400">{attachedName}</span>
+                <span className="self-center text-xs text-[rgb(var(--muted))]">{attachedName}</span>
               ) : null}
             </div>
             <div className="flex gap-2 pt-1">
@@ -252,7 +252,7 @@ export function AppealsScreen() {
                 Отправить
               </Button>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="text-[11px] text-[rgb(var(--muted))]">
               Созданные обращения сохраняются в этом браузере (демо).
             </p>
           </CardContent>
@@ -261,7 +261,7 @@ export function AppealsScreen() {
 
       <Card
         className={cn(
-          "border-slate-200 dark:border-slate-700 dark:bg-slate-800/50",
+          "border-[rgb(var(--border))]800/50",
           !(filter === "all" && expandedAll) && "max-h-[min(420px,55vh)] overflow-y-auto"
         )}
       >
@@ -272,7 +272,7 @@ export function AppealsScreen() {
           {filter === "all" && list.length > 3 ? (
             <button
               type="button"
-              className="mt-2 flex w-full items-center justify-center gap-1 py-2 text-center text-sm font-semibold text-slate-700 dark:text-slate-200"
+              className="mt-2 flex w-full items-center justify-center gap-1 py-2 text-center text-sm font-semibold text-[rgb(var(--text))]"
               onClick={() => setExpandedAll((v) => !v)}
             >
               {expandedAll ? (
@@ -290,21 +290,21 @@ export function AppealsScreen() {
       </Card>
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Поиск по обращениям</label>
+        <label className="text-xs font-semibold text-[rgb(var(--muted))]">Поиск по обращениям</label>
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Дата, договор, тема, статус…"
-          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
+          className="w-full rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] px-3 py-2.5 text-sm text-[rgb(var(--text))] placeholder:text-[rgb(var(--muted))]600900100 dark:placeholder:text-[rgb(var(--muted))]"
         />
-        <p className="text-xs text-slate-500 dark:text-slate-400">
+        <p className="text-xs text-[rgb(var(--muted))]">
           Укажите дату создания, номер договора или контекст — список отфильтруется.
         </p>
       </div>
 
-      <Card className="dark:border-slate-700 dark:bg-slate-800/50">
-        <CardContent className="divide-y divide-slate-100 p-0 dark:divide-slate-700">
+      <Card className="dark:border-[rgb(var(--border))]/50">
+        <CardContent className="divide-y divide-[rgb(var(--border))] p-0 dark:divide-[rgb(var(--border))]">
           {(
             [
               ["Все обращения", "all" as const],
@@ -317,8 +317,8 @@ export function AppealsScreen() {
               key={key}
               type="button"
               className={cn(
-                "flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-slate-900 dark:text-slate-100",
-                filter === key ? "bg-slate-50 dark:bg-slate-700/50" : ""
+                "flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-[rgb(var(--text))]",
+                filter === key ? "bg-[rgb(var(--surface-2))]/50" : ""
               )}
               onClick={() => {
                 setFilter(key);
@@ -326,7 +326,7 @@ export function AppealsScreen() {
               }}
             >
               {label}
-              <ChevronRight className="h-4 w-4 text-slate-400" />
+              <ChevronRight className="h-4 w-4 text-[rgb(var(--muted))]" />
             </button>
           ))}
         </CardContent>
@@ -342,22 +342,22 @@ export function AppealsScreen() {
                   detail.badgeLabel.includes("работе") && "bg-sky-100 text-sky-800",
                   detail.badgeLabel.includes("подпис") && "bg-amber-100 text-amber-900",
                   detail.badgeLabel === "Выполнено" && "bg-emerald-100 text-emerald-800",
-                  detail.badgeLabel === "Отклонено" && "bg-slate-200 text-slate-700"
+                  detail.badgeLabel === "Отклонено" && "bg-[rgb(var(--surface-2))] text-[rgb(var(--text))]"
                 )}
               >
                 {detail.badgeLabel}
               </span>
-              <span className="text-xs text-slate-500 dark:text-slate-400">
+              <span className="text-xs text-[rgb(var(--muted))]">
                 {detail.category} · от {detail.dateLabel}
               </span>
             </div>
-            <p className="leading-relaxed text-slate-800 dark:text-slate-200">{detail.description}</p>
+            <p className="leading-relaxed text-[rgb(var(--text))]">{detail.description}</p>
             <div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">История</div>
-              <ul className="mt-2 space-y-2 border-t border-slate-100 pt-2 dark:border-slate-600">
+              <div className="text-xs font-semibold uppercase tracking-wide text-[rgb(var(--muted))]">История</div>
+              <ul className="mt-2 space-y-2 border-t border-[rgb(var(--border))] pt-2600">
                 {detail.history.map((h) => (
-                  <li key={`${h.at}-${h.text.slice(0, 12)}`} className="text-slate-700 dark:text-slate-300">
-                    <span className="font-medium text-slate-500 dark:text-slate-400">{h.at}</span> — {h.text}
+                  <li key={`${h.at}-${h.text.slice(0, 12)}`} className="text-[rgb(var(--text))]300">
+                    <span className="font-medium text-[rgb(var(--muted))]">{h.at}</span> — {h.text}
                   </li>
                 ))}
               </ul>

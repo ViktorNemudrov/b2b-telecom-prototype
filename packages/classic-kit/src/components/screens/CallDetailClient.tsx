@@ -33,7 +33,7 @@ export function CallDetailClient({
     return (
       <div className="safe-px mx-auto min-h-dvh max-w-[430px] pb-8 pt-4">
         <CenteredPageTitleBar title="Звонок" backHref={backHref} />
-        <p className="mt-8 text-center text-sm text-slate-500">Звонок не найден (демо).</p>
+        <p className="mt-8 text-center text-sm text-[rgb(var(--muted))]">Звонок не найден (демо).</p>
       </div>
     );
   }
@@ -57,7 +57,7 @@ export function CallDetailClient({
               )
             }
             className={[
-              "flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700",
+              "flex h-8 w-8 items-center justify-center rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] text-[rgb(var(--muted))] shadow-softSm transition hover:brightness-105 ",
               getCustomizationButtonClasses(settingsCustom.dimmedDisabled)
             ].join(" ")}
             aria-label="Настройки"
@@ -69,9 +69,9 @@ export function CallDetailClient({
       />
 
       <div className="mt-4">
-        <h1 className="text-xl font-semibold leading-tight text-slate-900 dark:text-slate-100">{title}</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{call.phone}</p>
-        <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-accent-dark px-3 py-1.5 text-xs font-semibold text-white">
+        <h1 className="text-xl font-semibold leading-tight text-[rgb(var(--text))]">{title}</h1>
+        <p className="mt-1 text-sm text-[rgb(var(--muted))]">{call.phone}</p>
+        <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-accent-orange/15 px-3 py-1.5 text-xs font-semibold text-accent-orange dark:bg-accent-orange/20">
           <span className="opacity-90">{call.missed ? "Пропущенный" : "Входящий"}</span>
           <span className="text-white/70">·</span>
           <span>Филатов</span>
@@ -86,11 +86,11 @@ export function CallDetailClient({
 
       <Card className="mt-4">
         <CardContent className="pb-5 pt-5">
-          <div className="text-base font-semibold text-slate-900 dark:text-slate-100">
-            Итоги разговора <span className="text-accent-yellow">⭐</span>
+          <div className="text-base font-semibold text-[rgb(var(--text))]">
+            Итоги разговора <span className="text-accent-orange">⭐</span>
           </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Ключевые моменты разговора и запросы клиента</p>
-          <ul className="mt-4 list-disc space-y-2 pl-4 text-sm text-slate-800 dark:text-slate-200">
+          <p className="mt-1 text-xs text-[rgb(var(--muted))]">Ключевые моменты разговора и запросы клиента</p>
+          <ul className="mt-4 list-disc space-y-2 pl-4 text-sm text-[rgb(var(--text))]">
             {bullets.map((b, i) => (
               <li key={i}>{b}</li>
             ))}
@@ -106,7 +106,7 @@ export function CallDetailClient({
               setShowTranscript((v) => !v);
             }}
             className={[
-              "mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E8D5F5] via-[#C4B5FD] to-[#7E6DBF] px-4 py-3 text-sm font-semibold text-slate-900 shadow-softSm transition hover:opacity-95 active:translate-y-[1px]",
+              "mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E8D5F5] via-[#C4B5FD] to-[#7E6DBF] px-4 py-3 text-sm font-semibold text-[rgb(var(--text))] shadow-softSm transition hover:opacity-95 active:translate-y-[1px]",
               getCustomizationButtonClasses(transcriptCustom.dimmedDisabled)
             ].join(" ")}
             disabled={transcriptCustom.dimmedDisabled}
@@ -115,7 +115,7 @@ export function CallDetailClient({
             Расшифровка
           </button>
           {showTranscript ? (
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm whitespace-pre-wrap text-slate-800 dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-100">
+            <div className="mt-4 rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--surface-2))] p-3 text-sm whitespace-pre-wrap text-[rgb(var(--text))]">
               {call.transcript}
             </div>
           ) : null}
@@ -124,7 +124,7 @@ export function CallDetailClient({
 
       <Card className="mt-4">
         <CardContent className="pb-4 pt-4">
-          <p className="text-sm text-slate-600 dark:text-slate-300">срок хранения 60 дней — осталось 43 дня</p>
+          <p className="text-sm text-[rgb(var(--muted))]">срок хранения 60 дней — осталось 43 дня</p>
           <Button
             variant="secondary"
             className="mt-3 w-full rounded-full"

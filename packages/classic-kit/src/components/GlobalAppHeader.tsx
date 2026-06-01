@@ -23,14 +23,16 @@ export function GlobalAppHeader({
   const notificationsCustom = useUiCustomization("classic.notifications");
 
   return (
-    <div className="sticky top-0 z-40 border-b border-slate-100 bg-[rgb(var(--bg))]/95 backdrop-blur dark:border-slate-800">
-      <div className="safe-px flex items-center justify-between gap-2 py-2">
+    <div className="sticky top-0 z-40 border-b border-[rgb(var(--border))] bg-[rgb(var(--bg))]/97 backdrop-blur-md dark:border-[rgb(var(--border))]">
+      <div className="safe-px flex items-center justify-between gap-2 py-2.5">
+        {/* Аватар профиля */}
         <Link
           href={profileHref}
           className={cn(
-            "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white transition",
-            "active:translate-y-[1px] hover:bg-slate-50",
-            "dark:border-slate-600 dark:bg-[rgb(var(--card))] dark:hover:bg-slate-800",
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl",
+            "bg-[rgb(var(--card))] border border-[rgb(var(--border))]",
+            "transition active:scale-95",
+            "dark:bg-[rgb(var(--surface-2))]",
             getCustomizationButtonClasses(profileCustom.dimmedDisabled)
           )}
           aria-label="Профиль"
@@ -45,32 +47,34 @@ export function GlobalAppHeader({
             }
           }}
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-dark/5 dark:bg-white/10">
-            <span className="inline-flex items-center justify-center leading-none text-xs font-bold text-slate-700 translate-y-[1.25px] dark:text-slate-200">ИП</span>
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-accent-orange/20 to-accent-amber/20 dark:from-accent-orange/30 dark:to-accent-amber/30">
+            <span className="text-[11px] font-bold text-accent-orange">ИП</span>
           </div>
         </Link>
 
+        {/* Центр: логотип + название */}
         <div className="flex min-w-0 flex-1 flex-col items-center px-1">
           <div className="flex items-center gap-2">
             <Image
               src={sphereSrc}
               alt=""
-              width={28}
-              height={28}
-              className="h-7 w-7 shrink-0 rounded-full object-cover shadow-softSm ring-1 ring-black/5 dark:ring-white/10"
+              width={26}
+              height={26}
+              className="h-[26px] w-[26px] shrink-0 rounded-full object-cover shadow-softSm ring-1 ring-black/10 dark:ring-white/10"
             />
             <div className="min-w-0 text-center leading-tight">
-              <div className="text-[12px] font-bold tracking-tight text-slate-900 dark:text-slate-100">
+              <div className="text-[12px] font-bold tracking-tight text-[rgb(var(--text))]">
                 Билайн <span className="text-accent-yellow">One</span>
-                <span className="font-medium text-slate-600 dark:text-slate-300"> · Ваш бизнес ассистент</span>
+                <span className="font-medium text-[rgb(var(--muted))]"> · Ваш бизнес ассистент</span>
               </div>
-              <div className="truncate text-[10px] font-medium text-slate-500 dark:text-slate-400">
+              <div className="truncate text-[10px] font-medium text-[rgb(var(--muted))]">
                 {userProfile.legalName}
               </div>
             </div>
           </div>
         </div>
 
+        {/* Правый блок: поиск + уведомления */}
         <div className="flex shrink-0 items-center gap-1.5">
           {showSearch ? (
             <button
@@ -83,19 +87,25 @@ export function GlobalAppHeader({
                 openDevelopmentStub("Поиск по сервисам.");
               }}
               className={cn(
-                "flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 active:translate-y-[1px] dark:border-slate-600 dark:bg-[rgb(var(--card))] dark:text-slate-200 dark:hover:bg-slate-800",
+                "flex h-10 w-10 items-center justify-center rounded-2xl",
+                "border border-[rgb(var(--border))] bg-[rgb(var(--card))]",
+                "text-[rgb(var(--muted))] transition hover:text-[rgb(var(--text))] active:scale-95",
+                "dark:bg-[rgb(var(--surface-2))]",
                 getCustomizationButtonClasses(searchCustom.dimmedDisabled)
               )}
               aria-label="Поиск"
               disabled={searchCustom.dimmedDisabled}
             >
-              <Search className="h-5 w-5" />
+              <Search className="h-4.5 w-4.5" />
             </button>
           ) : null}
           <Link
             href="/notifications/"
             className={cn(
-              "relative flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white transition hover:bg-slate-50 active:translate-y-[1px] dark:border-slate-600 dark:bg-[rgb(var(--card))] dark:hover:bg-slate-800",
+              "relative flex h-10 w-10 items-center justify-center rounded-2xl",
+              "border border-[rgb(var(--border))] bg-[rgb(var(--card))]",
+              "text-[rgb(var(--muted))] transition hover:text-[rgb(var(--text))] active:scale-95",
+              "dark:bg-[rgb(var(--surface-2))]",
               getCustomizationButtonClasses(notificationsCustom.dimmedDisabled)
             )}
             aria-label="Уведомления"
@@ -110,8 +120,8 @@ export function GlobalAppHeader({
               }
             }}
           >
-            <Bell className="h-5 w-5 text-slate-700 dark:text-slate-200" />
-            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-accent-yellow" />
+            <Bell className="h-4.5 w-4.5" />
+            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-accent-orange ring-2 ring-[rgb(var(--card))]" />
           </Link>
         </div>
       </div>

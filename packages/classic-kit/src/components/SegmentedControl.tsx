@@ -14,9 +14,9 @@ export function SegmentedControl<T extends string>({
   onChange: (next: T) => void;
 }) {
   return (
-    <div className="relative flex items-center rounded-2xl border border-slate-200 bg-white p-1 shadow-softSm">
+    <div className="relative flex items-center rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--surface-2))] p-1">
       <motion.div
-        className="absolute inset-y-1 rounded-xl bg-accent-dark"
+        className="absolute inset-y-1 rounded-xl bg-accent-orange"
         layout
         transition={{ type: "spring", stiffness: 500, damping: 40 }}
         style={{
@@ -32,7 +32,7 @@ export function SegmentedControl<T extends string>({
             onClick={() => onChange(o.key)}
             className={cn(
               "relative z-10 h-9 flex-1 rounded-xl px-3 text-xs font-semibold transition",
-              active ? "text-white" : "text-slate-500 hover:text-slate-700"
+              active ? "text-white" : "text-[rgb(var(--muted))] hover:text-[rgb(var(--text))]"
             )}
           >
             {o.label}

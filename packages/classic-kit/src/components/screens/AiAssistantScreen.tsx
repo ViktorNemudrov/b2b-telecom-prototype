@@ -93,7 +93,7 @@ function toAiMessage(payload: Pick<ChatMessage, "text" | "widget" | "invoiceMont
 }
 
 const pillBase =
-  "inline-flex items-center gap-2 rounded-full bg-white px-[13px] py-[8px] text-[13px] font-medium text-[#3C4858] shadow-[0_2px_10px_rgba(0,0,0,0.07)] transition hover:brightness-[1.02] active:scale-[0.99] dark:border dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100";
+  "inline-flex items-center gap-2 rounded-full bg-white px-[13px] py-[8px] text-[13px] font-medium text-[#3C4858] shadow-[0_2px_10px_rgba(0,0,0,0.07)] transition hover:brightness-[1.02] active:scale-[0.99] dark:border dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))] dark:text-[rgb(var(--text))]";
 
 function appendChatLog(userText: string, aiText: string, intent: string) {
   if (typeof window === "undefined") return;
@@ -1077,7 +1077,7 @@ export function AiAssistantScreen() {
                     }
                   >
                     {slideKind === "weekly" ? (
-                      <Card className="h-full rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
+                      <Card className="h-full rounded-[20px] border-[#E5E7EE] bg-white shadow-none dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))]">
                         <CardContent className="flex h-full items-center gap-3 overflow-hidden pb-1.5 pt-1.5">
                           <button
                             type="button"
@@ -1111,7 +1111,7 @@ export function AiAssistantScreen() {
                           <div className="min-w-0 flex-1">
                             <button
                               type="button"
-                              className="flex min-w-0 flex-nowrap items-center gap-1.5 text-left text-xs font-semibold text-[#343A4A] dark:text-slate-100"
+                              className="flex min-w-0 flex-nowrap items-center gap-1.5 text-left text-xs font-semibold text-[#343A4A] dark:text-[rgb(var(--text))]"
                               onClick={() => {
                                 setInput("звонки за неделю");
                                 window.setTimeout(() => send("звонки за неделю"), 60);
@@ -1121,7 +1121,7 @@ export function AiAssistantScreen() {
                               <span className="min-w-0 truncate">Еженедельный отчет</span>
                               <span className="shrink-0 text-[11px] font-normal text-[#A2A8B8]">за 24 апреля</span>
                             </button>
-                            <p className="mt-0.5 line-clamp-1 text-[11px] leading-snug text-[#6B7280] dark:text-slate-300">
+                            <p className="mt-0.5 line-clamp-1 text-[11px] leading-snug text-[#6B7280] dark:text-[rgb(var(--text))]">
                               126 звонков, 1 пропущенный, средняя длительность 2:40. Есть 4 клиента в риске по оплате.
                             </p>
                             <button
@@ -1137,7 +1137,7 @@ export function AiAssistantScreen() {
                           </div>
                           <button
                             type="button"
-                            className="shrink-0 rounded-full p-1 text-[#C7CBD6] hover:bg-slate-100 dark:hover:bg-slate-700"
+                            className="shrink-0 rounded-full p-1 text-[#C7CBD6] hover:bg-[rgb(var(--surface-2))] dark:hover:bg-[rgb(var(--surface-2))]"
                             onClick={() => setShowWeeklyCard(false)}
                           >
                             <X className="h-4 w-4" />
@@ -1146,14 +1146,14 @@ export function AiAssistantScreen() {
                       </Card>
                     ) : null}
                     {slideKind === "assist" ? (
-                      <Card className="h-full rounded-[20px] border-[#DDE4FF] bg-gradient-to-br from-[#F7F9FF] to-white shadow-none dark:border-slate-700 dark:from-slate-800 dark:to-slate-800">
+                      <Card className="h-full rounded-[20px] border-[#DDE4FF] bg-gradient-to-br from-[#F7F9FF] to-white shadow-none dark:border-[rgb(var(--border))] dark:from-[rgb(var(--text))] dark:to-[rgb(var(--text))]">
                         <CardContent className="flex h-full items-center gap-3 pb-1.5 pt-1.5">
                           <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ECEAFD]">
                             <Bot className="h-4 w-4 text-[#4B5563]" />
                           </span>
                           <div className="min-w-0 flex-1">
-                            <div className="text-xs font-semibold text-[#343A4A] dark:text-slate-100">AI ассистенты подключены</div>
-                            <div className="mt-0.5 line-clamp-1 text-[11px] leading-snug text-[#6B7280] dark:text-slate-300">
+                            <div className="text-xs font-semibold text-[#343A4A] dark:text-[rgb(var(--text))]">AI ассистенты подключены</div>
+                            <div className="mt-0.5 line-clamp-1 text-[11px] leading-snug text-[#6B7280] dark:text-[rgb(var(--text))]">
                               У вас подключены AI ассистенты, но вы ими еще не пользовались.
                             </div>
                             <button
@@ -1181,7 +1181,7 @@ export function AiAssistantScreen() {
                   <button
                     key={`hero-dot-${idx}`}
                     type="button"
-                    className={cn("h-1.5 w-5 rounded-full", heroCard === idx ? "bg-slate-900 dark:bg-slate-100" : "bg-slate-300 dark:bg-slate-600")}
+                    className={cn("h-1.5 w-5 rounded-full", heroCard === idx ? "bg-[rgb(var(--surface-2))]" : "bg-[rgb(var(--surface-2))]")}
                     onClick={() => goToHeroSlide(idx)}
                   />
                 ))}
@@ -1192,7 +1192,7 @@ export function AiAssistantScreen() {
           <div className="mt-3">
             <div className="flex flex-col items-center px-1 pt-0.5 text-center">
               <div className="flex items-center justify-center gap-1.5">
-                <span className="text-[22px] font-semibold tracking-tight text-[#212529] dark:text-slate-100">
+                <span className="text-[22px] font-semibold tracking-tight text-[#212529] dark:text-[rgb(var(--text))]">
                   Билайн
                 </span>
                 <Image
@@ -1204,10 +1204,10 @@ export function AiAssistantScreen() {
                 />
                 <span className="text-[22px] font-semibold tracking-tight text-accent-yellow">One</span>
               </div>
-              <h1 className="mt-0.5 max-w-[18rem] text-[26px] font-semibold leading-[1.15] tracking-tight text-[#212529] dark:text-slate-100">
+              <h1 className="mt-0.5 max-w-[18rem] text-[26px] font-semibold leading-[1.15] tracking-tight text-[#212529] dark:text-[rgb(var(--text))]">
                 Ваш бизнес ассистент
               </h1>
-              <p className="mt-1 text-[13px] text-[#8E8E93] dark:text-slate-400">{userProfile.legalName}</p>
+              <p className="mt-1 text-[13px] text-[#8E8E93] dark:text-[rgb(var(--text))]">{userProfile.legalName}</p>
             </div>
 
             <div className="mt-2 flex flex-col items-center gap-2">
@@ -1280,7 +1280,7 @@ export function AiAssistantScreen() {
                 >
                   <span>Счета на оплату</span>
                   {unpaidInvoicesCount > 0 ? (
-                    <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#2D2D2D] px-1.5 text-[11px] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
+                    <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#2D2D2D] px-1.5 text-[11px] font-bold text-white dark:bg-[rgb(var(--surface-2))] dark:text-[rgb(var(--text))]">
                       {unpaidInvoicesCount}
                     </span>
                   ) : null}
@@ -1297,7 +1297,7 @@ export function AiAssistantScreen() {
           <button
             type="button"
             aria-label="Назад"
-            className="mb-3 inline-flex items-center text-sm font-semibold text-[#3C4858] transition hover:text-[#212529] dark:text-slate-200 dark:hover:text-white"
+            className="mb-3 inline-flex items-center text-sm font-semibold text-[#3C4858] transition hover:text-[#212529] dark:text-[rgb(var(--text))] dark:hover:text-white"
             onClick={() => {
               // «Назад» в чате = главный экран ассистента, не history.back (иначе Виджеты → Ассистент → чип → назад уводил на /widgets/).
               // Историю в sessionStorage не трогаем — переписка живёт до обновления вкладки или «Выход».
@@ -1311,7 +1311,7 @@ export function AiAssistantScreen() {
               router.replace("/assistant/");
             }}
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F2F2F7] dark:bg-slate-700">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F2F2F7] dark:bg-[rgb(var(--surface-2))]">
               <ChevronLeft className="h-4 w-4" aria-hidden />
             </span>
           </button>
@@ -1356,9 +1356,9 @@ export function AiAssistantScreen() {
                   ) : null}
                   {m.role === "ai" && m.widget === "invoices-march" ? <InvoicesMarchWidget /> : null}
                   {m.role === "ai" && m.widget === "invoices-month" ? (
-                    <Card className="border-slate-200 dark:border-slate-700">
+                    <Card className="border-[rgb(var(--border))]">
                       <CardContent className="space-y-2 pb-3 pt-3">
-                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-[rgb(var(--text))]">
                           Счета за {m.invoiceMonth}
                         </div>
                         {runtimeInvoices
@@ -1367,22 +1367,22 @@ export function AiAssistantScreen() {
                             <button
                               key={inv.id}
                               type="button"
-                              className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-100 bg-white px-3 py-2 text-left transition hover:bg-slate-50 active:scale-[0.99] dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
+                              className="flex w-full items-center justify-between gap-2 rounded-xl border border-[rgb(var(--border))] bg-white px-3 py-2 text-left transition hover:bg-[rgb(var(--surface-2))] active:scale-[0.99] dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))] dark:hover:bg-[rgb(var(--surface-2))]"
                               onClick={() => router.push(`/invoices/${inv.id}/?from=assistant`)}
                             >
-                              <span className="text-sm text-slate-800 dark:text-slate-200">
+                              <span className="text-sm text-[rgb(var(--text))]">
                                 {inv.amountRub.toLocaleString("ru-RU")} ₽
                               </span>
                               <span className="flex shrink-0 items-center gap-1">
-                                <span className="text-xs text-slate-500 dark:text-slate-400">
+                                <span className="text-xs text-[rgb(var(--text))]">
                                   {inv.status === "paid" ? "Оплачен" : inv.status === "pay" ? "Не оплачен" : "В оплате"}
                                 </span>
-                                <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-500" aria-hidden />
+                                <ChevronRight className="h-4 w-4 text-[rgb(var(--text))]" aria-hidden />
                               </span>
                             </button>
                           ))}
                         {(m.invoiceMonth === "февраль" || m.invoiceMonth === "март") ? (
-                          <p className="pt-1 text-xs text-slate-600 dark:text-slate-300">
+                          <p className="pt-1 text-xs text-[rgb(var(--text))]">
                             Разница (февраль vs март):{" "}
                             {(
                               runtimeInvoices
@@ -1399,9 +1399,9 @@ export function AiAssistantScreen() {
                     </Card>
                   ) : null}
                   {m.role === "ai" && m.widget === "invoices-unpaid-inline" ? (
-                    <Card className="border-slate-200 dark:border-slate-700">
+                    <Card className="border-[rgb(var(--border))]">
                       <CardContent className="space-y-2 pb-3 pt-3">
-                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-[rgb(var(--text))]">
                           Неоплаченные счета
                         </div>
                         {runtimeInvoices
@@ -1410,15 +1410,15 @@ export function AiAssistantScreen() {
                             <button
                               key={inv.id}
                               type="button"
-                              className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-100 bg-white px-3 py-2 text-left dark:border-slate-600 dark:bg-slate-800"
+                              className="flex w-full items-center justify-between gap-2 rounded-xl border border-[rgb(var(--border))] bg-white px-3 py-2 text-left dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))]"
                               onClick={() => router.push(`/invoices/${inv.id}/`)}
                             >
-                              <span className="text-sm text-slate-800 dark:text-slate-200">
+                              <span className="text-sm text-[rgb(var(--text))]">
                                 {inv.amountRub.toLocaleString("ru-RU")} ₽
                               </span>
                               <span className="flex shrink-0 items-center gap-1">
                                 <span className="text-xs text-rose-700 dark:text-rose-300">Не оплачен</span>
-                                <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-500" aria-hidden />
+                                <ChevronRight className="h-4 w-4 text-[rgb(var(--text))]" aria-hidden />
                               </span>
                             </button>
                           ))}
@@ -1429,28 +1429,28 @@ export function AiAssistantScreen() {
                     <InvoicesSummaryInlineWidget invoices={runtimeInvoices} />
                   ) : null}
                   {m.role === "ai" && m.widget === "missed-calls-inline" ? (
-                    <Card className="border-slate-200 dark:border-slate-700">
+                    <Card className="border-[rgb(var(--border))]">
                       <CardContent className="space-y-2 pb-3 pt-3">
-                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-[rgb(var(--text))]">
                           Пропущенные в чате
                         </div>
                         {primaryMissedCall ? (
                           <button
                             key={primaryMissedCall.id}
                             type="button"
-                            className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-100 bg-white px-3 py-2 text-left dark:border-slate-600 dark:bg-slate-800"
+                            className="flex w-full items-center justify-between gap-2 rounded-xl border border-[rgb(var(--border))] bg-white px-3 py-2 text-left dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))]"
                             onClick={() => router.push(`/call/${primaryMissedCall.id}/`)}
                           >
-                            <span className="min-w-0 flex-1 truncate text-left text-sm text-slate-800 dark:text-slate-200">
+                            <span className="min-w-0 flex-1 truncate text-left text-sm text-[rgb(var(--text))]">
                               {primaryMissedCall.title ?? primaryMissedCall.phone}
                             </span>
                             <span className="flex shrink-0 items-center gap-1">
-                              <span className="text-xs text-slate-500 dark:text-slate-400">{primaryMissedCall.time}</span>
-                              <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-500" aria-hidden />
+                              <span className="text-xs text-[rgb(var(--text))]">{primaryMissedCall.time}</span>
+                              <ChevronRight className="h-4 w-4 text-[rgb(var(--text))]" aria-hidden />
                             </span>
                           </button>
                         ) : (
-                          <div className="rounded-xl border border-slate-100 bg-white px-3 py-2 text-sm text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                          <div className="rounded-xl border border-[rgb(var(--border))] bg-white px-3 py-2 text-sm text-[rgb(var(--text))] dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))] dark:text-[rgb(var(--text))]">
                             Пропущенных звонков не найдено.
                           </div>
                         )}
@@ -1459,15 +1459,15 @@ export function AiAssistantScreen() {
                             <button
                               key={c.id}
                               type="button"
-                              className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-100 bg-white px-3 py-2 text-left dark:border-slate-600 dark:bg-slate-800"
+                              className="flex w-full items-center justify-between gap-2 rounded-xl border border-[rgb(var(--border))] bg-white px-3 py-2 text-left dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))]"
                               onClick={() => router.push(`/call/${c.id}/`)}
                             >
-                              <span className="min-w-0 flex-1 truncate text-left text-sm text-slate-800 dark:text-slate-200">
+                              <span className="min-w-0 flex-1 truncate text-left text-sm text-[rgb(var(--text))]">
                                 {c.title ?? c.phone}
                               </span>
                               <span className="flex shrink-0 items-center gap-1">
-                                <span className="text-xs text-slate-500 dark:text-slate-400">{c.time}</span>
-                                <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-500" aria-hidden />
+                                <span className="text-xs text-[rgb(var(--text))]">{c.time}</span>
+                                <ChevronRight className="h-4 w-4 text-[rgb(var(--text))]" aria-hidden />
                               </span>
                             </button>
                           ))}
@@ -1475,17 +1475,17 @@ export function AiAssistantScreen() {
                     </Card>
                   ) : null}
                   {m.role === "ai" && m.widget === "appeals-summary" ? (
-                    <Card className="border-slate-200 dark:border-slate-700">
+                    <Card className="border-[rgb(var(--border))]">
                       <CardContent className="space-y-3 pb-3 pt-3">
                         <Button
                           type="button"
-                          className="w-full rounded-xl bg-slate-900 text-sm font-semibold text-white dark:bg-slate-100 dark:text-slate-900"
+                          className="w-full rounded-xl bg-[rgb(var(--surface-2))] text-sm font-semibold text-white dark:bg-[rgb(var(--surface-2))] dark:text-[rgb(var(--text))]"
                           onClick={() => router.push(appealsListHref("assistant"))}
                         >
                           Создать обращение
                         </Button>
-                        <div className="rounded-xl border border-slate-100 bg-white p-3 dark:border-slate-600 dark:bg-slate-800">
-                          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Активные обращения</div>
+                        <div className="rounded-xl border border-[rgb(var(--border))] bg-white p-3 dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))]">
+                          <div className="text-sm font-semibold text-[rgb(var(--text))]">Активные обращения</div>
                           <div className="mt-2 space-y-2">
                             {chatAppeals.map((appeal) => (
                               <button
@@ -1495,8 +1495,8 @@ export function AiAssistantScreen() {
                                 onClick={() => router.push(appealsListHref("assistant"))}
                               >
                                 <div className="min-w-0 flex-1">
-                                  <div className="truncate text-sm text-slate-900 dark:text-slate-100">{appeal.title}</div>
-                                  <div className="truncate text-xs text-slate-500 dark:text-slate-400">
+                                  <div className="truncate text-sm text-[rgb(var(--text))]">{appeal.title}</div>
+                                  <div className="truncate text-xs text-[rgb(var(--text))]">
                                     {appeal.category} — от {appeal.dateLabel}
                                   </div>
                                 </div>
@@ -1512,25 +1512,25 @@ export function AiAssistantScreen() {
                                   >
                                     {appeal.badgeLabel}
                                   </span>
-                                  <ChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-500" aria-hidden />
+                                  <ChevronRight className="h-4 w-4 text-[rgb(var(--text))]" aria-hidden />
                                 </span>
                               </button>
                             ))}
                           </div>
                           <button
                             type="button"
-                            className="mt-3 flex w-full items-center justify-center gap-1 text-sm font-semibold text-slate-700 dark:text-slate-200"
+                            className="mt-3 flex w-full items-center justify-center gap-1 text-sm font-semibold text-[rgb(var(--text))]"
                             onClick={() => router.push(appealsListHref("assistant"))}
                           >
                             Все обращения
-                            <ChevronRight className="h-4 w-4 text-slate-400" aria-hidden />
+                            <ChevronRight className="h-4 w-4 text-[rgb(var(--text))]" aria-hidden />
                           </button>
                         </div>
-                        <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                        <p className="text-xs leading-relaxed text-[rgb(var(--text))]">
                           Для поиска конкретного обращения укажите: дату создания, номер договора или контекст обращения.
                         </p>
-                        <Card className="border-slate-200 dark:border-slate-700">
-                          <CardContent className="divide-y divide-slate-100 p-0 dark:divide-slate-700">
+                        <Card className="border-[rgb(var(--border))]">
+                          <CardContent className="divide-y divide-[rgb(var(--border))] p-0 dark:divide-[rgb(var(--border))]">
                             {[
                               { label: "Создать обращение", onClick: () => router.push(appealsListHref("assistant")) },
                               { label: "Список обращений", onClick: () => router.push(appealsListHref("assistant")) },
@@ -1540,11 +1540,11 @@ export function AiAssistantScreen() {
                               <button
                                 key={item.label}
                                 type="button"
-                                className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-slate-900 dark:text-slate-100"
+                                className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-[rgb(var(--text))]"
                                 onClick={item.onClick}
                               >
                                 {item.label}
-                                <ChevronRight className="h-4 w-4 text-slate-400" />
+                                <ChevronRight className="h-4 w-4 text-[rgb(var(--text))]" />
                               </button>
                             ))}
                           </CardContent>
@@ -1594,11 +1594,11 @@ export function AiAssistantScreen() {
               {chipTags.map((label) => (
                 <div
                   key={label}
-                  className="inline-flex items-center overflow-hidden rounded-full border border-[#E8EAED] bg-white text-[11px] font-medium leading-none text-[#3C4858] shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+                  className="inline-flex items-center overflow-hidden rounded-full border border-[#E8EAED] bg-white text-[11px] font-medium leading-none text-[#3C4858] shadow-sm dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))] dark:text-[rgb(var(--text))]"
                 >
                   <button
                     type="button"
-                    className="px-2.5 py-1 text-left hover:bg-slate-50 dark:hover:bg-slate-700"
+                    className="px-2.5 py-1 text-left hover:bg-[rgb(var(--surface-2))] dark:hover:bg-[rgb(var(--surface-2))]"
                     onClick={() => {
                       setInput(label);
                       window.setTimeout(() => send(label), 50);
@@ -1608,7 +1608,7 @@ export function AiAssistantScreen() {
                   </button>
                   <button
                     type="button"
-                    className="border-l border-[#E8EAED] px-1.5 py-1 text-[#C7C7CC] hover:bg-slate-100 hover:text-slate-600 dark:border-slate-600 dark:hover:bg-slate-700"
+                    className="border-l border-[#E8EAED] px-1.5 py-1 text-[#C7C7CC] hover:bg-[rgb(var(--surface-2))] hover:text-[rgb(var(--text))] dark:border-[rgb(var(--border))] dark:hover:bg-[rgb(var(--surface-2))]"
                     aria-label="Убрать"
                     onClick={() => setChipTags((t) => t.filter((x) => x !== label))}
                   >
@@ -1629,14 +1629,14 @@ export function AiAssistantScreen() {
           aria-live="polite"
         >
           <div className="safe-px">
-            <div className="flex items-center justify-between gap-3 rounded-2xl border border-[#E8EAED] bg-white px-3 py-2.5 shadow-md dark:border-slate-600 dark:bg-slate-800">
-              <div className="flex min-w-0 items-center gap-2 text-sm font-medium text-[#343A4A] dark:text-slate-100">
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-[#E8EAED] bg-white px-3 py-2.5 shadow-md dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))]">
+              <div className="flex min-w-0 items-center gap-2 text-sm font-medium text-[#343A4A] dark:text-[rgb(var(--text))]">
                 <Loader2 className="h-4 w-4 shrink-0 animate-spin text-accent-dark" aria-hidden />
                 <span>Готовим ответ…</span>
               </div>
               <button
                 type="button"
-                className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-800 transition hover:bg-slate-100 active:scale-[0.99] dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600"
+                className="shrink-0 rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--surface-2))] px-3 py-1.5 text-xs font-semibold text-[rgb(var(--text))] transition hover:bg-[rgb(var(--surface-2))] active:scale-[0.99] dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))] dark:text-[rgb(var(--text))] dark:hover:bg-[rgb(var(--surface-2))]"
                 data-testid="assistant-cancel-reply"
                 onClick={cancelPendingReply}
               >
@@ -1661,9 +1661,9 @@ export function AiAssistantScreen() {
       {toast ? (
         <div className="fixed bottom-[120px] left-0 right-0 z-40 mx-auto w-full max-w-[430px]">
           <div className="safe-px">
-            <Card className="border-[#E8EAED] bg-white/75 shadow-lg backdrop-blur-xl backdrop-saturate-150 dark:border-slate-600 dark:bg-slate-900/75 dark:backdrop-blur-xl">
+            <Card className="border-[#E8EAED] bg-white/75 shadow-lg backdrop-blur-xl backdrop-saturate-150 dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))]/75 dark:backdrop-blur-xl">
               <CardContent className="pb-3 pt-3">
-                <div className="text-sm text-[#212529] dark:text-slate-100">{toast}</div>
+                <div className="text-sm text-[#212529] dark:text-[rgb(var(--text))]">{toast}</div>
               </CardContent>
             </Card>
           </div>
@@ -1672,7 +1672,7 @@ export function AiAssistantScreen() {
 
       <Modal open={openHistory} onClose={() => setOpenHistory(false)} title="История запросов">
         <div className="space-y-2">
-          <div className="pb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <div className="pb-1 text-xs font-semibold uppercase tracking-wide text-[rgb(var(--text))]">
             Быстрые запросы
           </div>
           <div className="flex flex-wrap gap-2 pb-1">
@@ -1680,7 +1680,7 @@ export function AiAssistantScreen() {
               <button
                 key={prompt}
                 type="button"
-                className="rounded-full border border-[#E8EAED] bg-white px-3 py-1.5 text-xs font-medium text-[#3C4858] shadow-sm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                className="rounded-full border border-[#E8EAED] bg-white px-3 py-1.5 text-xs font-medium text-[#3C4858] shadow-sm transition hover:bg-[rgb(var(--surface-2))] dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))] dark:text-[rgb(var(--text))] dark:hover:bg-[rgb(var(--surface-2))]"
                 onClick={() => {
                   setOpenHistory(false);
                   setInput(prompt);
@@ -1691,21 +1691,21 @@ export function AiAssistantScreen() {
               </button>
             ))}
           </div>
-          <div className="pb-1 pt-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <div className="pb-1 pt-1 text-xs font-semibold uppercase tracking-wide text-[rgb(var(--text))]">
             Сохраненные сессии
           </div>
           {chatHistoryPresets.map((h) => (
             <button
               key={h.id}
               type="button"
-              className="w-full rounded-[18px] border border-[#E8EAED] bg-white p-3 text-left shadow-sm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
+              className="w-full rounded-[18px] border border-[#E8EAED] bg-white p-3 text-left shadow-sm transition hover:bg-[rgb(var(--surface-2))] dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))] dark:hover:bg-[rgb(var(--surface-2))]"
               onClick={() => {
                 setMessages(h.messages);
                 setOpenHistory(false);
                 setToast(`Загружено: «${h.title}».`);
               }}
             >
-              <div className="text-sm font-semibold text-[#212529] dark:text-slate-100">{h.title}</div>
+              <div className="text-sm font-semibold text-[#212529] dark:text-[rgb(var(--text))]">{h.title}</div>
               <div className="mt-1 line-clamp-2 text-xs text-[#8E8E93]">{h.preview}</div>
             </button>
           ))}

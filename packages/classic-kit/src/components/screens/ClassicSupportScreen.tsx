@@ -41,17 +41,17 @@ export function ClassicSupportScreen() {
       <Link
         href={appealsListHref("support")}
         data-testid="support-appeals-card"
-        className="block rounded-2xl outline-none ring-offset-2 ring-offset-white transition hover:brightness-[1.01] focus-visible:ring-2 focus-visible:ring-accent-yellow dark:ring-offset-slate-900"
+        className="block rounded-2xl outline-none ring-offset-2 ring-offset-white transition hover:brightness-[1.01] focus-visible:ring-2 focus-visible:ring-accent-yellow dark:ring-offset-[rgb(var(--text))]"
       >
-        <Card className="border-slate-200 dark:border-slate-700">
+        <Card className="border-[rgb(var(--border))]">
           <CardContent className="space-y-3 pb-4 pt-4">
             <div className="flex items-start gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-700">
-                <ClipboardList className="h-5 w-5 text-slate-700 dark:text-slate-200" aria-hidden />
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgb(var(--surface-2))]">
+                <ClipboardList className="h-5 w-5 text-[rgb(var(--text))]" aria-hidden />
               </span>
               <div className="min-w-0 flex-1">
-                <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Обращения</h2>
-                <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                <h2 className="text-base font-semibold text-[rgb(var(--text))]">Обращения</h2>
+                <p className="mt-1 text-xs leading-relaxed text-[rgb(var(--text))]">
                   Активных: {activeAppeals.length}. В работе: {inWorkCount}
                   {signPendingCount ? ` · Ожидает подписания: ${signPendingCount}` : ""}
                 </p>
@@ -59,15 +59,15 @@ export function ClassicSupportScreen() {
             </div>
 
             {previewAppeals.length ? (
-              <div className="divide-y divide-slate-100 rounded-xl border border-slate-100 dark:divide-slate-700 dark:border-slate-600">
+              <div className="divide-y divide-[rgb(var(--border))] rounded-xl border border-[rgb(var(--border))] dark:divide-[rgb(var(--border))] dark:border-[rgb(var(--border))]">
                 {previewAppeals.map((a) => (
                   <div
                     key={a.id}
-                    className="flex items-start justify-between gap-2 px-3 py-2.5 dark:text-slate-100"
+                    className="flex items-start justify-between gap-2 px-3 py-2.5 dark:text-[rgb(var(--text))]"
                   >
                     <span className="min-w-0">
-                      <span className="block truncate text-sm font-medium text-slate-900 dark:text-slate-100">{a.title}</span>
-                      <span className="mt-0.5 block text-[11px] text-slate-500 dark:text-slate-400">
+                      <span className="block truncate text-sm font-medium text-[rgb(var(--text))]">{a.title}</span>
+                      <span className="mt-0.5 block text-[11px] text-[rgb(var(--text))]">
                         {a.category} · ID от {a.dateLabel}
                       </span>
                     </span>
@@ -85,15 +85,15 @@ export function ClassicSupportScreen() {
               </div>
             ) : null}
 
-            <div className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-softSm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+            <div className="flex w-full items-center justify-between rounded-xl border border-[rgb(var(--border))] bg-white px-4 py-3 text-sm font-semibold text-[rgb(var(--text))] shadow-softSm dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface-2))] dark:text-[rgb(var(--text))]">
               Список обращений
-              <ChevronRight className="h-4 w-4 text-slate-400" aria-hidden />
+              <ChevronRight className="h-4 w-4 text-[rgb(var(--text))]" aria-hidden />
             </div>
           </CardContent>
         </Card>
       </Link>
 
-      <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Популярные темы</h2>
+      <h2 className="text-sm font-semibold text-[rgb(var(--text))]">Популярные темы</h2>
       <div className="space-y-2">
         {appealTopicOptions.map((t, i) => (
           <button
@@ -102,13 +102,13 @@ export function ClassicSupportScreen() {
             onClick={() => openDevelopmentStub(`Тема «${t.title}» — раздел в разработке.`)}
             className="block w-full text-left"
           >
-            <Card className="border-slate-200/80 transition hover:brightness-[1.02] dark:border-slate-700">
+            <Card className="border-[rgb(var(--border))]/80 transition hover:brightness-[1.02] dark:border-[rgb(var(--border))]">
               <CardContent className="flex items-center gap-3 py-3">
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{t.title}</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">{t.subtitle}</div>
+                  <div className="text-sm font-semibold text-[rgb(var(--text))]">{t.title}</div>
+                  <div className="text-xs text-[rgb(var(--text))]">{t.subtitle}</div>
                 </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-slate-300 dark:text-slate-500" aria-hidden />
+                <ChevronRight className="h-4 w-4 shrink-0 text-[rgb(var(--text))]" aria-hidden />
               </CardContent>
             </Card>
           </button>

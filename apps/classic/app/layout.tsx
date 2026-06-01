@@ -34,7 +34,10 @@ const CLASSIC_THEME_BOOTSTRAP_SCRIPT = `
 `;
 
 export const viewport: Viewport = {
-  themeColor: "#F7F8FA",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F4F5F7" },
+    { media: "(prefers-color-scheme: dark)", color: "#0D0D1A" }
+  ],
   viewportFit: "cover"
 };
 
@@ -60,7 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: CLASSIC_THEME_BOOTSTRAP_SCRIPT }} />
       </head>
-      <body className={`min-h-dvh bg-white antialiased dark:bg-slate-950 ${inter.variable} font-sans`}>
+      <body className={`min-h-dvh bg-[#F4F5F7] antialiased dark:bg-[#0D0D1A] ${inter.variable} font-sans`}>
         <div className="relative mx-auto min-h-dvh w-full max-w-[430px]">
           <ThemeProvider>
             <DemoSessionProvider>

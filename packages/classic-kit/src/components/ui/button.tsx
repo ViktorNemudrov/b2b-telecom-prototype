@@ -3,7 +3,7 @@
 import * as React from "react";
 import { cn } from "@shared/components/ui/cn";
 
-type Variant = "primary" | "secondary" | "ghost" | "outline";
+type Variant = "primary" | "secondary" | "ghost" | "outline" | "danger";
 type Size = "sm" | "md" | "icon";
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -22,22 +22,24 @@ export function Button({
     <button
       type={type}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-xl text-sm font-medium transition",
-        "active:translate-y-[1px] disabled:pointer-events-none disabled:opacity-50",
-        size === "md" && "h-11 px-4",
-        size === "sm" && "h-9 px-3",
-        size === "icon" && "h-11 w-11 px-0",
+        "inline-flex items-center justify-center gap-2 rounded-2xl text-sm font-semibold transition",
+        "active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50",
+        size === "md" && "h-11 px-5",
+        size === "sm" && "h-9 px-3.5",
+        size === "icon" && "h-10 w-10 px-0",
         variant === "primary" &&
-          "bg-accent-yellow text-accent-dark shadow-softSm hover:brightness-95",
+          "bg-accent-orange text-white shadow-softSm hover:brightness-105",
         variant === "secondary" &&
-          "bg-white text-accent-dark shadow-softSm hover:bg-slate-50 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600",
+          "bg-[rgb(var(--surface-2))] text-[rgb(var(--text))] shadow-softSm hover:brightness-105 dark:bg-[rgb(var(--surface-2))]",
         variant === "outline" &&
-          "border border-slate-200 bg-white text-accent-dark hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700",
-        variant === "ghost" && "bg-transparent text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700",
+          "border border-[rgb(var(--border))] bg-[rgb(var(--card))] text-[rgb(var(--text))] hover:brightness-105 dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--card))]",
+        variant === "ghost" &&
+          "bg-transparent text-[rgb(var(--muted))] hover:bg-[rgb(var(--surface-2))] hover:text-[rgb(var(--text))]",
+        variant === "danger" &&
+          "bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 dark:bg-rose-500/15 dark:hover:bg-rose-500/25",
         className
       )}
       {...props}
     />
   );
 }
-
