@@ -95,7 +95,7 @@ export function FeedScreen({
                   settingsCustom.useMock ? "Настройки ленты коммуникаций (мок из кастомизации)." : "Настройки ленты коммуникаций."
                 )
               }
-              className={["flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700", getCustomizationButtonClasses(settingsCustom.dimmedDisabled)].join(" ")}
+              className={["flex h-8 w-8 items-center justify-center rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] text-[rgb(var(--muted))] shadow-softSm transition hover:brightness-110 dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--card))] dark:text-[rgb(var(--muted))]", getCustomizationButtonClasses(settingsCustom.dimmedDisabled)].join(" ")}
               aria-label="Настройки"
               disabled={settingsCustom.dimmedDisabled}
             >
@@ -109,7 +109,7 @@ export function FeedScreen({
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Коммуникация</h1>
+              <h1 className="text-lg font-semibold text-[rgb(var(--text))]">Коммуникация</h1>
               <button
                 type="button"
                 onClick={() =>
@@ -117,14 +117,14 @@ export function FeedScreen({
                     settingsCustom.useMock ? "Настройки ленты коммуникаций (мок из кастомизации)." : "Настройки ленты коммуникаций."
                   )
                 }
-                className={["flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700", getCustomizationButtonClasses(settingsCustom.dimmedDisabled)].join(" ")}
+                className={["flex h-8 w-8 items-center justify-center rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] text-[rgb(var(--muted))] shadow-softSm transition hover:brightness-110 dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--card))] dark:text-[rgb(var(--muted))]", getCustomizationButtonClasses(settingsCustom.dimmedDisabled)].join(" ")}
                 aria-label="Настройки"
                 disabled={settingsCustom.dimmedDisabled}
               >
                 <Settings className="h-4 w-4" />
               </button>
             </div>
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{feedDateLabel}</p>
+            <p className="mt-0.5 text-xs text-[rgb(var(--muted))]">{feedDateLabel}</p>
           </div>
         </div>
       ) : null}
@@ -137,7 +137,7 @@ export function FeedScreen({
             <button
               type="button"
               onClick={() => openDevelopmentStub(searchCustom.useMock ? "Поиск по коммуникациям (мок из кастомизации)." : "Поиск по коммуникациям.")}
-              className={["flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 active:translate-y-[1px] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700", getCustomizationButtonClasses(searchCustom.dimmedDisabled)].join(" ")}
+              className={["flex h-10 w-10 items-center justify-center rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] text-[rgb(var(--muted))] shadow-softSm transition hover:brightness-110 active:translate-y-[1px] dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--card))] dark:text-[rgb(var(--muted))]", getCustomizationButtonClasses(searchCustom.dimmedDisabled)].join(" ")}
               aria-label="Поиск"
               disabled={searchCustom.dimmedDisabled}
             >
@@ -146,7 +146,7 @@ export function FeedScreen({
             <button
               type="button"
               onClick={() => setOpenDatePicker(true)}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-softSm transition hover:bg-slate-50 active:translate-y-[1px] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] text-[rgb(var(--muted))] shadow-softSm transition hover:brightness-110 active:translate-y-[1px] dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--card))] dark:text-[rgb(var(--muted))]"
               aria-label="Календарь"
             >
               <Calendar className="h-4 w-4" />
@@ -166,8 +166,8 @@ export function FeedScreen({
                 "rounded-full border px-3 py-2 text-xs font-semibold transition active:translate-y-[1px]",
                 getCustomizationButtonClasses(teamCustom.dimmedDisabled),
                 filter === "team"
-                  ? "border-transparent bg-accent-dark text-white shadow-softSm"
-                  : "border-slate-200 bg-white text-slate-800 shadow-softSm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  ? "border-transparent bg-accent-orange text-white shadow-softSm"
+                  : "border-[rgb(var(--border))] bg-[rgb(var(--card))] text-[rgb(var(--text))] shadow-softSm hover:brightness-110 dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--card))] dark:text-[rgb(var(--text))]"
               ].join(" ")}
               disabled={teamCustom.dimmedDisabled}
             >
@@ -179,8 +179,8 @@ export function FeedScreen({
               className={[
                 "rounded-full border px-3 py-2 text-xs font-semibold transition active:translate-y-[1px]",
                 filter === "all"
-                  ? "border-transparent bg-accent-dark text-white shadow-softSm"
-                  : "border-slate-200 bg-white text-slate-800 shadow-softSm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  ? "border-transparent bg-accent-orange text-white shadow-softSm"
+                  : "border-[rgb(var(--border))] bg-[rgb(var(--card))] text-[rgb(var(--text))] shadow-softSm hover:brightness-110 dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--card))] dark:text-[rgb(var(--text))]"
               ].join(" ")}
             >
               Все звонки
@@ -201,8 +201,8 @@ export function FeedScreen({
                 "inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition active:translate-y-[1px]",
                 getCustomizationButtonClasses(missedCustom.dimmedDisabled),
                 filter === "missed"
-                  ? "border-transparent bg-accent-dark text-white shadow-softSm"
-                  : "border-slate-200 bg-white text-slate-800 shadow-softSm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  ? "border-transparent bg-accent-orange text-white shadow-softSm"
+                  : "border-[rgb(var(--border))] bg-[rgb(var(--card))] text-[rgb(var(--text))] shadow-softSm hover:brightness-110 dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--card))] dark:text-[rgb(var(--text))]"
               ].join(" ")}
               disabled={missedCustom.dimmedDisabled}
             >
@@ -213,8 +213,8 @@ export function FeedScreen({
             </button>
           </div>
 
-          <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-            Доступное хранилище <span className="font-semibold text-slate-700">0.15%</span> · 1.5 МБ из 1 ГБ
+          <p className="text-[11px] leading-relaxed text-[rgb(var(--muted))]">
+            Доступное хранилище <span className="font-semibold text-[rgb(var(--text))]">0.15%</span> · 1.5 МБ из 1 ГБ
           </p>
 
           <div className="flex flex-wrap gap-2">
@@ -228,8 +228,8 @@ export function FeedScreen({
                 "rounded-full border px-3 py-1.5 text-[11px] font-semibold transition active:translate-y-[1px]",
                 getCustomizationButtonClasses(incomingCustom.dimmedDisabled),
                 filter === "incoming"
-                  ? "border-transparent bg-slate-800 text-white"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  ? "border-transparent bg-accent-orange text-white"
+                  : "border-[rgb(var(--border))] bg-[rgb(var(--card))] text-[rgb(var(--text))] hover:brightness-110 dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--card))] dark:text-[rgb(var(--text))]"
               ].join(" ")}
               disabled={incomingCustom.dimmedDisabled}
             >
@@ -245,8 +245,8 @@ export function FeedScreen({
                 "rounded-full border px-3 py-1.5 text-[11px] font-semibold transition active:translate-y-[1px]",
                 getCustomizationButtonClasses(reportsCustom.dimmedDisabled),
                 filter === "reports"
-                  ? "border-transparent bg-slate-800 text-white"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  ? "border-transparent bg-accent-orange text-white"
+                  : "border-[rgb(var(--border))] bg-[rgb(var(--card))] text-[rgb(var(--text))] hover:brightness-110 dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--card))] dark:text-[rgb(var(--text))]"
               ].join(" ")}
               disabled={reportsCustom.dimmedDisabled}
             >
@@ -259,10 +259,10 @@ export function FeedScreen({
               <CardContent className="px-2 pb-2 pt-1">
                 {commGroups.map(([date, rows]) => (
                   <div key={date}>
-                    <div className="px-2 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                    <div className="px-2 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-[rgb(var(--muted))]">
                       {date}
                     </div>
-                    <div className="divide-y divide-slate-100 px-2">
+                    <div className="divide-y divide-[rgb(var(--border))]/50 px-2">
                       {rows.map((row) => (
                         <CommunicationLogRow key={row.id} row={row} />
                       ))}
@@ -295,8 +295,8 @@ export function FeedScreen({
       ) : (
         <Card>
           <CardContent className="pb-5 pt-5">
-            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Секретарь</div>
-            <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+            <div className="text-sm font-semibold text-[rgb(var(--text))]">Секретарь</div>
+            <p className="mt-2 text-sm leading-relaxed text-[rgb(var(--muted))]">
               Принимает пропущенные, фиксирует суть и ставит задачи. В демо — заглушка; сценарии можно подключить к
               CRM.
             </p>
