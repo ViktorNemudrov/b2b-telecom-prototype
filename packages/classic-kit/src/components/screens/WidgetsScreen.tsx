@@ -24,13 +24,13 @@ function ArrowRow({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center justify-between rounded-xl px-0.5 py-0.5 text-left transition hover:bg-slate-50 dark:hover:bg-slate-700/50"
+      className="flex w-full items-center justify-between rounded-xl px-0.5 py-0.5 text-left transition hover:bg-[rgb(var(--surface2))]"
     >
       <div>
-        <div className="text-[19px] font-medium leading-tight text-slate-900 dark:text-slate-100">{title}</div>
-        {subtitle ? <div className="text-[12px] text-slate-400 dark:text-slate-400">{subtitle}</div> : null}
+        <div className="text-[19px] font-medium leading-tight text-[rgb(var(--text))]">{title}</div>
+        {subtitle ? <div className="text-[12px] text-[rgb(var(--muted))]">{subtitle}</div> : null}
       </div>
-      <ChevronRight className="h-5 w-5 shrink-0 text-slate-300 dark:text-slate-500" />
+      <ChevronRight className="h-5 w-5 shrink-0 text-[rgb(var(--muted))]/50" />
     </button>
   );
 }
@@ -84,39 +84,39 @@ export function WidgetsScreen() {
   return (
     <div className="space-y-2.5">
       <div className="flex justify-center">
-        <span className="inline-flex items-center gap-1 rounded-full bg-accent-dark px-3 py-1 text-[10px] font-semibold text-white shadow-softSm">
-          Подписка <span className="text-accent-yellow">✓</span>
+        <span className="inline-flex items-center gap-1 rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--surface2))] px-3 py-1 text-[10px] font-semibold text-[rgb(var(--text))] shadow-softSm">
+          Подписка <span className="text-accent-orange">✓</span>
         </span>
       </div>
 
       <div className="text-center leading-tight">
-        <div className="text-[35px] font-medium tracking-[-0.02em] text-slate-900 dark:text-slate-100">Связь для бизнеса</div>
-        <div className="text-[12px] text-slate-400 dark:text-slate-400">ИП Балашов Владислав</div>
+        <div className="text-[35px] font-medium tracking-[-0.02em] text-[rgb(var(--text))]">Связь для бизнеса</div>
+        <div className="text-[12px] text-[rgb(var(--muted))]">ИП Балашов Владислав</div>
       </div>
 
       <Card>
         <CardContent className="pt-2.5">
           <ArrowRow title="Мобильная связь" onClick={() => openDevelopmentStub("Мобильная связь в разработке.")} />
           <div className="mt-1.5 grid grid-cols-3 gap-1.5">
-            <div className="col-span-2 rounded-[16px] bg-slate-100 p-2.5">
-              <div className="text-[24px] font-medium leading-none text-slate-700">3 435 гб</div>
+            <div className="col-span-2 rounded-[16px] bg-[rgb(var(--surface2))] p-2.5">
+              <div className="text-[24px] font-medium leading-none text-[rgb(var(--text))]">3 435 гб</div>
               <div className="mt-2.5 grid grid-cols-8 gap-1">
                 {Array.from({ length: 40 }).map((_, idx) => (
                   <span
                     key={idx}
                     className={cn(
                       "h-2.5 w-2.5 rounded-full opacity-95",
-                      idx % 7 === 0 || idx % 8 === 0 ? "bg-slate-300" : "bg-accent-yellow"
+                      idx % 7 === 0 || idx % 8 === 0 ? "bg-[rgb(var(--muted))]/40" : "bg-accent-orange"
                     )}
                   />
                 ))}
               </div>
             </div>
             <div className="space-y-1.5">
-              <div className="rounded-[16px] bg-slate-100 p-2.5 text-slate-700">
+              <div className="rounded-[16px] bg-[rgb(var(--surface2))] p-2.5 text-[rgb(var(--text))]">
                 <div className="text-[24px] font-medium leading-none">1 545 мин</div>
               </div>
-              <div className="rounded-[16px] bg-slate-100 p-2.5 text-slate-700">
+              <div className="rounded-[16px] bg-[rgb(var(--surface2))] p-2.5 text-[rgb(var(--text))]">
                 <div className="text-[24px] font-medium leading-none">800 sms</div>
               </div>
             </div>
@@ -139,20 +139,20 @@ export function WidgetsScreen() {
           <button type="button" className="mt-0.5 block w-full text-left" onClick={onRecordingsTap}>
             <div className="grid grid-cols-3 gap-2 text-center">
               <div>
-                <div className="text-[39px] font-light leading-none text-slate-800">245</div>
-                <div className="text-[11px] text-slate-400">принято</div>
+                <div className="text-[39px] font-light leading-none text-[rgb(var(--text))]">245</div>
+                <div className="text-[11px] text-[rgb(var(--muted))]">принято</div>
               </div>
               <div>
-                <div className="text-[39px] font-light leading-none text-slate-800">12</div>
-                <div className="text-[11px] text-slate-400">ждут ответа</div>
+                <div className="text-[39px] font-light leading-none text-[rgb(var(--text))]">12</div>
+                <div className="text-[11px] text-[rgb(var(--muted))]">ждут ответа</div>
               </div>
               <div>
-                <div className="text-[39px] font-light leading-none text-slate-800">16</div>
-                <div className="text-[11px] text-slate-400">секретарь</div>
+                <div className="text-[39px] font-light leading-none text-[rgb(var(--text))]">16</div>
+                <div className="text-[11px] text-[rgb(var(--muted))]">секретарь</div>
               </div>
             </div>
             <CompactHeatmap />
-            <div className="mt-1.5 flex justify-between px-1 text-[10px] text-slate-300">
+            <div className="mt-1.5 flex justify-between px-1 text-[10px] text-[rgb(var(--muted))]/60">
               {["8", "10", "12", "14", "16", "18"].map((x) => (
                 <span key={x}>{x}</span>
               ))}
@@ -174,7 +174,7 @@ export function WidgetsScreen() {
                 key={icon + i}
                 type="button"
                 onClick={() => openDevelopmentStub("AI - команда в разработке.")}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm transition hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-[rgb(var(--surface2))] text-sm transition hover:brightness-110"
               >
                 {icon}
               </button>
@@ -192,13 +192,13 @@ export function WidgetsScreen() {
       <Card>
         <CardContent className="pt-2.5">
           <ArrowRow title="Прием платежей" subtitle="Формируйте платежи на оплату" onClick={() => openDevelopmentStub("Прием платежей в разработке.")} />
-          <div className="mt-1.5 flex items-center justify-between text-[20px] font-medium text-slate-700">
+          <div className="mt-1.5 flex items-center justify-between text-[20px] font-medium text-[rgb(var(--text))]">
             <span className="inline-flex items-center gap-1.5">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[rgb(var(--surface2))] text-[rgb(var(--muted))]">
                 <Tag className="h-3 w-3" aria-hidden />
               </span>
               12
-              <span className="text-[11px] font-normal text-slate-400">ожидают</span>
+              <span className="text-[11px] font-normal text-[rgb(var(--muted))]">ожидают</span>
             </span>
             <span>662 454 ₽</span>
           </div>
@@ -208,28 +208,28 @@ export function WidgetsScreen() {
       <Card>
         <CardContent className="pt-2.5">
           <ArrowRow title="Продвижение" subtitle="Продвигайте компанию и ресурсы" onClick={() => openDevelopmentStub("Продвижение в разработке.")} />
-          <div className="mt-1.5 rounded-[16px] bg-slate-100 px-3 py-2">
+          <div className="mt-1.5 rounded-[16px] bg-[rgb(var(--surface2))] px-3 py-2">
             <div className="flex items-center justify-between text-[18px] font-medium">
               <span className="inline-flex items-center gap-1.5">
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white text-slate-500 shadow-softSm">
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[rgb(var(--card))] text-[rgb(var(--muted))] shadow-softSm">
                   <Tag className="h-3 w-3" aria-hidden />
                 </span>
                 Весенние скидки
               </span>
               <span>24%</span>
             </div>
-            <div className="text-[11px] text-slate-400">Топ рассылка</div>
-            <div className="mt-1.5 grid grid-cols-3 gap-2 text-center text-[11px] text-slate-500">
+            <div className="text-[11px] text-[rgb(var(--muted))]">Топ рассылка</div>
+            <div className="mt-1.5 grid grid-cols-3 gap-2 text-center text-[11px] text-[rgb(var(--muted))]">
               <div>
-                <div className="text-[18px] font-medium text-slate-700">12,3к</div>
+                <div className="text-[18px] font-medium text-[rgb(var(--text))]">12,3к</div>
                 <div>рассылок</div>
               </div>
               <div>
-                <div className="text-[18px] font-medium text-slate-700">42%</div>
+                <div className="text-[18px] font-medium text-[rgb(var(--text))]">42%</div>
                 <div>доставлено</div>
               </div>
               <div>
-                <div className="text-[18px] font-medium text-slate-700">3,5%</div>
+                <div className="text-[18px] font-medium text-[rgb(var(--text))]">3,5%</div>
                 <div>переходов</div>
               </div>
             </div>
@@ -240,30 +240,30 @@ export function WidgetsScreen() {
       <Card>
         <CardContent className="pt-2.5">
           <ArrowRow title="Конструктор сайтов" subtitle="Продвигайте компанию и ресурсы" onClick={() => openDevelopmentStub("Конструктор сайтов в разработке.")} />
-          <div className="mt-1.5 rounded-[16px] bg-slate-100 px-3 py-2">
-            <div className="text-[11px] text-slate-400">Сайт опубликован</div>
+          <div className="mt-1.5 rounded-[16px] bg-[rgb(var(--surface2))] px-3 py-2">
+            <div className="text-[11px] text-[rgb(var(--muted))]">Сайт опубликован</div>
             <div className="inline-flex items-center gap-1.5 text-[21px] font-medium text-indigo-600">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white text-slate-500 shadow-softSm">
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[rgb(var(--card))] text-[rgb(var(--muted))] shadow-softSm">
                 <Globe className="h-3 w-3" aria-hidden />
               </span>
               beelineone.ru
             </div>
-            <div className="mt-1.5 grid grid-cols-3 gap-2 text-center text-[11px] text-slate-500">
+            <div className="mt-1.5 grid grid-cols-3 gap-2 text-center text-[11px] text-[rgb(var(--muted))]">
               <div>
-                <div className="text-[18px] font-medium text-slate-700">5,3к</div>
+                <div className="text-[18px] font-medium text-[rgb(var(--text))]">5,3к</div>
                 <div>просмотров</div>
               </div>
               <div>
-                <div className="text-[18px] font-medium text-slate-700">18</div>
+                <div className="text-[18px] font-medium text-[rgb(var(--text))]">18</div>
                 <div>заявок</div>
               </div>
               <div>
-                <div className="text-[18px] font-medium text-slate-700">3,5%</div>
+                <div className="text-[18px] font-medium text-[rgb(var(--text))]">3,5%</div>
                 <div>конверсия</div>
               </div>
             </div>
           </div>
-          <div className="mt-1.5 text-[10px] uppercase tracking-wide text-slate-400">Топ страницы:</div>
+          <div className="mt-1.5 text-[10px] uppercase tracking-wide text-[rgb(var(--muted))]">Топ страницы:</div>
           <div className="mt-1 flex flex-wrap gap-1.5">
             {topPages.map((path) => (
               <button
@@ -285,7 +285,7 @@ export function WidgetsScreen() {
           data-testid="widgets-add-product"
           variant="outline"
           className={cn(
-            "rounded-full border-slate-200 bg-white text-sm font-semibold dark:border-slate-600 dark:bg-slate-800",
+            "rounded-full border-[rgb(var(--border))] bg-[rgb(var(--card))] text-sm font-semibold dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--card))]",
             getCustomizationButtonClasses(addCustom.dimmedDisabled)
           )}
           onClick={() => {
