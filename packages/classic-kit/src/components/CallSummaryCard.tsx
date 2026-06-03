@@ -19,20 +19,20 @@ export function CallSummaryCard({
   return (
     <div className="flex items-start justify-between gap-3">
       <div className="flex min-w-0 flex-1 items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-50">
-          <PhoneCall className="h-5 w-5 text-slate-700" />
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[rgb(var(--surface2))]">
+          <PhoneCall className="h-5 w-5 text-[rgb(var(--muted))]" />
         </div>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="text-sm font-semibold text-slate-900">
+            <div className="text-sm font-semibold text-[rgb(var(--text))]">
               {call.time}, {call.phone}
             </div>
-            <span className="rounded-full bg-accent-dark px-3 py-1 text-xs font-semibold text-white">
+            <span className="rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--surface2))] px-3 py-1 text-xs font-medium text-[rgb(var(--text))]">
               {call.missed ? "Пропущенный: Филатов" : "Входящий: Филатов"}
             </span>
           </div>
-          <div className="mt-1 text-sm text-slate-700">{call.summary}</div>
-          {call.companyHint ? <div className="mt-2 text-xs text-slate-500">{call.companyHint}</div> : null}
+          <div className="mt-1 text-sm text-[rgb(var(--muted))]">{call.summary}</div>
+          {call.companyHint ? <div className="mt-2 text-xs text-[rgb(var(--muted))]">{call.companyHint}</div> : null}
           {detailHref ? (
             <Link
               href={detailHref}
