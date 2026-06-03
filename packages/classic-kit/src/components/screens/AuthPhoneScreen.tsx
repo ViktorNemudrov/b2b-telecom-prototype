@@ -25,11 +25,11 @@ export function AuthPhoneScreen({
   };
 
   return (
-    <div className="safe-px flex min-h-dvh flex-col bg-[rgb(var(--bg))] text-slate-900">
-      <header className="flex items-center justify-between border-b border-slate-200/80 bg-[rgb(var(--bg))]/95 pt-3 pb-3 backdrop-blur">
+    <div className="safe-px flex min-h-dvh flex-col bg-[rgb(var(--bg))] text-[rgb(var(--text))]">
+      <header className="flex items-center justify-between border-b border-[rgb(var(--border))]/60 bg-[rgb(var(--bg))]/95 pt-3 pb-3 backdrop-blur">
         <button
           type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-softSm transition hover:bg-slate-50"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--card))] text-[rgb(var(--muted))] shadow-softSm transition hover:brightness-110"
           aria-label="Назад"
           onClick={() => goSmartBack(router, backHref)}
         >
@@ -38,33 +38,33 @@ export function AuthPhoneScreen({
         <button
           type="button"
           onClick={() => openDevelopmentStub("Справка по входу появится в релизе.")}
-          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-[11px] font-bold tracking-wide text-slate-700 shadow-softSm transition hover:bg-slate-50"
+          className="rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--card))] px-4 py-2 text-[11px] font-bold tracking-wide text-[rgb(var(--muted))] shadow-softSm transition hover:brightness-110"
         >
           ПОМОЩЬ
         </button>
       </header>
 
-      <h1 className="mt-10 text-[32px] font-medium lowercase leading-tight tracking-tight text-slate-900">
+      <h1 className="mt-10 text-[32px] font-medium lowercase leading-tight tracking-tight text-[rgb(var(--text))]">
         введите номер
       </h1>
 
       <div
-        className="mt-5 rounded-2xl border-2 border-accent-yellow/70 bg-amber-50/90 px-4 py-3.5 text-center shadow-softSm"
+        className="mt-5 rounded-2xl border border-accent-orange/40 bg-accent-orange/10 px-4 py-3.5 text-center shadow-softSm"
         role="note"
       >
-        <p className="text-[15px] font-bold leading-snug text-amber-900">Введите любой номер</p>
-        <p className="mt-1.5 text-xs font-medium leading-relaxed text-slate-600">
+        <p className="text-[15px] font-bold leading-snug text-accent-orange">Введите любой номер</p>
+        <p className="mt-1.5 text-xs font-medium leading-relaxed text-[rgb(var(--muted))]">
           Для демо подойдут любые цифры после +7 — вход сработает в любом случае.
         </p>
       </div>
 
-      <div className="mt-8 rounded-2xl border border-slate-200 bg-white px-4 py-5 shadow-softSm">
-        <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">логин</label>
-        <div className="relative mt-2 flex items-center border-b border-slate-200 pb-2">
+      <div className="mt-8 rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] px-4 py-5 shadow-softSm">
+        <label className="text-xs font-semibold uppercase tracking-wide text-[rgb(var(--muted))]">логин</label>
+        <div className="relative mt-2 flex items-center border-b border-[rgb(var(--border))] pb-2">
           <input
             value={phone}
             onChange={(e) => setPhone(formatRuMobileMask(e.target.value))}
-            className="w-full bg-transparent text-2xl font-medium tracking-tight text-slate-900 outline-none placeholder:text-slate-400"
+            className="w-full bg-transparent text-2xl font-medium tracking-tight text-[rgb(var(--text))] outline-none placeholder:text-[rgb(var(--muted))]"
             placeholder="+7 961 416 24 34"
             inputMode="tel"
             autoComplete="tel"
@@ -72,7 +72,7 @@ export function AuthPhoneScreen({
           <button
             type="button"
             onClick={() => setPhone("+7 ")}
-            className="ml-2 px-2 text-xl leading-none text-slate-400 transition hover:text-slate-600"
+            className="ml-2 px-2 text-xl leading-none text-[rgb(var(--muted))] transition hover:text-[rgb(var(--text))]"
             aria-label="Очистить"
           >
             ×
@@ -91,7 +91,7 @@ export function AuthPhoneScreen({
         <button
           type="button"
           onClick={submit}
-          className="w-full rounded-2xl bg-accent-yellow py-4 text-base font-bold lowercase text-accent-dark shadow-soft transition hover:brightness-95 active:translate-y-[1px]"
+          className="w-full rounded-2xl bg-gradient-to-r from-[#FF6B35] to-[#E8421E] py-4 text-base font-bold lowercase text-white shadow-soft transition hover:brightness-95 active:translate-y-[1px]"
         >
           продолжить
         </button>
