@@ -28,12 +28,12 @@ export function Button({
         size === "sm" && "h-9 px-3",
         size === "icon" && "h-11 w-11 px-0",
         variant === "primary" &&
-          "bg-accent-yellow text-accent-dark shadow-softSm hover:brightness-95",
+          "bg-accent-orange text-white shadow-softSm hover:brightness-95",
         variant === "secondary" &&
-          "bg-white text-accent-dark shadow-softSm hover:bg-slate-50 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600",
+          "bg-[rgb(var(--card))] text-[rgb(var(--text))] shadow-softSm hover:brightness-110 dark:bg-[rgb(var(--card))] dark:text-[rgb(var(--text))]",
         variant === "outline" &&
-          "border border-slate-200 bg-white text-accent-dark hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700",
-        variant === "ghost" && "bg-transparent text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700",
+          "border border-[rgb(var(--border))] bg-[rgb(var(--card))] text-[rgb(var(--text))] hover:brightness-110 dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--card))] dark:text-[rgb(var(--text))]",
+        variant === "ghost" && "bg-transparent text-[rgb(var(--muted))] hover:bg-[rgb(var(--surface2))] hover:text-[rgb(var(--text))] dark:text-[rgb(var(--muted))] dark:hover:bg-[rgb(var(--surface2))] dark:hover:text-[rgb(var(--text))]",
         className
       )}
       {...props}
