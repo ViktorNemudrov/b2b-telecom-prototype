@@ -73,7 +73,7 @@ export function BottomInputBar({
         className={cn(
           "safe-px backdrop-blur",
           variant === "assistant" &&
-            "rounded-t-[28px] border-t border-[#E8EAED] bg-white pb-[calc(12px+clamp(0px,env(safe-area-inset-bottom),14px))] pt-4 shadow-[0_-8px_32px_rgba(0,0,0,0.06)] dark:border-slate-700 dark:bg-slate-900",
+            "rounded-t-[28px] border-t border-[rgb(var(--border))] bg-[rgb(var(--bg))] pb-[calc(12px+clamp(0px,env(safe-area-inset-bottom),14px))] pt-4 shadow-[0_-8px_32px_rgba(0,0,0,0.18)] dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--bg))]",
           variant === "default" && "bg-[rgb(var(--bg))]/85",
           placement === "fixedBottom" && variant === "default" && "border-t border-slate-100 pb-4 pt-3",
           placement === "inline" && variant === "default" && "pb-2 pt-1"
@@ -81,8 +81,8 @@ export function BottomInputBar({
       >
         <div
           className={cn(
-            "rounded-[20px] border border-[#E5E5EA] bg-white p-1.5 shadow-[0_2px_12px_rgba(0,0,0,0.05)] dark:border-slate-600 dark:bg-slate-800",
-            focused && "ring-2 ring-accent-yellow/35"
+            "rounded-[20px] border border-[rgb(var(--border))] bg-[rgb(var(--card))] p-1.5 shadow-[0_2px_12px_rgba(0,0,0,0.12)] dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--card))]",
+            focused && "ring-2 ring-accent-orange/35"
           )}
         >
           <input
@@ -104,7 +104,7 @@ export function BottomInputBar({
             }}
             placeholder="Чем можем помочь?"
             className={cn(
-              "h-9 min-w-0 bg-transparent px-2 text-[15px] outline-none placeholder:text-[#C7C7CC] dark:placeholder:text-slate-500",
+              "h-9 min-w-0 bg-transparent px-2 text-[15px] text-[rgb(var(--text))] outline-none placeholder:text-[rgb(var(--muted))] dark:placeholder:text-[rgb(var(--muted))]",
               variant === "assistant" ? "w-full" : "flex-1"
             )}
             onFocus={() => setFocused(true)}
@@ -125,17 +125,17 @@ export function BottomInputBar({
               <button
                 aria-label="Прикрепить"
                 type="button"
-                className="flex h-9 w-9 items-center justify-center rounded-full text-[#5F6676] transition hover:bg-slate-50 active:translate-y-[1px] dark:text-slate-300 dark:hover:bg-slate-700"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-[rgb(var(--muted))] transition hover:bg-[rgb(var(--surface2))] active:translate-y-[1px] dark:text-[rgb(var(--muted))] dark:hover:bg-[rgb(var(--surface2))]"
                 onClick={() => fileRef.current?.click()}
               >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#A9B1C0] dark:border-slate-500">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[rgb(var(--border))] dark:border-[rgb(var(--border))]">
                   <Paperclip className="h-3.5 w-3.5" />
                 </span>
               </button>
 
               <button
                 aria-label="История"
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 active:translate-y-[1px] dark:text-slate-300 dark:hover:bg-slate-700"
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-[rgb(var(--muted))] transition hover:bg-[rgb(var(--surface2))] active:translate-y-[1px] dark:text-[rgb(var(--muted))] dark:hover:bg-[rgb(var(--surface2))]"
                 onClick={onOpenHistory}
               >
                 <Clock3 className="h-5 w-5" />
@@ -147,14 +147,14 @@ export function BottomInputBar({
                 <button
                   aria-label="Перейти на главную"
                   type="button"
-                  className="relative flex h-9 w-9 items-center justify-center rounded-full text-[#5F6676] transition hover:bg-slate-50 active:translate-y-[1px] dark:text-slate-300 dark:hover:bg-slate-700"
+                  className="relative flex h-9 w-9 items-center justify-center rounded-full text-[rgb(var(--muted))] transition hover:bg-[rgb(var(--surface2))] active:translate-y-[1px] dark:text-[rgb(var(--muted))] dark:hover:bg-[rgb(var(--surface2))]"
                   onClick={() => {
                     if (typeof window !== "undefined") window.location.assign("/assistant/?reset=1");
                   }}
                 >
-                  <span className="relative flex h-7 w-7 items-center justify-center rounded-full border border-[#A9B1C0] dark:border-slate-500">
+                  <span className="relative flex h-7 w-7 items-center justify-center rounded-full border border-[rgb(var(--border))] dark:border-[rgb(var(--border))]">
                     <Pencil className="h-3.5 w-3.5 -translate-x-[0.5px] -translate-y-[0.5px] -rotate-2" strokeWidth={2} />
-                    <Plus className="absolute bottom-[2.5px] right-[1.5px] h-2.5 w-2.5 text-[#5F6676] dark:text-slate-300" strokeWidth={2.4} />
+                    <Plus className="absolute bottom-[2.5px] right-[1.5px] h-2.5 w-2.5 text-[rgb(var(--muted))] dark:text-[rgb(var(--muted))]" strokeWidth={2.4} />
                   </span>
                 </button>
               ) : null}
@@ -165,7 +165,7 @@ export function BottomInputBar({
                   "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition active:translate-y-[1px]",
                   listening
                     ? "bg-rose-50 text-rose-700 animate-pulse dark:bg-rose-900/30 dark:text-rose-200"
-                    : "text-[#5F6676] hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700",
+                    : "text-[rgb(var(--muted))] hover:bg-[rgb(var(--surface2))] dark:text-[rgb(var(--muted))] dark:hover:bg-[rgb(var(--surface2))]",
                   !supported && "opacity-80"
                 )}
                 title={
@@ -241,7 +241,7 @@ export function BottomInputBar({
                   }
                 }}
               >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#A9B1C0] dark:border-slate-500">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[rgb(var(--border))] dark:border-[rgb(var(--border))]">
                   {listening ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
                 </span>
               </button>
@@ -250,7 +250,7 @@ export function BottomInputBar({
                 <button
                   aria-label="Отправить"
                   data-testid={sendButtonDataTestId}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-yellow text-accent-dark shadow-softSm transition hover:brightness-95 active:translate-y-[1px]"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-orange text-white shadow-softSm transition hover:brightness-95 active:translate-y-[1px]"
                   onClick={() => onSend()}
                 >
                   <SendHorizonal className="h-5 w-5" />

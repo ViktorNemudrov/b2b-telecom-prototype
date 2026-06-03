@@ -60,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: CLASSIC_THEME_BOOTSTRAP_SCRIPT }} />
       </head>
-      <body className={`min-h-dvh bg-white antialiased dark:bg-slate-950 ${inter.variable} font-sans`}>
+      <body className={`min-h-dvh bg-[rgb(var(--bg))] antialiased dark:bg-[rgb(var(--bg))] ${inter.variable} font-sans`}>
         <div className="relative mx-auto min-h-dvh w-full max-w-[430px]">
           <ThemeProvider>
             <DemoSessionProvider>

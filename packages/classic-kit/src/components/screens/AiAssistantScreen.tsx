@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bot, ChevronLeft, ChevronRight, Loader2, Pause, PhoneOff, Play, Sparkles, X } from "lucide-react";
+import { BarChart2, Bot, ChevronLeft, ChevronRight, CreditCard, HelpCircle, Loader2, Mail, Pause, PhoneOff, Play, Settings, Smartphone, Sparkles, Wallet, X } from "lucide-react";
 import { InvoicesMarchWidget } from "@shared/components/ai/InvoicesMarchWidget";
 import { InvoicesSummaryInlineWidget } from "@shared/components/ai/InvoicesSummaryInlineWidget";
 import { MyNumbersInlineWidget } from "@shared/components/ai/MyNumbersInlineWidget";
@@ -92,8 +92,17 @@ function toAiMessage(payload: Pick<ChatMessage, "text" | "widget" | "invoiceMont
   };
 }
 
-const pillBase =
-  "inline-flex items-center gap-2 rounded-full bg-white px-[13px] py-[8px] text-[13px] font-medium text-[#3C4858] shadow-[0_2px_10px_rgba(0,0,0,0.07)] transition hover:brightness-[1.02] active:scale-[0.99] dark:border dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100";
+function ChipIcon({ label }: { label: string }) {
+  const l = label.toLowerCase();
+  if (l.includes("смс") || l.includes("рассылк") || l.includes("сообщен")) return <Mail className="h-4 w-4" />;
+  if (l.includes("платеж") || l.includes("счет") || l.includes("счёт") || l.includes("оплат")) return <CreditCard className="h-4 w-4" />;
+  if (l.includes("настройк")) return <Settings className="h-4 w-4" />;
+  if (l.includes("инсайт") || l.includes("аналит") || l.includes("статист")) return <BarChart2 className="h-4 w-4" />;
+  if (l.includes("баланс")) return <Wallet className="h-4 w-4" />;
+  if (l.includes("номер") || l.includes("телефон")) return <Smartphone className="h-4 w-4" />;
+  if (l.includes("умею") || l.includes("возможн")) return <HelpCircle className="h-4 w-4" />;
+  return <Sparkles className="h-4 w-4" />;
+}
 
 function appendChatLog(userText: string, aiText: string, intent: string) {
   if (typeof window === "undefined") return;
@@ -1053,7 +1062,12 @@ export function AiAssistantScreen() {
         {!hasChat ? (
           <>
           <div
-            className="-mx-1 cursor-grab px-1 active:cursor-grabbing"
+            className="pointer-events-none fixed inset-0 z-0"
+            aria-hidden
+            style={{ background: "radial-gradient(ellipse 90% 55% at 50% 105%, rgba(180,75,15,0.42) 0%, rgba(130,45,8,0.20) 48%, transparent 72%)" }}
+          />
+          <div
+            className="hidden"
             data-no-assistant-nav-swipe
             data-testid="assistant-hero-swiper"
             style={{ touchAction: "pan-y" }}
@@ -1189,104 +1203,27 @@ export function AiAssistantScreen() {
             ) : null}
           </div>
 
-          <div className="mt-3">
-            <div className="flex flex-col items-center px-1 pt-0.5 text-center">
-              <div className="flex items-center justify-center gap-1.5">
-                <span className="text-[22px] font-semibold tracking-tight text-[#212529] dark:text-slate-100">
-                  Билайн
-                </span>
-                <Image
-                  src={sphereSrc}
-                  alt=""
-                  width={28}
-                  height={28}
-                  className="h-7 w-7 rounded-full object-cover shadow-sm ring-1 ring-black/5"
-                />
-                <span className="text-[22px] font-semibold tracking-tight text-accent-yellow">One</span>
-              </div>
-              <h1 className="mt-0.5 max-w-[18rem] text-[26px] font-semibold leading-[1.15] tracking-tight text-[#212529] dark:text-slate-100">
-                Ваш бизнес ассистент
-              </h1>
-              <p className="mt-1 text-[13px] text-[#8E8E93] dark:text-slate-400">{userProfile.legalName}</p>
-            </div>
-
-            <div className="mt-2 flex flex-col items-center gap-2">
-              <div className="flex w-full max-w-[360px] justify-center gap-2">
-                <button
-                  type="button"
-                  className={cn(pillBase, getCustomizationButtonClasses(missedChipCustom.dimmedDisabled))}
-                  disabled={missedChipCustom.dimmedDisabled}
-                  onClick={() => {
-                    if (missedChipCustom.useMock) {
-                      setToast("Пропущенные звонки (мок из кастомизации).");
-                      return;
-                    }
-                    markMissedCallsSeen();
-                    setShowMissedCard(false);
-                    window.setTimeout(() => send("Пропущенные звонки"), 60);
-                  }}
-                >
-                  <span>Пропущенные звонки</span>
-                  {!isMissedCallsSeen() ? (
-                    <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#FF3B4E] px-1.5 text-[11px] font-bold text-white">
-                      {missedCallsCount}
-                    </span>
-                  ) : null}
-                </button>
-                <button
-                  type="button"
-                  className={cn(pillBase, getCustomizationButtonClasses(appealsChipCustom.dimmedDisabled))}
-                  disabled={appealsChipCustom.dimmedDisabled}
-                  onClick={() => {
-                    if (appealsChipCustom.useMock) {
-                      setToast("Обращения (мок из кастомизации).");
-                      return;
-                    }
-                    window.setTimeout(() => send("Обращения"), 60);
-                  }}
-                >
-                  <span>Обращения</span>
-                </button>
-              </div>
-              <div className="flex w-full max-w-[360px] flex-wrap justify-center gap-2">
-                <button
-                  type="button"
-                  className={cn(pillBase, getCustomizationButtonClasses(invoicesChipCustom.dimmedDisabled))}
-                  disabled={invoicesChipCustom.dimmedDisabled}
-                  onClick={() => {
-                    if (invoicesChipCustom.dimmedDisabled) {
-                      return;
-                    }
-                    if (invoicesChipCustom.useMock) {
-                      setToast("Мои продукты (мок из кастомизации).");
-                      return;
-                    }
-                    window.setTimeout(() => send("Мои продукты"), 60);
-                  }}
-                >
-                  <span>Мои продукты</span>
-                </button>
-                <button
-                  type="button"
-                  className={cn(pillBase, getCustomizationButtonClasses(unpaidChipCustom.dimmedDisabled))}
-                  disabled={unpaidChipCustom.dimmedDisabled}
-                  onClick={() => {
-                    if (unpaidChipCustom.useMock) {
-                      setToast("Счета на оплату (мок из кастомизации).");
-                      return;
-                    }
-                    window.setTimeout(() => send("Счета на оплату"), 60);
-                  }}
-                >
-                  <span>Счета на оплату</span>
-                  {unpaidInvoicesCount > 0 ? (
-                    <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-[#2D2D2D] px-1.5 text-[11px] font-bold text-white dark:bg-slate-200 dark:text-slate-900">
-                      {unpaidInvoicesCount}
-                    </span>
-                  ) : null}
-                </button>
-              </div>
-            </div>
+          <div className="flex min-h-[calc(100dvh-300px)] flex-col items-center justify-center px-6 pb-2 text-center">
+            <Image
+              src={sphereSrc}
+              alt=""
+              width={120}
+              height={120}
+              className="launch-sphere-pulse mb-6 h-[120px] w-[120px] rounded-full object-cover"
+            />
+            <p className="max-w-[260px] text-[15px] leading-snug text-[rgb(var(--text))] opacity-80">
+              Помогаю управлять вашими продуктами удобнее и эффективнее
+            </p>
+            <button
+              type="button"
+              className="mt-5 rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--card))]/80 px-5 py-2.5 text-[13px] font-medium text-[rgb(var(--text))] transition hover:brightness-110 active:scale-[0.98]"
+              onClick={() => {
+                setInput("Что я умею?");
+                window.setTimeout(() => send("Что я умею?"), 50);
+              }}
+            >
+              Что я умею?
+            </button>
           </div>
 
           </>
@@ -1297,7 +1234,7 @@ export function AiAssistantScreen() {
           <button
             type="button"
             aria-label="Назад"
-            className="mb-3 inline-flex items-center text-sm font-semibold text-[#3C4858] transition hover:text-[#212529] dark:text-slate-200 dark:hover:text-white"
+            className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--card))]/60 px-3 py-1.5 text-[13px] font-medium text-[rgb(var(--text))] transition hover:brightness-110 active:scale-[0.98]"
             onClick={() => {
               // «Назад» в чате = главный экран ассистента, не history.back (иначе Виджеты → Ассистент → чип → назад уводил на /widgets/).
               // Историю в sessionStorage не трогаем — переписка живёт до обновления вкладки или «Выход».
@@ -1311,9 +1248,8 @@ export function AiAssistantScreen() {
               router.replace("/assistant/");
             }}
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F2F2F7] dark:bg-slate-700">
-              <ChevronLeft className="h-4 w-4" aria-hidden />
-            </span>
+            <ChevronLeft className="h-4 w-4" aria-hidden />
+            <span>Новый чат</span>
           </button>
           ) : null}
           <AnimatePresence initial={false}>
@@ -1589,32 +1525,23 @@ export function AiAssistantScreen() {
 
       {!hasChat && chipTags.length > 0 ? (
         <div className="fixed bottom-[calc(128px+clamp(0px,env(safe-area-inset-bottom),14px))] left-0 right-0 z-30 mx-auto w-full max-w-[430px]">
-          <div className="safe-px">
-            <div className="flex flex-wrap gap-1.5">
+          <div className="overflow-x-auto no-scrollbar">
+            <div className="flex gap-2 px-4 pb-1">
               {chipTags.map((label) => (
-                <div
+                <button
                   key={label}
-                  className="inline-flex items-center overflow-hidden rounded-full border border-[#E8EAED] bg-white text-[11px] font-medium leading-none text-[#3C4858] shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+                  type="button"
+                  className="flex w-[110px] shrink-0 flex-col gap-2.5 rounded-2xl border border-[rgb(var(--border))] bg-[rgb(var(--card))] p-3 text-left transition hover:brightness-110 active:scale-[0.98] dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--card))]"
+                  onClick={() => {
+                    setInput(label);
+                    window.setTimeout(() => send(label), 50);
+                  }}
                 >
-                  <button
-                    type="button"
-                    className="px-2.5 py-1 text-left hover:bg-slate-50 dark:hover:bg-slate-700"
-                    onClick={() => {
-                      setInput(label);
-                      window.setTimeout(() => send(label), 50);
-                    }}
-                  >
-                    {label}
-                  </button>
-                  <button
-                    type="button"
-                    className="border-l border-[#E8EAED] px-1.5 py-1 text-[#C7C7CC] hover:bg-slate-100 hover:text-slate-600 dark:border-slate-600 dark:hover:bg-slate-700"
-                    aria-label="Убрать"
-                    onClick={() => setChipTags((t) => t.filter((x) => x !== label))}
-                  >
-                    <X className="h-3 w-3" strokeWidth={2.5} />
-                  </button>
-                </div>
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[rgb(var(--surface2))] text-[rgb(var(--muted))]">
+                    <ChipIcon label={label} />
+                  </span>
+                  <span className="text-[11px] font-medium leading-tight text-[rgb(var(--text))]">{label}</span>
+                </button>
               ))}
             </div>
           </div>

@@ -28,6 +28,8 @@ const config: Config = {
         accent: {
           dark: "#1F2035",
           yellow: "#FFD429",
+          orange: "#FF6B35",
+          amber: "#FFB03B",
           violet: "#8F6BFF"
         }
       },

@@ -1,6 +1,6 @@
 "use client";
 
-import { Volume2 } from "lucide-react";
+import { MoreHorizontal, RefreshCw, ThumbsDown, ThumbsUp, Volume2 } from "lucide-react";
 import { cn } from "@shared/components/ui/cn";
 import { Button } from "@shared/components/ui/button";
 import type { ChatMessage } from "@shared/lib/mockData";
@@ -55,9 +55,9 @@ export function ChatBubble({
                 <button
                   key={s}
                   onClick={() => onSuggestedClick?.(s)}
-                  className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 active:translate-y-[1px] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  className="rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--surface2))] px-3 py-1.5 text-xs font-medium text-[rgb(var(--text))] transition hover:brightness-110 active:translate-y-[1px] dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface2))] dark:text-[rgb(var(--text))]"
                 >
-                  {s}
+                  ↳ {s}
                 </button>
               ))}
             </div>
@@ -71,35 +71,58 @@ export function ChatBubble({
     <div className={cn("flex w-full", isUser ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "max-w-[86%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-softSm",
+          "max-w-[86%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
           isUser
-            ? "bg-[#E8F4DE] text-[#2A2D3A] dark:bg-emerald-950/50 dark:text-slate-100"
-            : "border border-slate-200 bg-white text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            ? "bg-[rgb(var(--surface2))] text-[rgb(var(--text))] dark:bg-[rgb(var(--surface2))] dark:text-[rgb(var(--text))]"
+            : "border-0 bg-transparent text-[rgb(var(--text))] dark:text-[rgb(var(--text))]"
         )}
       >
         <div className="whitespace-pre-wrap">{message.text}</div>
         {!isUser && hasSource ? <AssistantSourceBlock sourceLabel={message.sourceLabel!} /> : null}
 
         {!isUser ? (
-          <div className="mt-3 flex items-center gap-2">
+          <div className="mt-3 flex items-center gap-1">
             <Button
               size="icon"
               variant="ghost"
-              className="h-9 w-9 rounded-xl dark:text-slate-300 dark:hover:bg-slate-700"
+              className="h-8 w-8 rounded-xl text-[rgb(var(--muted))] hover:bg-[rgb(var(--surface2))] hover:text-[rgb(var(--text))] dark:text-[rgb(var(--muted))] dark:hover:bg-[rgb(var(--surface2))] dark:hover:text-[rgb(var(--text))]"
+              aria-label="Полезно"
+              title="Полезно"
+            >
+              <ThumbsUp className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 rounded-xl text-[rgb(var(--muted))] hover:bg-[rgb(var(--surface2))] hover:text-[rgb(var(--text))] dark:text-[rgb(var(--muted))] dark:hover:bg-[rgb(var(--surface2))] dark:hover:text-[rgb(var(--text))]"
+              aria-label="Не полезно"
+              title="Не полезно"
+            >
+              <ThumbsDown className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 rounded-xl text-[rgb(var(--muted))] hover:bg-[rgb(var(--surface2))] hover:text-[rgb(var(--text))] dark:text-[rgb(var(--muted))] dark:hover:bg-[rgb(var(--surface2))] dark:hover:text-[rgb(var(--text))]"
+              aria-label="Повторить"
+              title="Повторить"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 rounded-xl text-[rgb(var(--muted))] hover:bg-[rgb(var(--surface2))] hover:text-[rgb(var(--text))] dark:text-[rgb(var(--muted))] dark:hover:bg-[rgb(var(--surface2))] dark:hover:text-[rgb(var(--text))]"
               onClick={() => {
                 if (!canSpeak()) return;
                 const synth = window.speechSynthesis;
                 const isActive = synth.speaking || synth.paused || (synth as any).pending;
                 const shouldStop = isActive && lastSpokenText === message.text;
-
-                // If the same bubble is currently being spoken -> toggle stop.
                 if (shouldStop) {
                   synth.cancel();
                   lastSpokenText = null;
                   return;
                 }
-
-                // Otherwise restart speaking from this bubble.
                 const u = new SpeechSynthesisUtterance(message.text);
                 u.lang = "ru-RU";
                 synth.cancel();
@@ -117,7 +140,16 @@ export function ChatBubble({
               disabled={!canSpeak()}
               title={!canSpeak() ? "SpeechSynthesis недоступен" : "Озвучить / остановить"}
             >
-              <Volume2 className="h-4 w-4" />
+              <Volume2 className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 rounded-xl text-[rgb(var(--muted))] hover:bg-[rgb(var(--surface2))] hover:text-[rgb(var(--text))] dark:text-[rgb(var(--muted))] dark:hover:bg-[rgb(var(--surface2))] dark:hover:text-[rgb(var(--text))]"
+              aria-label="Ещё"
+              title="Ещё"
+            >
+              <MoreHorizontal className="h-3.5 w-3.5" />
             </Button>
           </div>
         ) : null}
@@ -128,9 +160,9 @@ export function ChatBubble({
               <button
                 key={s}
                 onClick={() => onSuggestedClick?.(s)}
-                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 active:translate-y-[1px]"
+                className="rounded-full border border-[rgb(var(--border))] bg-[rgb(var(--surface2))] px-3 py-1.5 text-xs font-medium text-[rgb(var(--text))] transition hover:brightness-110 active:translate-y-[1px] dark:border-[rgb(var(--border))] dark:bg-[rgb(var(--surface2))] dark:text-[rgb(var(--text))]"
               >
-                {s}
+                ↳ {s}
               </button>
             ))}
           </div>

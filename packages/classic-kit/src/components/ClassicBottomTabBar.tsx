@@ -11,8 +11,8 @@ import { getCustomizationButtonClasses, useUiCustomization } from "@shared/lib/u
 const tabClass = (active: boolean) =>
   `flex min-w-0 flex-1 flex-col items-center gap-0.5 px-1 py-2 text-[10px] font-semibold transition ${
     active
-      ? "text-accent-yellow dark:text-accent-yellow"
-      : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+      ? "text-accent-orange dark:text-accent-orange"
+      : "text-[rgb(var(--muted))] hover:text-[rgb(var(--text))] dark:text-[rgb(var(--muted))] dark:hover:text-[rgb(var(--text))]"
   }`;
 
 export function ClassicBottomTabBar() {
@@ -34,7 +34,7 @@ export function ClassicBottomTabBar() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-[90] border-t border-slate-200/80 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur dark:border-slate-700/80 dark:bg-slate-900/95"
+      className="fixed bottom-0 left-0 right-0 z-[90] border-t border-[rgb(var(--border))]/80 bg-[rgb(var(--bg))]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur dark:border-[rgb(var(--border))]/80 dark:bg-[rgb(var(--bg))]/95"
       aria-label="Основное меню"
     >
       <div className="mx-auto flex max-w-lg items-stretch justify-between px-1">
