@@ -26,7 +26,7 @@
     "verify": "npm run lint && npm run test && npm run verify:customization && npm run predeploy:chat",
     "verify:full": "npm run lint && npm run test && npx playwright test",
     "test:e2e": "playwright test",
-    "test:e2e:chat": "playwright test e2e/assistant-routing.spec.ts e2e/assistant-ai.spec.ts e2e/chat-page.spec.ts",
+    "test:e2e:chat": "playwright test e2e/assistant-routing.spec.ts e2e/assistant-ai.spec.ts e2e/chat-page.spec.ts --project=desktop-chromium --project=mobile-android-chrome --project=desktop-chromium-classic",
     "test:e2e:chat:gate": "playwright test e2e/chat-scenarios-gate.spec.ts --project=desktop-chromium --project=mobile-android-chrome --workers=1",
     "test:e2e:chat:classic": "playwright test --project=desktop-chromium-classic --workers=1",
     "test:e2e:smoke": "playwright test e2e/smoke-release.spec.ts --project=desktop-chromium",
